@@ -7,7 +7,7 @@ from aiogram.types import Message, CallbackQuery
 from aiogram.utils import markdown
 from dotenv import load_dotenv
 
-from bot_base_messages.messages_templates import BotMessagesTemplates
+from bot_base_messages.messages_templates import BotMessagesTemplates as Templates
 from bot_keyboards.keyboards import MakeMarkup, MakeCallback
 from bot_states.states import GetNmIdFormStateGroup
 from exceptions.wb_exceptions import WBApiResponseExceptions
@@ -41,13 +41,13 @@ async def send_user_nm_ids(message: types.Message):
             markup = MakeMarkup.nm_ids_markup(nm_ids)
             message_for_ids = markdown.hbold('Ваши номенклатуры:\n\n')
             for nm in nm_ids:
-                message_for_ids += BotMessagesTemplates.send_nm_ids_template.format(*nm)
-            message_for_ids += BotMessagesTemplates.plus_send_nm_ids_template
+                message_for_ids += Templates.send_nm_ids_template.format(*nm)
+            message_for_ids += Templates.plus_send_nm_ids_template
         else:
             message_for_ids = 'Активных номеров номенклатур не найдено.'
         await message.answer(message_for_ids, reply_markup=markup)
     except WBApiResponseExceptions:
-        await message.answer('Ошибка, повторите запрос позже.')
+        await message.answer(Templates.errors['try_later'])
 
 
 @router.callback_query(MakeCallback.filter())
@@ -60,16 +60,16 @@ async def send_analytics_callback(callback: CallbackQuery, callback_data: MakeCa
         product = analytics_nm_id.pop(0)
         answer_message = f'Товар: {markdown.hbold(product)}.\n\n'
         for nm_id in analytics_nm_id:
-            answer_message += BotMessagesTemplates.send_analytic_detail_mess_template.format(*nm_id)
+            answer_message += Templates.send_analytic_detail_mess_template.format(*nm_id)
         await callback.answer(text=product)
         await message_wait.edit_text(answer_message)
     else:
-        await callback.answer('Ошибка, повторите запрос позже.')
+        await callback.answer(Templates.errors['try_later'])
 
 
 @router.message(Command(commands='sday'))
 async def set_state_nm_ids(message: types.Message, state: FSMContext):
-    await message.answer(BotMessagesTemplates.set_state_statistics_mess_template)
+    await message.answer(Templates.set_state_statistics_mess_template)
     await state.set_state(GetNmIdFormStateGroup.nm_id)
 
 
@@ -85,9 +85,9 @@ async def send_analytic(message: types.Message, state: FSMContext):
         if analytic_nm_id:
             analytic_message = f'Товар: {markdown.hbold(analytic_nm_id.pop(0))}.\n\n'
             for nm_id in analytic_nm_id:
-                analytic_message += BotMessagesTemplates.send_analytic_detail_mess_template.format(*nm_id)
+                analytic_message += Templates.send_analytic_detail_mess_template.format(*nm_id)
             await message_wait.edit_text(analytic_message)
         else:
-            await message_wait.edit_text('Ошибка, проверьте правильность артикула.')
+            await message_wait.edit_text(Templates.errors['check_correct'])
     except WBApiResponseExceptions:
-        await message_wait.edit_text('Ошибка, повторите запрос позже.')
+        await message_wait.edit_text(Templates.errors['try_later'])

@@ -3,6 +3,10 @@ from dataclasses import dataclass
 
 @dataclass
 class BotMessagesTemplates:
+	errors = {
+		'try_later': 'Ошибка, повторите запрос позже.',
+		'check_correct': 'Ошибка, проверьте правильность введенных данных.'
+	}
 	send_nm_ids_template = (
 		'Артикул: {}\n'
 		'Категория товара: {}\n'
