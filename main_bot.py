@@ -12,8 +12,7 @@ async def set_default_commands(bot):
     """Добавление кнопки 'Меню' со списком команд."""
     await bot.set_my_commands(
         [
-            types.BotCommand(command='nm', description='Список номенклатур.'),
-            types.BotCommand(command='sday', description='Статистика за день.')
+            types.BotCommand(command='get_stats', description='Статистика'),
         ]
     )
 
