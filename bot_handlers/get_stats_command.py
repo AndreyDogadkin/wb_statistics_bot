@@ -1,7 +1,7 @@
 from os import getenv
 
 from aiogram import types, F, Router
-from aiogram.filters import CommandStart, Command, StateFilter
+from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state
 from aiogram.utils import markdown
@@ -19,32 +19,20 @@ WB_TOKEN = getenv('WB_TOKEN')  # TODO delete after tests
 router = Router()
 
 
-@router.message(CommandStart(), StateFilter(default_state))
-async def command_start_handler(message: types.Message) -> None:
-    """Команда старт."""
-    await message.answer(f'Привет, {markdown.hbold(message.from_user.full_name)}!\n'
-                         f'Я тестовая версия бота "WB statistics!"')
-
-
-@router.callback_query(~StateFilter(default_state), F.data == 'cancel')
-async def close_any_state(callback: types.CallbackQuery, state: FSMContext):
-    """Отмена любого состояния. """
-    await callback.message.delete()
-    await callback.answer('Отмена выбора.')
-    await state.clear()
-
-
 @router.message(Command(commands='get_stats'), StateFilter(default_state))
 async def set_get_stats_state(message: types.Message, state: FSMContext):
-    await message.answer(text='Для выполнения операции отправьте токен WB API "Стандартный".')
+    for_edit = await message.answer(text='Для выполнения операции отправьте токен WB API "Стандартный".',
+                                    reply_markup=MakeMarkup.cancel_builder().as_markup())
+    await state.update_data(for_edit=for_edit)
     await state.set_state(GetStats.get_token)
-    #  TODO add keyboard, "Запомнить токен", "Отмена"
 
 
 @router.message(StateFilter(GetStats.get_token))  # TODO add token filter
-async def get_user_token(message: types.Message, state: FSMContext):
+async def get_user_token_send_nm_ids(message: types.Message, state: FSMContext):
     await state.update_data(token=message.text)
     state_data: dict = await state.get_data()
+    for_del_message: types.Message = state_data.get('for_edit')
+    await for_del_message.delete()
     token: str = state_data.get('token')
     statistics = StatisticsRequests(WB_TOKEN)  # TODO fix token after tests (get from state.get_data)
     try:
@@ -62,6 +50,8 @@ async def get_user_token(message: types.Message, state: FSMContext):
         await message.answer(message_for_ids, reply_markup=markup)  # TODO pagination for nm_ids list
     except WBApiResponseExceptions:
         await message.answer(Templates.errors['try_later'])
+    finally:
+        await message.delete()
 
 
 @router.callback_query(StateFilter(GetStats.get_nm_id), NmIdsCallbackData.filter())
@@ -95,6 +85,7 @@ async def send_user_statistics(callback: types.CallbackQuery, callback_data: Per
             await message_wait.edit_text(answer_message)
         else:
             await callback.answer(Templates.errors['try_later'])
-        await state.clear()
     except WBApiResponseExceptions:
         await message_wait.edit_text('Ошибка при исполнении запроса')  # TODO fix error message
+    finally:
+        await state.clear()
