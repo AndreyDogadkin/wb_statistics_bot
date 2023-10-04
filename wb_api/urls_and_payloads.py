@@ -12,7 +12,7 @@ class WBApiPayloads:
     nm_ids_payload = {
         "sort": {
             "cursor": {
-                "limit": 1000
+                "limit": 50
             },
             "filter": {
                 "withPhoto": -1
