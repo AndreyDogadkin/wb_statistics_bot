@@ -34,7 +34,7 @@ class StatisticsRequests:
                         return response_data
                     except Exception as e:
                         raise WBApiResponseExceptions(message=e, url=url)
-                raise WBApiResponseExceptions(url=url)
+                raise WBApiResponseExceptions(url=url, message=response.status)
 
     @ResponseHandlers.nm_ids_handler
     async def get_nm_ids(self) -> list[tuple]:
@@ -47,11 +47,11 @@ class StatisticsRequests:
         response = await self.__get_response_post(url=url, data=data)
         return response
 
-    @ResponseHandlers.analytic_detail_handler
-    async def get_analytics_detail(self,
-                                   nm_ids: list,
-                                   period: int = 1,
-                                   aggregation_lvl: str = 'day') -> list[str, tuple]:
+    @ResponseHandlers.analytic_detail_days_handler
+    async def get_analytics_detail_days(self,
+                                        nm_ids: list,
+                                        period: int = 1,
+                                        aggregation_lvl: str = 'day') -> list[str, tuple]:
         """
         Получение статистики по переданному номеру номенклатуры.
         :param nm_ids: list
@@ -59,7 +59,7 @@ class StatisticsRequests:
         :param aggregation_lvl: str, default: 'day'
         :return: list[tuple]
         """
-        url = WBApiUrls.analytic_detail_url
+        url = WBApiUrls.analytic_detail_url_days
         data = {
             'nmIDs': nm_ids,
             'period': {
@@ -70,3 +70,19 @@ class StatisticsRequests:
         }
         response = await self.__get_response_post(url=url, data=data)
         return response
+
+    @ResponseHandlers.analytic_detail_period_handler
+    async def get_analytic_detail_periods(self, nm_ids: list, period: int = 7):
+        url = WBApiUrls.analytic_detail_url_periods
+        data = {
+            'nmIDs': nm_ids,
+            'period': {
+                'begin': str(datetime.now() - timedelta(days=period)),
+                'end': str(datetime.now())
+            },
+            'page': 1
+        }
+        response = await self.__get_response_post(url=url, data=data)
+        return response
+
+    # TODO добавить просмотр остатков товаров (В документации -> статистика -> склад)

@@ -7,7 +7,7 @@ class NmIdsCallbackData(CallbackData, prefix='analytics'):
     nm_id: int
 
 
-class PeriodCallBackData(CallbackData, prefix='period_for_stats'):
+class DaysCallBackData(CallbackData, prefix='days_for_stats'):
     period: int
 
 
@@ -29,11 +29,14 @@ class MakeMarkup:
     @classmethod
     def periods_markup(cls) -> InlineKeyboardMarkup:
         markup = InlineKeyboardBuilder()
-        markup.button(text='1 день', callback_data=PeriodCallBackData(period=0).pack())
-        markup.button(text='3 дня', callback_data=PeriodCallBackData(period=2).pack())
-        markup.button(text='5 дней', callback_data=PeriodCallBackData(period=4).pack())
-        markup.button(text='Неделя', callback_data=PeriodCallBackData(period=7).pack())
-        markup.button(text='Месяц 🔒', callback_data=PeriodCallBackData(period=31).pack())
+        markup.button(text='1 день', callback_data=DaysCallBackData(period=0).pack())
+        markup.button(text='3 дня', callback_data=DaysCallBackData(period=2).pack())
+        markup.button(text='5 дней', callback_data=DaysCallBackData(period=4).pack())
+        markup.button(text='Неделя', callback_data=DaysCallBackData(period=7).pack())
+        markup.button(text='2 недели', callback_data=DaysCallBackData(period=14).pack())
+        markup.button(text='Месяц', callback_data=DaysCallBackData(period=31).pack())
+        markup.button(text='2 месяца', callback_data=DaysCallBackData(period=62).pack())
+        markup.button(text='6 месяцев', callback_data=DaysCallBackData(period=180).pack())
         markup.adjust(3)
         markup.attach(cls.cancel_builder())
         return markup.as_markup()
