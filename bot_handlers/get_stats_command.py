@@ -1,4 +1,5 @@
 from os import getenv
+import logging
 
 from aiogram import types, F, Router
 from aiogram.filters import Command, StateFilter
@@ -13,6 +14,7 @@ from bot_states.states import GetStats
 from exceptions.wb_exceptions import WBApiResponseExceptions
 from wb_api.analytics_requests import StatisticsRequests
 
+loger = logging.getLogger(__name__)
 load_dotenv()
 WB_TOKEN = getenv('WB_TOKEN')  # TODO delete after tests
 
@@ -48,7 +50,7 @@ async def get_user_token_send_nm_ids(message: types.Message, state: FSMContext):
         else:
             message_for_ids = 'Активных номеров номенклатур не найдено.'
         await message.answer(message_for_ids, reply_markup=markup)  # TODO pagination for nm_ids list
-    except WBApiResponseExceptions:
+    except (WBApiResponseExceptions, Exception):
         await message.answer(err_mess_templates['try_later'])
     finally:
         await message.delete()
@@ -78,7 +80,8 @@ async def send_user_statistics(callback: types.CallbackQuery, callback_data: Day
             await message_wait.edit_text(answer_message)
         else:
             await callback.answer(err_mess_templates['try_later'])
-    except WBApiResponseExceptions:
+    except (WBApiResponseExceptions, Exception) as e:
+        loger.error(e)
         await message_wait.edit_text('Ошибка при исполнении запроса')  # TODO fix error message
     finally:
         await state.clear()
