@@ -4,7 +4,8 @@ from dataclasses import dataclass
 @dataclass
 class WBApiUrls:
     nm_ids_url = 'https://suppliers-api.wildberries.ru/content/v1/cards/cursor/list'
-    analytic_detail_url = 'https://suppliers-api.wildberries.ru/content/v1/analytics/nm-report/detail/history'
+    analytic_detail_url_days = 'https://suppliers-api.wildberries.ru/content/v1/analytics/nm-report/detail/history'
+    analytic_detail_url_periods = 'https://suppliers-api.wildberries.ru/content/v1/analytics/nm-report/detail'
 
 
 @dataclass

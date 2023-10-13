@@ -11,7 +11,7 @@ class ResponseHandlers:
     @staticmethod
     def nm_ids_handler(func):
         @wraps(func)
-        async def wrapper(*args, **kwargs):
+        async def wrapper(*args, **kwargs) -> list[tuple]:
             response: dict = await func(*args, **kwargs)
             if response.get('error') is True:
                 error = response.get('errorText')
@@ -30,7 +30,7 @@ class ResponseHandlers:
         return wrapper
 
     @staticmethod
-    def analytic_detail_handler(func):
+    def analytic_detail_days_handler(func):
         @wraps(func)
         async def wrapper(*args, **kwargs):
             response = await func(*args, **kwargs)
@@ -50,6 +50,43 @@ class ResponseHandlers:
                     buy_outs_sum = day.get('buyoutsSumRub')
                     out.append((date, order_sum, orders_count, open_card, add_to_cart_count,
                                 buy_out_count, buy_out_percent, buy_outs_sum))
+            elif response.get('error') is True:
+                error = response.get('errorText')
+                logger.error(error)
+                raise WBApiHandleException(error)
+            else:
+                logger.warning(f'Нет данных при обработке, переданные данные: {args}')
+            return out
+        return wrapper
+
+    @staticmethod
+    def analytic_detail_period_handler(func):
+        @wraps(func)
+        async def wrapper(*args, **kwargs):
+            response = await func(*args, **kwargs)
+            out = []
+            data = response.get('data')
+            cards = data.get('cards')
+            if cards:
+                cards = cards[0]
+                out = [cards['object']['name']]
+                statistics = cards.get('statistics')
+                select_period = statistics.get('selectedPeriod')
+                previous_period = statistics.get('previousPeriod')
+                data_for_periods = [
+                    'begin',
+                    'end',
+                    'ordersSumRub',
+                    'ordersCount',
+                    'openCardCount',
+                    'addToCartCount',
+                    'buyoutsCount',
+                    'buyoutsSumRub',
+                    'avgOrdersCountPerDay',
+                    'avgPriceRub'
+                ]
+                out += [(select_period[i] for i in data_for_periods),
+                        (previous_period[i] for i in data_for_periods)]
             elif response.get('error') is True:
                 error = response.get('errorText')
                 logger.error(error)
