@@ -6,7 +6,7 @@ import aiohttp
 
 from exceptions.wb_exceptions import WBApiResponseExceptions
 from .requests_handlers import ResponseHandlers
-from .urls_and_payloads import WBApiUrls, WBApiPayloads
+from .urls_and_payloads import wb_api_urls, wb_api_payloads
 
 
 class StatisticsRequests:
@@ -21,7 +21,7 @@ class StatisticsRequests:
 
     async def __get_response_post(self, url, data):
         """
-        Общий метод для получения ответа от WB API.
+        Сессия для получения ответа от WB API.
         :param url:
         :param data:
         :return:
@@ -42,8 +42,8 @@ class StatisticsRequests:
         Получение номенклатур продавца.
         :return: list[tuple]
         """
-        url = WBApiUrls.nm_ids_url
-        data = WBApiPayloads.nm_ids_payload
+        url = wb_api_urls['get_nm_ids_url']
+        data = wb_api_payloads['nm_ids_payload']
         response = await self.__get_response_post(url=url, data=data)
         return response
 
@@ -55,11 +55,11 @@ class StatisticsRequests:
         """
         Получение статистики по переданному номеру номенклатуры.
         :param nm_ids: list
-        :param period: int, default: 1
-        :param aggregation_lvl: str, default: 'day'
+        :param period: int
+        :param aggregation_lvl
         :return: list[tuple]
         """
-        url = WBApiUrls.analytic_detail_url_days
+        url = wb_api_urls['analytic_detail_url_days']
         data = {
             'nmIDs': nm_ids,
             'period': {
@@ -73,7 +73,7 @@ class StatisticsRequests:
 
     @ResponseHandlers.analytic_detail_period_handler
     async def get_analytic_detail_periods(self, nm_ids: list, period: int = 7):
-        url = WBApiUrls.analytic_detail_url_periods
+        url = wb_api_urls['analytic_detail_url_periods']
         data = {
             'nmIDs': nm_ids,
             'period': {
