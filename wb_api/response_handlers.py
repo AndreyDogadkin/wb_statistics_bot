@@ -1,7 +1,10 @@
-from functools import wraps
 import logging
-from exceptions.wb_exceptions import WBApiHandleException
+from functools import wraps
 
+from pydantic import ValidationError
+
+from exceptions.wb_exceptions import WBApiHandleException
+from .response_validate_and_parse import DataAnalyticDays
 
 logger = logging.getLogger(__name__)
 
@@ -36,26 +39,19 @@ class ResponseHandlers:
             response = await func(*args, **kwargs)
             out = []
             if response.get('data'):
-                data = response.get('data')[0]
-                out = [data.get('imtName')]
-                history = data.get('history')
-                for day in history:
-                    date = day.get('dt')
-                    order_sum = day.get('ordersSumRub')
-                    orders_count = day.get('ordersCount')
-                    open_card = day.get('openCardCount')
-                    add_to_cart_count = day.get('addToCartCount')
-                    buy_out_count = day.get('buyoutsCount')
-                    buy_out_percent = day.get('buyoutPercent')
-                    buy_outs_sum = day.get('buyoutsSumRub')
-                    out.append((date, order_sum, orders_count, open_card, add_to_cart_count,
-                                buy_out_count, buy_out_percent, buy_outs_sum))
+                try:
+                    data = DataAnalyticDays.model_validate(response)
+                    out.append(data.data[0].imtName)
+                    for history in data.data[0].history:
+                        out.append(history.__dict__.values())
+                except ValidationError as e:
+                    logger.error(f'Ошибка валидации ответа: {e.json()}')
             elif response.get('error') is True:
                 error = response.get('errorText')
                 logger.error(error)
                 raise WBApiHandleException(error)
             else:
-                logger.warning(f'Нет данных при обработке, переданные данные: {args}')
+                logger.warning(f'Нет данных при обработке значений: {args}')
             return out
         return wrapper
 

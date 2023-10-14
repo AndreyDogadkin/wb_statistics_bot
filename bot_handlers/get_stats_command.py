@@ -15,7 +15,9 @@ from exceptions.wb_exceptions import WBApiResponseExceptions
 from wb_api.analytics_requests import StatisticsRequests
 
 loger = logging.getLogger(__name__)
+
 load_dotenv()
+
 WB_TOKEN = getenv('WB_TOKEN')  # TODO delete after tests
 
 router = Router()
@@ -79,10 +81,10 @@ async def send_user_statistics(callback: types.CallbackQuery, callback_data: Day
             await callback.answer(text=product)
             await message_wait.edit_text(answer_message)
         else:
-            await callback.answer(err_mess_templates['try_later'])
+            await message_wait.edit_text(err_mess_templates['no_data'])
     except (WBApiResponseExceptions, Exception) as e:
         loger.error(e)
-        await message_wait.edit_text('Ошибка при исполнении запроса')  # TODO fix error message
+        await message_wait.edit_text(err_mess_templates['try_later'])
     finally:
         await state.clear()
 

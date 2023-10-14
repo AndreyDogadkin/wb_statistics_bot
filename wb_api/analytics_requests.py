@@ -5,7 +5,7 @@ from http import HTTPStatus
 import aiohttp
 
 from exceptions.wb_exceptions import WBApiResponseExceptions
-from .requests_handlers import ResponseHandlers
+from .response_handlers import ResponseHandlers
 from .urls_and_payloads import wb_api_urls, wb_api_payloads
 
 
@@ -86,3 +86,4 @@ class StatisticsRequests:
         return response
 
     # TODO добавить просмотр остатков товаров (В документации -> статистика -> склад)
+    # TODO добавить продажи (в документации -> статистика -> продажи)
