@@ -1,5 +1,6 @@
 import logging
 from functools import wraps
+from datetime import datetime
 
 from pydantic import ValidationError
 
@@ -12,11 +13,19 @@ logger = logging.getLogger(__name__)
 class ResponseHandlers:
 
     @staticmethod
-    def __check_error_key(response) -> None:
-        if response.get('error') is True:
-            error = response.get('errorText')
+    def __check_error_key(_response: dict) -> None:
+        if _response.get('error') is True:
+            error = _response.get('errorText')
             logger.error(error)
             raise WBApiHandleException(error)
+
+    @staticmethod
+    def __get_datetime_format(_datetime: str, method: str):
+        formats: dict = {
+            'detail_days': '%Y-%m-%d',
+            'detail_period': '%Y-%m-%d %H:%M:%S'
+        }
+        return datetime.strptime(_datetime, formats[method]).strftime('%d.%m.%y')
 
     @classmethod
     def nm_ids_handler(cls, func):
@@ -52,6 +61,7 @@ class ResponseHandlers:
                     out: list = [None] * len_out_list
                     out[0] = data.data[0].imtName
                     for elem in history:
+                        elem.dt = cls.__get_datetime_format(elem.dt, 'detail_days')
                         out[len_out_list - 1] = (elem.__dict__.values())
                         len_out_list -= 1
                     return out
@@ -70,13 +80,21 @@ class ResponseHandlers:
             if response.get('data'):
                 data = ResponseStatsPeriod.model_validate(response)
                 name = data.data.cards[0].object.name
+                vendor_code = data.data.cards[0].vendorCode
                 statistics = data.data.cards[0].statistics
+                statistics.selectedPeriod.begin = cls.__get_datetime_format(statistics.selectedPeriod.begin,
+                                                                            'detail_period')
+                statistics.selectedPeriod.end = cls.__get_datetime_format(statistics.selectedPeriod.end,
+                                                                          'detail_period')
+                statistics.previousPeriod.begin = cls.__get_datetime_format(statistics.previousPeriod.begin,
+                                                                            'detail_period')
+                statistics.previousPeriod.end = cls.__get_datetime_format(statistics.previousPeriod.end,
+                                                                          'detail_period')
                 select_period = list(statistics.selectedPeriod.__dict__.values())
                 select_period_buyouts: dict = select_period.pop()['buyoutsPercent']
                 previous_period = list(statistics.previousPeriod.__dict__.values())
                 previous_period_buyouts = previous_period.pop()['buyoutsPercent']
-                #  TODO Изменить формат даты
-                return [name, ('Выбранный период:', *select_period, select_period_buyouts),
+                return [f'{name} [{vendor_code}]', ('Выбранный период:', *select_period, select_period_buyouts),
                         ('Предыдущий период:', *previous_period, previous_period_buyouts)]
             logger.warning(f'Нет данных при обработке, переданные данные: {args}')
         return wrapper

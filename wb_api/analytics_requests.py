@@ -66,6 +66,7 @@ class StatisticsRequests:
                 'begin': str(datetime.now().date() - timedelta(days=period)),
                 'end': str(datetime.now().date())
             },
+            'timezone': 'Europe/Moscow',
             'aggregationLevel': aggregation_lvl
         }
         response = await self.__get_response_post(url=url, data=data)
