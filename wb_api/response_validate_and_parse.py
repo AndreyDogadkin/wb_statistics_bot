@@ -3,81 +3,118 @@ import json
 from pydantic import BaseModel, ValidationError
 
 
-class NmHistory(BaseModel):
-    dt: str
-    openCardCount: int
-    addToCartCount: int
-    addToCartConversion: int
-    ordersCount: int
-    ordersSumRub: int
-    cartToOrderConversion: int
-    buyoutsCount: int
-    buyoutsSumRub: int
-    buyoutPercent: int
-
-
-class NmData(BaseModel):
-    nmID: int
-    imtName: str
-    vendorCode: str
-    history: list[NmHistory]
-
-
-class DataAnalyticDays(BaseModel):
-    data: list[NmData]
+class BaseData(BaseModel):
+    data: list
     error: bool
     errorText: str
     additionalErrors: None | dict[str, str]
+
+
+class NmHistoryStatsDays(BaseModel):
+    dt: str
+    ordersSumRub: int
+    ordersCount: int
+    openCardCount: int
+    addToCartCount: int
+    buyoutsCount: int
+    buyoutsSumRub: int
+    buyoutPercent: int
+    addToCartConversion: int
+    cartToOrderConversion: int
+
+
+class NmDataStatsDays(BaseModel):
+    nmID: int
+    imtName: str
+    vendorCode: str
+    history: list[NmHistoryStatsDays]
+
+
+class DataStatsDays(BaseData):
+    data: list[NmDataStatsDays]
+
+
+class CardsNmIds(BaseModel):
+    sizes: list[dict[str, int | list]]
+    mediaFiles: list[str]
+    colors: list[str]
+    updateAt: str
+    vendorCode: str
+    brand: str
+    object: str
+    nmID: int
+    imtID: int
+    objectID: int
+    isProhibited: bool
+    tags: list
+
+
+class DataNmIDs(BaseModel):
+    cards: list[CardsNmIds]
+    cursor: dict
+
+
+class ResponseNmIDs(BaseData):
+    data: DataNmIDs
+
+
+class PeriodsStatsPeriod(BaseModel):
+    begin: str
+    end: str
+    ordersSumRub: int
+    ordersCount: int
+    openCardCount: int
+    addToCartCount: int
+    buyoutsCount: int
+    buyoutsSumRub: int
+    cancelCount: int
+    cancelSumRub: int
+    avgOrdersCountPerDay: float
+    avgPriceRub: int
+    conversions: dict[str, int]
+
+
+class StatisticsStatsPeriod(BaseModel):
+    selectedPeriod: PeriodsStatsPeriod
+    previousPeriod: PeriodsStatsPeriod
+    periodComparison: dict
+
+
+class ObjectStatsPeriod(BaseModel):
+    id: int
+    name: str
+
+
+class CardsStatsPeriod(BaseModel):
+    nmID: int
+    vendorCode: str
+    brandName: str
+    object: ObjectStatsPeriod
+    statistics: StatisticsStatsPeriod
+    stocks: dict[str, int]
+
+
+class DataStatsPeriod(BaseModel):
+    page: int
+    isNextPage: bool
+    cards: list[CardsStatsPeriod]
+
+
+class ResponseStatsPeriod(BaseData):
+    data: DataStatsPeriod
 
 
 if __name__ == '__main__':
 
     #  TODO delete after tests
     string_j = """
-    {
-        "data": [
-            {
-                "nmID": 162935859,
-                "imtName": "Рогатка спортивная рыболовная",
-                "vendorCode": "slingshot",
-                "history": [
-                    {
-                        "dt": "2023-09-27",
-                        "openCardCount": 109,
-                        "addToCartCount": 15,
-                        "addToCartConversion": 14,
-                        "ordersCount": 2,
-                        "ordersSumRub": 1000,
-                        "cartToOrderConversion": 13,
-                        "buyoutsCount": 2,
-                        "buyoutsSumRub": 1000,
-                        "buyoutPercent": 100
-                    },
-                    {
-                        "dt": "2023-09-28",
-                        "openCardCount": 125,
-                        "addToCartCount": 21,
-                        "addToCartConversion": 17,
-                        "ordersCount": 3,
-                        "ordersSumRub": 1500,
-                        "cartToOrderConversion": 14,
-                        "buyoutsCount": 3,
-                        "buyoutsSumRub": 1500,
-                        "buyoutPercent": 100
-                    }
-                ]
-            }
-        ],
-        "error": false,
-        "errorText": "",
-        "additionalErrors": null
-    }
+ 
     """
 
     j_data = json.loads(string_j)
     try:
-        d = DataAnalyticDays.model_validate(j_data)
+        d = ResponseStatsPeriod.model_validate(j_data)
     except ValidationError as e:
         print('pydantic_error:', e.json())
     else:
-        print(d.data[0].imtName)
+        print(d.data.cards[0].nmID)

@@ -52,7 +52,8 @@ async def get_user_token_send_nm_ids(message: types.Message, state: FSMContext):
         else:
             message_for_ids = 'Активных номеров номенклатур не найдено.'
         await message.answer(message_for_ids, reply_markup=markup)  # TODO pagination for nm_ids list
-    except (WBApiResponseExceptions, Exception):
+    except (WBApiResponseExceptions, Exception) as e:
+        loger.error(e)
         await message.answer(err_mess_templates['try_later'])
     finally:
         await message.delete()

@@ -26,7 +26,7 @@ class StatisticsRequests:
         :param data:
         :return:
         """
-        async with aiohttp.ClientSession() as session:
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=15)) as session:  # TODO разобраться с таймаутом и отловом ошибки таймаута
             async with session.post(url=url, data=json.dumps(data), headers=self.__headers) as response:
                 if response.status == HTTPStatus.OK:
                     try:
