@@ -4,7 +4,7 @@ from http import HTTPStatus
 
 import aiohttp
 
-from exceptions.wb_exceptions import WBApiResponseExceptions
+from exceptions.wb_exceptions import WBApiResponseExceptions, IncorrectKeyException
 from .response_handlers import ResponseHandlers
 from .urls_and_payloads import wb_api_urls, wb_api_payloads
 
@@ -19,7 +19,7 @@ class StatisticsRequests:
                           'Content-Encoding': 'utf-8',
                           }
 
-    async def __get_response_post(self, url, data) -> dict:
+    async def __get_response_post(self, url, data):
         """Сессия для получения ответа от WB API."""
         async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=15)) as session:  # TODO разобраться с таймаутом и отловом ошибки таймаута
             async with session.post(url=url, data=json.dumps(data), headers=self.__headers) as response:
@@ -29,10 +29,12 @@ class StatisticsRequests:
                         return response_data
                     except Exception as e:
                         raise WBApiResponseExceptions(message=e, url=url)
+                if response.status == HTTPStatus.UNAUTHORIZED:
+                    raise IncorrectKeyException
                 raise WBApiResponseExceptions(url=url, message=response.status)
 
     @ResponseHandlers.nm_ids_handler
-    async def get_nm_ids(self) -> dict:
+    async def get_nm_ids(self):
         """Запрос номенклатур продавца."""
         url = wb_api_urls['get_nm_ids_url']
         data = wb_api_payloads['nm_ids_payload']
@@ -59,7 +61,7 @@ class StatisticsRequests:
         return response
 
     @ResponseHandlers.analytic_detail_period_handler
-    async def get_analytic_detail_periods(self, nm_ids: list, period: int = 7) -> dict:
+    async def get_analytic_detail_periods(self, nm_ids: list, period: int = 7):
         """Запрос статистики товара по периодам."""
         url = wb_api_urls['analytic_detail_url_periods']
         data = {

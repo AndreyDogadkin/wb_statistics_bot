@@ -21,7 +21,7 @@ async def set_default_commands(bot):
     await bot.set_my_commands(
         [
             types.BotCommand(command='help', description='Как пользоваться ботом.'),  # TODO add handler to help command
-            types.BotCommand(command='token', description='Добавить/обновить токен.'),
+            types.BotCommand(command='token', description='Добавить/обновить токен.(В разработке)'),
             types.BotCommand(command='get_stats', description='Получить статистику.'),
         ]
     )
@@ -30,8 +30,7 @@ async def set_default_commands(bot):
 @dp.message(CommandStart(), StateFilter(default_state))
 async def command_start_handler(message: types.Message) -> None:
     """Команда start."""
-    await message.answer(f'Привет, {markdown.hbold(message.from_user.full_name)}!\n'
-                         f'Я тестовая версия бота "WB statistics!"')
+    await message.answer(info_mess_templates['start'].format(markdown.hbold(message.from_user.full_name)))
 
 
 @dp.message(Command(commands='help'))

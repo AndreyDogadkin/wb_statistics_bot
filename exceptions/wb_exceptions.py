@@ -15,3 +15,7 @@ class WBApiHandleException(Exception):
     def __str__(self):
         return f'Ошибка подготовки ответа.\n Детали: {self.message}'
 
+
+class IncorrectKeyException(Exception):
+    pass
+
