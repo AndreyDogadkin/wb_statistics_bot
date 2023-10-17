@@ -4,11 +4,12 @@ import sys
 
 from aiogram import Bot, Dispatcher, types, F
 from aiogram.enums import ParseMode
-from aiogram.filters import StateFilter, CommandStart
+from aiogram.filters import StateFilter, CommandStart, Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state
 from aiogram.utils import markdown
 
+from bot_base_messages.messages_templates import info_mess_templates
 from bot_handlers import get_stats_command, save_tokens_command
 from config_data.config import get_config
 
@@ -28,9 +29,15 @@ async def set_default_commands(bot):
 
 @dp.message(CommandStart(), StateFilter(default_state))
 async def command_start_handler(message: types.Message) -> None:
-    """Команда старт."""
+    """Команда start."""
     await message.answer(f'Привет, {markdown.hbold(message.from_user.full_name)}!\n'
                          f'Я тестовая версия бота "WB statistics!"')
+
+
+@dp.message(Command(commands='help'))
+async def command_help_handler(message: types.Message):
+    """Команда help."""
+    await message.answer(info_mess_templates['help'])
 
 
 @dp.callback_query(~StateFilter(default_state), F.data == 'cancel')

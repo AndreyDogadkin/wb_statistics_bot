@@ -3,7 +3,8 @@ import json
 from pydantic import BaseModel, ValidationError
 
 
-class BaseData(BaseModel):
+class BaseResponse(BaseModel):
+    """Базовый класс ответа WB API."""
     data: list
     error: bool
     errorText: str
@@ -11,6 +12,7 @@ class BaseData(BaseModel):
 
 
 class NmHistoryStatsDays(BaseModel):
+    """Статистика по дням. Данные статистики."""
     dt: str
     ordersSumRub: int
     ordersCount: int
@@ -24,17 +26,20 @@ class NmHistoryStatsDays(BaseModel):
 
 
 class NmDataStatsDays(BaseModel):
+    """Статистика по дням. Данные о товаре."""
     nmID: int
     imtName: str
     vendorCode: str
     history: list[NmHistoryStatsDays]
 
 
-class DataStatsDays(BaseData):
+class ResponseStatsDays(BaseResponse):
+    """Статистика по дням."""
     data: list[NmDataStatsDays]
 
 
 class CardsNmIds(BaseModel):
+    """Получение артикулов продавца. Данные о товарах."""
     sizes: list[dict[str, int | list]]
     mediaFiles: list[str]
     colors: list[str]
@@ -50,15 +55,18 @@ class CardsNmIds(BaseModel):
 
 
 class DataNmIDs(BaseModel):
+    """Получение артикулов продавца."""
     cards: list[CardsNmIds]
     cursor: dict
 
 
-class ResponseNmIDs(BaseData):
+class ResponseNmIDs(BaseResponse):
+    """Получение артикулов продавца."""
     data: DataNmIDs
 
 
 class PeriodsStatsPeriod(BaseModel):
+    """Статистика по периодам. Данные статистики."""
     begin: str
     end: str
     ordersSumRub: int
@@ -75,17 +83,20 @@ class PeriodsStatsPeriod(BaseModel):
 
 
 class StatisticsStatsPeriod(BaseModel):
+    """Статистика по периодам. Выбранный и предыдущий периоды."""
     selectedPeriod: PeriodsStatsPeriod
     previousPeriod: PeriodsStatsPeriod
     periodComparison: dict
 
 
 class ObjectStatsPeriod(BaseModel):
+    """Статистика по периодам. Данные о товаре."""
     id: int
     name: str
 
 
 class CardsStatsPeriod(BaseModel):
+    """Статистика по периодам. Данные о товаре."""
     nmID: int
     vendorCode: str
     brandName: str
@@ -95,12 +106,14 @@ class CardsStatsPeriod(BaseModel):
 
 
 class DataStatsPeriod(BaseModel):
+    """Статистика по периодам."""
     page: int
     isNextPage: bool
     cards: list[CardsStatsPeriod]
 
 
-class ResponseStatsPeriod(BaseData):
+class ResponseStatsPeriod(BaseResponse):
+    """Статистика по периодам."""
     data: DataStatsPeriod
 
 

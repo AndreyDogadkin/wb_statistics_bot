@@ -11,6 +11,6 @@ router = Router()
 
 @router.message(Command(commands='token'), StateFilter(default_state))
 async def set_save_token_state(message: types.Message, state: FSMContext):
-    await message.answer(text='Выберите сохраняемого/обновляемого токена.',
+    await message.answer(text='Выберите тип сохраняемого/обновляемого токена.',
                          reply_markup=MakeMarkup.change_token_markup())
     await state.set_state(SaveToken.get_token_type)

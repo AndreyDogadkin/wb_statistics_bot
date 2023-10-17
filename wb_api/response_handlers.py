@@ -1,11 +1,11 @@
 import logging
-from functools import wraps
 from datetime import datetime
+from functools import wraps
 
 from pydantic import ValidationError
 
 from exceptions.wb_exceptions import WBApiHandleException
-from .response_validate_and_parse import DataStatsDays, ResponseNmIDs, CardsNmIds, ResponseStatsPeriod
+from .response_validate_and_parse import ResponseStatsDays, ResponseNmIDs, CardsNmIds, ResponseStatsPeriod
 
 logger = logging.getLogger(__name__)
 
@@ -14,6 +14,7 @@ class ResponseHandlers:
 
     @staticmethod
     def __check_error_key(_response: dict) -> None:
+        """Проверка на ошибки в ответе."""
         if _response.get('error') is True:
             error = _response.get('errorText')
             logger.error(error)
@@ -21,6 +22,7 @@ class ResponseHandlers:
 
     @staticmethod
     def __get_datetime_format(_datetime: str, method: str):
+        """Изменят формат даты под заданный."""
         formats: dict = {
             'detail_days': '%Y-%m-%d',
             'detail_period': '%Y-%m-%d %H:%M:%S'
@@ -28,9 +30,10 @@ class ResponseHandlers:
         return datetime.strptime(_datetime, formats[method]).strftime('%d.%m.%y')
 
     @classmethod
-    def nm_ids_handler(cls, func):
+    def nm_ids_handler(cls, func) -> callable:
+        """Обработчик ответа для запроса номеров номенклатур продавца."""
         @wraps(func)
-        async def wrapper(*args, **kwargs):
+        async def wrapper(*args, **kwargs) -> list[tuple]:
             response: dict = await func(*args, **kwargs)
             cls.__check_error_key(response)
             try:
@@ -49,13 +52,14 @@ class ResponseHandlers:
 
     @classmethod
     def analytic_detail_days_handler(cls, func):
+        """Обработчик ответа для запроса статистики товара по дням."""
         @wraps(func)
         async def wrapper(*args, **kwargs):
             response = await func(*args, **kwargs)
             cls.__check_error_key(response)
             if response.get('data'):
                 try:
-                    data = DataStatsDays.model_validate(response)
+                    data = ResponseStatsDays.model_validate(response)
                     history = data.data[0].history
                     len_out_list = (len(history) + 1)
                     out: list = [None] * len_out_list
@@ -73,6 +77,7 @@ class ResponseHandlers:
 
     @classmethod
     def analytic_detail_period_handler(cls, func):
+        """Обработчик ответа для запроса статистики товара по периодам."""
         @wraps(func)
         async def wrapper(*args, **kwargs):
             response = await func(*args, **kwargs)

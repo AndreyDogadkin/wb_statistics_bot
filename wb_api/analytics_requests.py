@@ -19,13 +19,8 @@ class StatisticsRequests:
                           'Content-Encoding': 'utf-8',
                           }
 
-    async def __get_response_post(self, url, data):
-        """
-        Сессия для получения ответа от WB API.
-        :param url:
-        :param data:
-        :return:
-        """
+    async def __get_response_post(self, url, data) -> dict:
+        """Сессия для получения ответа от WB API."""
         async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=15)) as session:  # TODO разобраться с таймаутом и отловом ошибки таймаута
             async with session.post(url=url, data=json.dumps(data), headers=self.__headers) as response:
                 if response.status == HTTPStatus.OK:
@@ -37,11 +32,8 @@ class StatisticsRequests:
                 raise WBApiResponseExceptions(url=url, message=response.status)
 
     @ResponseHandlers.nm_ids_handler
-    async def get_nm_ids(self) -> list[tuple]:
-        """
-        Получение номенклатур продавца.
-        :return: list[tuple]
-        """
+    async def get_nm_ids(self) -> dict:
+        """Запрос номенклатур продавца."""
         url = wb_api_urls['get_nm_ids_url']
         data = wb_api_payloads['nm_ids_payload']
         response = await self.__get_response_post(url=url, data=data)
@@ -51,14 +43,8 @@ class StatisticsRequests:
     async def get_analytics_detail_days(self,
                                         nm_ids: list,
                                         period: int = 1,
-                                        aggregation_lvl: str = 'day') -> list[str, tuple]:
-        """
-        Получение статистики по переданному номеру номенклатуры.
-        :param nm_ids: list
-        :param period: int
-        :param aggregation_lvl
-        :return: list[tuple]
-        """
+                                        aggregation_lvl: str = 'day') -> dict:
+        """Запрос статистики товара по дням."""
         url = wb_api_urls['analytic_detail_url_days']
         data = {
             'nmIDs': nm_ids,
@@ -73,7 +59,8 @@ class StatisticsRequests:
         return response
 
     @ResponseHandlers.analytic_detail_period_handler
-    async def get_analytic_detail_periods(self, nm_ids: list, period: int = 7):
+    async def get_analytic_detail_periods(self, nm_ids: list, period: int = 7) -> dict:
+        """Запрос статистики товара по периодам."""
         url = wb_api_urls['analytic_detail_url_periods']
         data = {
             'nmIDs': nm_ids,
