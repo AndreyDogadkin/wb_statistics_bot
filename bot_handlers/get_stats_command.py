@@ -69,10 +69,13 @@ async def change_page_for_nm_ids(callback: types.CallbackQuery, callback_data: P
     state_data = await state.get_data()
     page_number = state_data.get('page_number')
     nm_ids = state_data.get('nm_ids')
-    if page_number and callback_data.unpack(callback.data).command == 'prev':
+    command = callback_data.unpack(callback.data).command
+    if page_number and command == 'prev':
         await state.update_data(page_number=page_number - 1)
-    elif callback_data.unpack(callback.data).command == 'next' and page_number <= len(nm_ids):
+        await callback.answer('<<')
+    elif command == 'next' and page_number < len(nm_ids):
         await state.update_data(page_number=page_number + 1)
+        await callback.answer('>>')
     message, markup = await paginate_nm_ids(state)
     await callback.message.edit_text(text=message, reply_markup=markup)
 
