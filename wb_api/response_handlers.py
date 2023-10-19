@@ -30,7 +30,7 @@ class ResponseHandlers:
         return datetime.strptime(_datetime, formats[method]).strftime('%d.%m.%y')
 
     @classmethod
-    def nm_ids_handler(cls, func) -> callable:
+    def nm_ids_handler(cls, func):
         """Обработчик ответа для запроса номеров номенклатур продавца."""
         @wraps(func)
         async def wrapper(*args, **kwargs) -> list[tuple]:
