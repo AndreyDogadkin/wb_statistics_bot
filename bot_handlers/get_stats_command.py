@@ -9,7 +9,7 @@ from aiogram.utils import markdown
 from dotenv import load_dotenv
 
 from bot_base_messages.messages_templates import get_stats_mess_templates, err_mess_templates
-from bot_keyboards.keyboards import MakeMarkup, NmIdsCallbackData, DaysCallBackData
+from bot_keyboards.keyboards import MakeMarkup, NmIdsCallbackData, DaysCallBackData, PaginationNmIds
 from bot_states.states import GetStats
 from exceptions.wb_exceptions import WBApiResponseExceptions, IncorrectKeyException
 from wb_api.analytics_requests import StatisticsRequests
@@ -64,21 +64,44 @@ async def incorrect_key(message: types.Message, state: FSMContext):
     await message.delete()
 
 
+@router.callback_query(StateFilter(GetStats.get_nm_ids), PaginationNmIds.filter())
+async def change_page_for_nm_ids(callback: types.CallbackQuery, callback_data: PaginationNmIds, state: FSMContext):
+    state_data = await state.get_data()
+    page_number = state_data.get('page_number')
+    nm_ids = state_data.get('nm_ids')
+    if page_number and callback_data.unpack(callback.data).command == 'prev':
+        await state.update_data(page_number=page_number - 1)
+    elif callback_data.unpack(callback.data).command == 'next' and page_number <= len(nm_ids):
+        await state.update_data(page_number=page_number + 1)
+    message, markup = await paginate_nm_ids(state)
+    await callback.message.edit_text(text=message, reply_markup=markup)
+
+
+async def paginate_nm_ids(state: FSMContext):
+    state_data = await state.get_data()
+    nm_ids = state_data.get('nm_ids')
+    page_number = state_data.get('page_number')
+    markup: None | types.InlineKeyboardMarkup = None
+    if nm_ids:
+        markup = MakeMarkup.nm_ids_markup(nm_ids, page_number)
+        message_for_ids: str = markdown.hbold(get_stats_mess_templates['change_nm_id'])
+        for nm in nm_ids[page_number]:
+            message_for_ids += get_stats_mess_templates['send_nm_ids_template'].format(*nm)
+        message_for_ids += markdown.hbold(get_stats_mess_templates['plus_send_nm_ids_template'])
+    else:
+        message_for_ids = err_mess_templates['no_active_nms']
+    return message_for_ids, markup
+
+
 async def send_nm_ids(message: types.Message, state: FSMContext, token):
     """Отправка номеров номенклатур пользователю."""
     statistics = StatisticsRequests(token)  # TODO fix token after tests (get from state.get_data)
     try:
-        nm_ids: list[tuple] = await statistics.get_nm_ids()
-        markup: None | types.InlineKeyboardMarkup = None
-        if nm_ids:
-            markup = MakeMarkup.nm_ids_markup(nm_ids)
-            message_for_ids: str = markdown.hbold(get_stats_mess_templates['change_nm_id'])
-            for nm in nm_ids:
-                message_for_ids += get_stats_mess_templates['send_nm_ids_template'].format(*nm)
-            message_for_ids += markdown.hbold(get_stats_mess_templates['plus_send_nm_ids_template'])
-            await state.set_state(GetStats.get_nm_ids)
-        else:
-            message_for_ids = err_mess_templates['no_active_nms']
+        nm_ids: list[list[tuple]] = await statistics.get_nm_ids()
+        await state.update_data(nm_ids=nm_ids)
+        await state.update_data(page_number=0)
+        message_for_ids, markup = await paginate_nm_ids(state)
+        await state.set_state(GetStats.get_nm_ids)
         await message.answer(message_for_ids, reply_markup=markup)  # TODO pagination for nm_ids list
     except IncorrectKeyException:
         await message.answer(err_mess_templates['error_401'])

@@ -7,6 +7,10 @@ class NmIdsCallbackData(CallbackData, prefix='analytics'):
     nm_id: int
 
 
+class PaginationNmIds(CallbackData, prefix='page_command'):
+    command: str
+
+
 class DaysCallBackData(CallbackData, prefix='days_for_stats'):
     period: int
 
@@ -14,15 +18,15 @@ class DaysCallBackData(CallbackData, prefix='days_for_stats'):
 class MakeMarkup:
 
     @classmethod
-    def nm_ids_markup(cls, data) -> InlineKeyboardMarkup:
+    def nm_ids_markup(cls, data, page_number: int) -> InlineKeyboardMarkup:
         markup = InlineKeyboardBuilder()
-        for day in data:
+        for nm in data[page_number]:
             markup.button(
-                text=day[0],
-                callback_data=NmIdsCallbackData(nm_id=day[-1]).pack()
+                text=nm[0],
+                callback_data=NmIdsCallbackData(nm_id=nm[-1]).pack()
             )
         markup.adjust(3)
-        markup.attach(cls.__pagination_builder())
+        markup.attach(cls.__pagination_builder(page_number, len(data)))
         markup.attach(cls.cancel_builder())
         return markup.as_markup()
 
@@ -59,11 +63,16 @@ class MakeMarkup:
         return markup.as_markup()
 
     @classmethod
-    def __pagination_builder(cls) -> InlineKeyboardBuilder:
+    def __pagination_builder(cls, page_number, page_count) -> InlineKeyboardBuilder:
         markup = InlineKeyboardBuilder()
-        prev_button = InlineKeyboardButton(text='<<', callback_data='back')
-        next_button = InlineKeyboardButton(text='>>', callback_data='next')
-        counter_button = InlineKeyboardButton(text='0/0', callback_data='center')
-        # TODO make callback data class
-        markup.row(prev_button, counter_button, next_button)
+        prev_button = InlineKeyboardButton(text='<<', callback_data=PaginationNmIds(command='prev').pack())
+        next_button = InlineKeyboardButton(text='>>', callback_data=PaginationNmIds(command='next').pack())
+        empty_button = InlineKeyboardButton(text=' ', callback_data=' ')
+        counter_button = InlineKeyboardButton(text=f'{page_number + 1}/{page_count}', callback_data='center')
+        if page_number + 1 == page_count:
+            markup.row(prev_button, counter_button, empty_button)
+        elif not page_number:
+            markup.row(empty_button, counter_button, next_button)
+        else:
+            markup.row(prev_button, counter_button, next_button)
         return markup
