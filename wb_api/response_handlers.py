@@ -37,14 +37,21 @@ class ResponseHandlers:
             response: dict = await func(*args, **kwargs)
             cls.__check_error_key(response)
             try:
+                pagination_size_nm_ids = 2
                 data: ResponseNmIDs = ResponseNmIDs.model_validate(response)
                 cards: list = data.data.cards
-                out: list = [None] * len(cards)
-                for i, card in enumerate(cards):
+                out: list = []
+                page: list = []
+                for card in cards:
                     vendor_code: CardsNmIds = card.vendorCode
                     object_: CardsNmIds = card.object
                     nm_id: CardsNmIds = card.nmID
-                    out[i] = (vendor_code, object_, nm_id)
+                    page.append((vendor_code, object_, nm_id))
+                    if len(page) == pagination_size_nm_ids:
+                        out.append(page)
+                        page = []
+                if page:
+                    out.append(page)
                 return out
             except ValidationError as e:
                 logger.error(f'Ошибка валидации ответа: {e.json()}')
