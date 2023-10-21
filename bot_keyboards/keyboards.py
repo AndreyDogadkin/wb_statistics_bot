@@ -11,8 +11,12 @@ class PaginationNmIds(CallbackData, prefix='page_command'):
     command: str
 
 
-class DaysCallBackData(CallbackData, prefix='days_for_stats'):
+class DaysCallbackData(CallbackData, prefix='days_for_stats'):
     period: int
+
+
+class TokenTypeCallbackData(CallbackData, prefix='token'):
+    token_type: str
 
 
 class MakeMarkup:
@@ -33,14 +37,14 @@ class MakeMarkup:
     @classmethod
     def periods_markup(cls) -> InlineKeyboardMarkup:
         markup = InlineKeyboardBuilder()
-        markup.button(text='1 день', callback_data=DaysCallBackData(period=0).pack())
-        markup.button(text='3 дня', callback_data=DaysCallBackData(period=2).pack())
-        markup.button(text='5 дней', callback_data=DaysCallBackData(period=4).pack())
-        markup.button(text='Неделя', callback_data=DaysCallBackData(period=7).pack())
-        markup.button(text='2 недели', callback_data=DaysCallBackData(period=14).pack())
-        markup.button(text='Месяц', callback_data=DaysCallBackData(period=31).pack())
-        markup.button(text='2 месяца', callback_data=DaysCallBackData(period=62).pack())
-        markup.button(text='6 месяцев', callback_data=DaysCallBackData(period=180).pack())
+        markup.button(text='1 день', callback_data=DaysCallbackData(period=0).pack())
+        markup.button(text='3 дня', callback_data=DaysCallbackData(period=2).pack())
+        markup.button(text='5 дней', callback_data=DaysCallbackData(period=4).pack())
+        markup.button(text='Неделя', callback_data=DaysCallbackData(period=7).pack())
+        markup.button(text='2 недели', callback_data=DaysCallbackData(period=14).pack())
+        markup.button(text='Месяц', callback_data=DaysCallbackData(period=31).pack())
+        markup.button(text='2 месяца', callback_data=DaysCallbackData(period=62).pack())
+        markup.button(text='6 месяцев', callback_data=DaysCallbackData(period=180).pack())
         markup.adjust(3)
         markup.attach(cls.cancel_builder())
         return markup.as_markup()
@@ -56,8 +60,8 @@ class MakeMarkup:
     def change_token_markup(cls):
         markup = InlineKeyboardBuilder()
         # TODO make callback data class
-        markup.button(text='Стандартный', callback_data='standard_token')
-        markup.button(text='Статистика', callback_data='statistics_token')
+        markup.button(text='Стандартный', callback_data=TokenTypeCallbackData(token_type='standard').pack())
+        markup.button(text='Статистика 🔒', callback_data=TokenTypeCallbackData(token_type='statistics').pack())
         markup.adjust(2)
         markup.attach(cls.cancel_builder())
         return markup.as_markup()
