@@ -1,4 +1,3 @@
-from os import getenv
 import logging
 
 from aiogram import types, F, Router
@@ -6,19 +5,17 @@ from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state
 from aiogram.utils import markdown
-from dotenv import load_dotenv
 
 from bot_base_messages.messages_templates import get_stats_mess_templates, err_mess_templates
-from bot_keyboards.keyboards import MakeMarkup, NmIdsCallbackData, DaysCallBackData, PaginationNmIds
+from bot_keyboards.keyboards import MakeMarkup, NmIdsCallbackData, DaysCallbackData, PaginationNmIds
 from bot_states.states import GetStats
 from exceptions.wb_exceptions import WBApiResponseExceptions, IncorrectKeyException
+from models.methods import DBMethods
 from wb_api.analytics_requests import StatisticsRequests
 
 loger = logging.getLogger(__name__)
 
-load_dotenv()
-
-WB_TOKEN = getenv('WB_TOKEN')  # TODO delete after tests
+database = DBMethods()
 
 router = Router()
 
@@ -29,14 +26,16 @@ async def set_get_stats_state(message: types.Message, state: FSMContext):
     Отправка номенклатур пользователю, если токен сохранен,
     иначе установка состояния получения токена
     """
-    if True:  # TODO Заменить после подключения к БД: заглушка запроса к БД сохранен ли у пользователя токен
-        await send_nm_ids(message, state, WB_TOKEN)
-    # else:
-    #     for_delete_message = await message.answer(text=get_stats_mess_templates['send_token_standard'],
-    #                                               reply_markup=MakeMarkup.cancel_builder().as_markup())
-    #     await state.update_data(for_delete_message=for_delete_message)
-    #     await state.set_state(GetStats.get_token)
-    #     await message.delete()
+    token = await database.get_user_standard_token(message.from_user.id)
+    if token:
+        await send_nm_ids(message, state, token)
+        await state.update_data(token=token)
+    else:
+        for_delete_message = await message.answer(text=get_stats_mess_templates['send_token_standard'],
+                                                  reply_markup=MakeMarkup.cancel_builder().as_markup())
+        await state.update_data(for_delete_message=for_delete_message)
+        await state.set_state(GetStats.get_token)
+        await message.delete()
 
 
 @router.message(StateFilter(GetStats.get_token), F.text.len() == 149)  # TODO add token filter
@@ -107,11 +106,13 @@ async def send_nm_ids(message: types.Message, state: FSMContext, token):
         await state.set_state(GetStats.get_nm_ids)
         await message.answer(message_for_ids, reply_markup=markup)  # TODO pagination for nm_ids list
     except IncorrectKeyException:
+        await message.answer_sticker(err_mess_templates['error_401_sticker'])
         await message.answer(err_mess_templates['error_401'])
         await state.clear()
     except (WBApiResponseExceptions, Exception) as e:
         loger.error(e)
         await message.answer(err_mess_templates['try_later'])
+        await message.answer_sticker(err_mess_templates['error_try_later_sticker'])
         await state.clear()
     finally:
         await message.delete()
@@ -143,15 +144,15 @@ async def get_user_statistics(statistics: StatisticsRequests, nm_id: int, period
         return product, answer_message
 
 
-@router.callback_query(StateFilter(GetStats.get_period), DaysCallBackData.filter())
-async def send_user_statistics(callback: types.CallbackQuery, callback_data: DaysCallBackData, state: FSMContext):
+@router.callback_query(StateFilter(GetStats.get_period), DaysCallbackData.filter())
+async def send_user_statistics(callback: types.CallbackQuery, callback_data: DaysCallbackData, state: FSMContext):
     """Отправить статистику пользователю."""
     message_wait: types.Message = await callback.message.edit_text(markdown.hitalic('Выполняю запрос...🕐'))
     period: int = callback_data.unpack(callback.data).period
     state_data: dict = await state.get_data()
     nm_id: int = state_data.get('nm_id')
     token: str = state_data.get('token')
-    statistics = StatisticsRequests(WB_TOKEN)  # TODO fix token after tests (get from state.get_data)
+    statistics = StatisticsRequests(token)  # TODO fix token after tests (get from state.get_data)
     try:
         product, answer_message = await get_user_statistics(statistics, nm_id, period)
         if product and answer_message:
@@ -161,6 +162,7 @@ async def send_user_statistics(callback: types.CallbackQuery, callback_data: Day
             await message_wait.edit_text(err_mess_templates['no_data'])
     except (WBApiResponseExceptions, Exception) as e:
         loger.error(e)
+        await message_wait.answer_sticker(err_mess_templates['error_try_later_sticker'])
         await message_wait.edit_text(err_mess_templates['try_later'])
     finally:
         await state.storage.close()

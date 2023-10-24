@@ -9,4 +9,4 @@ class GetStats(StatesGroup):
 
 class SaveToken(StatesGroup):
 	get_token_type = State()
-	get_token = State()
+	get_standard_token = State()
