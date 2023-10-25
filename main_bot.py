@@ -23,7 +23,7 @@ async def set_default_commands(bot):
     """Добавление кнопки 'Меню' со списком команд."""
     await bot.set_my_commands(
         [
-            types.BotCommand(command='help', description='Как пользоваться ботом.'),  # TODO add handler to help command
+            types.BotCommand(command='help', description='Как пользоваться ботом.'),
             types.BotCommand(command='token', description='Добавить/обновить токен.(В разработке)'),
             types.BotCommand(command='get_stats', description='Получить статистику.'),
         ]
