@@ -2,6 +2,7 @@ from sqlalchemy import select, update
 
 from models.engine import session
 from models.models import User
+from utils.aes_encryption import AESEncryption
 
 base_session = session
 
@@ -28,14 +29,17 @@ class DBMethods:
 
     async def save_standard_token(self, telegram_id, token_standard):
         """Сохранение токена 'Стандартный' в БД."""
+        encrypted_token = AESEncryption().encrypt(token_standard)
         async with self.session() as s:
             await s.execute(update(
                 User
-            ).where(User.telegram_id == telegram_id).values(wb_token_standard=token_standard))  # noqa
+            ).where(User.telegram_id == telegram_id).values(wb_token_standard=encrypted_token))  # noqa
             await s.commit()
 
     async def get_user_standard_token(self, telegram_id):
         """Получение токена 'Стандартный' в БД"""
         async with self.session.begin() as s:
             res = await s.execute(select(User.wb_token_standard).where(User.telegram_id == telegram_id))  # noqa
-            return res.scalar()
+            token = res.scalar()
+            if token:
+                return AESEncryption().decrypt(token)
