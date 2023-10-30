@@ -83,15 +83,11 @@ async def paginate_nm_ids(state: FSMContext):
     state_data = await state.get_data()
     nm_ids = state_data.get('nm_ids')
     page_number = state_data.get('page_number')
-    markup: None | types.InlineKeyboardMarkup = None
-    if nm_ids:
-        markup = MakeMarkup.nm_ids_markup(nm_ids, page_number)
-        message_for_ids: str = markdown.hbold(get_stats_mess_templates['change_nm_id'])
-        for nm in nm_ids[page_number]:
-            message_for_ids += get_stats_mess_templates['send_nm_ids_template'].format(*nm)
-        message_for_ids += markdown.hbold(get_stats_mess_templates['plus_send_nm_ids_template'])
-    else:
-        message_for_ids = err_mess_templates['no_active_nms']
+    markup = MakeMarkup.nm_ids_markup(nm_ids, page_number)
+    message_for_ids: str = markdown.hbold(get_stats_mess_templates['change_nm_id'])
+    for nm in nm_ids[page_number]:
+        message_for_ids += get_stats_mess_templates['send_nm_ids_template'].format(*nm)
+    message_for_ids += markdown.hbold(get_stats_mess_templates['plus_send_nm_ids_template'])
     return message_for_ids, markup
 
 
@@ -100,11 +96,15 @@ async def send_nm_ids(message: types.Message, state: FSMContext, token):
     statistics = StatisticsRequests(token)  # TODO fix token after tests (get from state.get_data)
     try:
         nm_ids: list[list[tuple]] = await statistics.get_nm_ids()
-        await state.update_data(nm_ids=nm_ids)
-        await state.update_data(page_number=0)
-        message_for_ids, markup = await paginate_nm_ids(state)
-        await state.set_state(GetStats.get_nm_ids)
-        await message.answer(message_for_ids, reply_markup=markup)  # TODO pagination for nm_ids list
+        if nm_ids:
+            await state.update_data(nm_ids=nm_ids)
+            await state.update_data(page_number=0)
+            message_for_ids, markup = await paginate_nm_ids(state)
+            await state.set_state(GetStats.get_nm_ids)
+            await message.answer(message_for_ids, reply_markup=markup)  # TODO pagination for nm_ids list
+        else:
+            await state.clear()
+            await message.answer(err_mess_templates['no_active_nms'])
     except IncorrectKeyException:
         await message.answer_sticker(err_mess_templates['error_401_sticker'])
         await message.answer(err_mess_templates['error_401'])

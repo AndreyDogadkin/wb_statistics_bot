@@ -73,8 +73,10 @@ class MakeMarkup:
         next_button = InlineKeyboardButton(text='>>', callback_data=PaginationNmIds(command='next').pack())
         empty_button = InlineKeyboardButton(text=' ', callback_data=' ')
         counter_button = InlineKeyboardButton(text=f'{page_number + 1}/{page_count}', callback_data='center')
-        if page_number + 1 == page_count:
+        if page_number + 1 == page_count and page_count != 1:
             markup.row(prev_button, counter_button, empty_button)
+        elif page_number + 1 == page_count == 1:
+            markup.row(empty_button, counter_button, empty_button)
         elif not page_number:
             markup.row(empty_button, counter_button, next_button)
         else:

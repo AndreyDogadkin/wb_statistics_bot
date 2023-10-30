@@ -37,7 +37,7 @@ class ResponseHandlers:
             response: dict = await func(*args, **kwargs)
             cls.__check_error_key(response)
             try:
-                pagination_size_nm_ids = 2
+                pagination_size_nm_ids = 5
                 data: ResponseNmIDs = ResponseNmIDs.model_validate(response)
                 cards: list = data.data.cards
                 out: list = []

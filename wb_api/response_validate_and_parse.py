@@ -40,7 +40,7 @@ class ResponseStatsDays(BaseResponse):
 
 class CardsNmIds(BaseModel):
     """Получение артикулов продавца. Данные о товарах."""
-    sizes: list[dict[str, int | list]]
+    sizes: list[dict]
     mediaFiles: list[str]
     colors: list[str]
     updateAt: str
