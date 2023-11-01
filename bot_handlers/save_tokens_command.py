@@ -52,6 +52,7 @@ async def save_standard_token(message: types.Message, state: FSMContext):
 
 @router.message(StateFilter(SaveToken.get_standard_token), F.text.len() != 149)
 async def invalid_token(message: types.Message, state: FSMContext):
+    """Обработка некорректно введенного токена."""
     state_data = await state.get_data()
     for_edit: types.Message = state_data.get('for_edit')
     if for_edit:

@@ -4,6 +4,7 @@ from functools import wraps
 
 from pydantic import ValidationError
 
+from config_data.config import PAGINATION_SIZE
 from exceptions.wb_exceptions import WBApiHandleException
 from .response_validate_and_parse import ResponseStatsDays, ResponseNmIDs, CardsNmIds, ResponseStatsPeriod
 
@@ -37,7 +38,6 @@ class ResponseHandlers:
             response: dict = await func(*args, **kwargs)
             cls.__check_error_key(response)
             try:
-                pagination_size_nm_ids = 5
                 data: ResponseNmIDs = ResponseNmIDs.model_validate(response)
                 cards: list = data.data.cards
                 out: list = []
@@ -47,7 +47,7 @@ class ResponseHandlers:
                     object_: CardsNmIds = card.object
                     nm_id: CardsNmIds = card.nmID
                     page.append((vendor_code, object_, nm_id))
-                    if len(page) == pagination_size_nm_ids:
+                    if len(page) == PAGINATION_SIZE:
                         out.append(page)
                         page = []
                 if page:

@@ -15,7 +15,7 @@ class DBMethods:
     async def check_user(self, telegram_id):
         """Проверка наличия пользователя в БД."""
         async with self.session.begin() as s:
-            res = await s.execute(select(User).where(User.telegram_id == telegram_id))  # noq
+            res = await s.execute(select(User).where(User.telegram_id == telegram_id))  # noqa
         return res.scalar()
 
     async def add_user(self, telegram_id):
