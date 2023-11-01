@@ -14,7 +14,6 @@ from bot_handlers import get_stats_command, save_tokens_command
 from config_data.config import get_config
 from models.methods import DBMethods
 
-
 dp = Dispatcher()
 database = DBMethods()
 
@@ -54,7 +53,7 @@ async def close_any_state(callback: types.CallbackQuery, state: FSMContext):
 
 async def main() -> None:
     config = get_config()
-    bot = Bot(config.bot.token, parse_mode=ParseMode.HTML)
+    bot = Bot(config.bot.TG_TOKEN, parse_mode=ParseMode.HTML)
     dp.include_router(get_stats_command.router)
     dp.include_router(save_tokens_command.router)
     await set_default_commands(bot)

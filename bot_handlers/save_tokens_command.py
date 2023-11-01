@@ -6,7 +6,7 @@ from aiogram.fsm.state import default_state
 from bot_keyboards.keyboards import MakeMarkup, TokenTypeCallbackData
 from bot_states.states import SaveToken
 from models.methods import DBMethods
-from bot_base_messages.messages_templates import save_token_mess_templates
+from bot_base_messages.messages_templates import save_token_mess_templates, err_mess_templates
 
 database = DBMethods()
 
@@ -48,3 +48,15 @@ async def save_standard_token(message: types.Message, state: FSMContext):
     await state_data.get('for_edit').edit_text(save_token_mess_templates['token_updated'])
     await message.delete()
     await state.clear()
+
+
+@router.message(StateFilter(SaveToken.get_standard_token), F.text.len() != 149)
+async def invalid_token(message: types.Message, state: FSMContext):
+    state_data = await state.get_data()
+    for_edit: types.Message = state_data.get('for_edit')
+    if for_edit:
+        await for_edit.delete()
+    markup = MakeMarkup.cancel_builder().as_markup()
+    for_edit = await message.answer(text=err_mess_templates['incorrect_token'], reply_markup=markup)
+    await state.update_data(for_edit=for_edit)
+    await message.delete()
