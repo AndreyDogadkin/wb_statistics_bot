@@ -10,7 +10,7 @@ env.read_env()
 
 class AESEncryption:
 
-    def __init__(self, key: bytes = (ast.literal_eval(env('ENCRYPTION_KEY')))):
+    def __init__(self, key: bytes = (ast.literal_eval(env('ENCRYPTION_KEY')))):  # TODO Найти другой способ получения ключа
         self.__key = key
 
     def encrypt(self, token):

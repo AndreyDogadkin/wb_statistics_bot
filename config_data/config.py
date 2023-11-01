@@ -1,31 +1,28 @@
 from dataclasses import dataclass
+
 from environs import Env
+from pydantic_settings import BaseSettings
 
 
-@dataclass
-class DatabaseConfig:
-    pass
+class BotSettings(BaseSettings):
+    TG_TOKEN: str
+    ADMINS: list
 
 
-@dataclass
-class BotConfig:
-
-    token: str
-    admins: list[int]
+class DatabaseSettings(BaseSettings):
+    DB_URL: str
 
 
 @dataclass
 class MainConfig:
 
-    bot: BotConfig
+    bot: BotSettings
+    database: DatabaseSettings
 
 
 def get_config():
-    env: Env = Env()
-    env.read_env()
+    Env().read_env()
     return MainConfig(
-        bot=BotConfig(
-            token=env('TG_TOKEN'),
-            admins=[]
-        )
+        bot=BotSettings(),
+        database=DatabaseSettings()
     )
