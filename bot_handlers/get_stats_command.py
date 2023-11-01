@@ -4,9 +4,10 @@ from aiogram import types, F, Router
 from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state
+from aiogram.types import InlineKeyboardMarkup
 from aiogram.utils import markdown
 
-from bot_base_messages.messages_templates import get_stats_mess_templates, err_mess_templates
+from bot_base_messages.messages_templates import get_stats_mess_templates, err_mess_templates, stickers
 from bot_keyboards.keyboards import MakeMarkup, NmIdsCallbackData, DaysCallbackData, PaginationNmIds
 from bot_states.states import GetStats
 from exceptions.wb_exceptions import WBApiResponseExceptions, IncorrectKeyException
@@ -65,6 +66,7 @@ async def incorrect_key(message: types.Message, state: FSMContext):
 
 @router.callback_query(StateFilter(GetStats.get_nm_ids), PaginationNmIds.filter())
 async def change_page_for_nm_ids(callback: types.CallbackQuery, callback_data: PaginationNmIds, state: FSMContext):
+    """Отправка выбранной страницы номеров номенклатур пользователю."""
     state_data = await state.get_data()
     page_number = state_data.get('page_number')
     nm_ids = state_data.get('nm_ids')
@@ -79,7 +81,8 @@ async def change_page_for_nm_ids(callback: types.CallbackQuery, callback_data: P
     await callback.message.edit_text(text=message, reply_markup=markup)
 
 
-async def paginate_nm_ids(state: FSMContext):
+async def paginate_nm_ids(state: FSMContext) -> tuple[str, InlineKeyboardMarkup]:
+    """Подготовка сообщения и клавиатуры для номеров номенклатур."""
     state_data = await state.get_data()
     nm_ids = state_data.get('nm_ids')
     page_number = state_data.get('page_number')
@@ -92,8 +95,8 @@ async def paginate_nm_ids(state: FSMContext):
 
 
 async def send_nm_ids(message: types.Message, state: FSMContext, token):
-    """Отправка номеров номенклатур пользователю."""
-    statistics = StatisticsRequests(token)  # TODO fix token after tests (get from state.get_data)
+    """Отправка первой страницы номеров номенклатур пользователю."""
+    statistics = StatisticsRequests(token)
     try:
         nm_ids: list[list[tuple]] = await statistics.get_nm_ids()
         if nm_ids:
@@ -101,18 +104,18 @@ async def send_nm_ids(message: types.Message, state: FSMContext, token):
             await state.update_data(page_number=0)
             message_for_ids, markup = await paginate_nm_ids(state)
             await state.set_state(GetStats.get_nm_ids)
-            await message.answer(message_for_ids, reply_markup=markup)  # TODO pagination for nm_ids list
+            await message.answer(message_for_ids, reply_markup=markup)
         else:
             await state.clear()
             await message.answer(err_mess_templates['no_active_nms'])
     except IncorrectKeyException:
-        await message.answer_sticker(err_mess_templates['error_401_sticker'])
+        await message.answer_sticker(stickers['error_401_sticker'])
         await message.answer(err_mess_templates['error_401'])
         await state.clear()
     except (WBApiResponseExceptions, Exception) as e:
         loger.error(e)
         await message.answer(err_mess_templates['try_later'])
-        await message.answer_sticker(err_mess_templates['error_try_later_sticker'])
+        await message.answer_sticker(stickers['error_try_later_sticker'])
         await state.clear()
     finally:
         await message.delete()
@@ -128,7 +131,7 @@ async def set_period_state(callback: types.CallbackQuery, callback_data: NmIdsCa
     await state.set_state(GetStats.get_period)
 
 
-async def get_user_statistics(statistics: StatisticsRequests, nm_id: int, period: int):
+async def get_user_statistics(statistics: StatisticsRequests, nm_id: int, period: int) -> tuple[str, str]:
     """Получить статистику пользователя."""
     message_template = get_stats_mess_templates['send_analytic_detail_days_mess_template']
     get_stats_func = statistics.get_analytics_detail_days
@@ -152,7 +155,7 @@ async def send_user_statistics(callback: types.CallbackQuery, callback_data: Day
     state_data: dict = await state.get_data()
     nm_id: int = state_data.get('nm_id')
     token: str = state_data.get('token')
-    statistics = StatisticsRequests(token)  # TODO fix token after tests (get from state.get_data)
+    statistics = StatisticsRequests(token)
     try:
         product, answer_message = await get_user_statistics(statistics, nm_id, period)
         if product and answer_message:
@@ -162,7 +165,7 @@ async def send_user_statistics(callback: types.CallbackQuery, callback_data: Day
             await message_wait.edit_text(err_mess_templates['no_data'])
     except (WBApiResponseExceptions, Exception) as e:
         loger.error(e)
-        await message_wait.answer_sticker(err_mess_templates['error_try_later_sticker'])
+        await message_wait.answer_sticker(stickers['error_try_later_sticker'])
         await message_wait.edit_text(err_mess_templates['try_later'])
     finally:
         await state.storage.close()

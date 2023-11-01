@@ -9,7 +9,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state
 from aiogram.utils import markdown
 
-from bot_base_messages.messages_templates import info_mess_templates
+from bot_base_messages.messages_templates import info_mess_templates, stickers
 from bot_handlers import get_stats_command, save_tokens_command
 from config_data.config import get_config
 from models.methods import DBMethods
@@ -22,9 +22,9 @@ async def set_default_commands(bot):
     """Добавление кнопки 'Меню' со списком команд."""
     await bot.set_my_commands(
         [
-            types.BotCommand(command='help', description='Как пользоваться ботом.'),
-            types.BotCommand(command='token', description='Добавить/обновить токен.(В разработке)'),
-            types.BotCommand(command='get_stats', description='Получить статистику.'),
+            types.BotCommand(command='help', description='❓ Как пользоваться ботом.'),
+            types.BotCommand(command='token', description='🔑 Добавить/обновить токен.'),
+            types.BotCommand(command='get_stats', description='📈 Получить статистику.'),
         ]
     )
 
@@ -32,7 +32,7 @@ async def set_default_commands(bot):
 @dp.message(CommandStart(), StateFilter(default_state))
 async def command_start_handler(message: types.Message) -> None:
     """Команда start."""
-    await message.answer_sticker('CAACAgIAAxkBAAEBjxNlNEKVb0a0gj-L-BxBs8n5FWBQ_gACbwAD29t-AAGZW1Coe5OAdDAE')
+    await message.answer_sticker(stickers['start_sticker'])
     await message.answer(info_mess_templates['start'].format(markdown.hbold(message.from_user.full_name)))
     await database.add_user(message.from_user.id)
 
