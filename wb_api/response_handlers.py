@@ -43,7 +43,8 @@ class ResponseHandlers:
                 vendor_code: CardsNmIds = card.vendorCode
                 object_: CardsNmIds = card.object
                 nm_id: CardsNmIds = card.nmID
-                page.append((vendor_code, object_, nm_id))
+                photo: CardsNmIds = card.mediaFiles[0]
+                page.append((vendor_code, object_, nm_id, photo))
                 if len(page) == PAGINATION_SIZE:
                     out.append(page)
                     page = []

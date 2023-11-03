@@ -32,7 +32,7 @@ class MakeMarkup:
         for nm in data[page_number]:
             markup.button(
                 text=nm[0],
-                callback_data=NmIdsCallbackData(nm_id=nm[-1]).pack()
+                callback_data=NmIdsCallbackData(nm_id=nm[2]).pack()
             )
         markup.adjust(2)
         markup.attach(cls.__pagination_builder(page_number, len(data)))
