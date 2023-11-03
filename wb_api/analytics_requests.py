@@ -1,12 +1,20 @@
 import json
+import logging
 from datetime import datetime, timedelta
+from functools import wraps
 from http import HTTPStatus
 
 import aiohttp
 
-from exceptions.wb_exceptions import WBApiResponseExceptions, IncorrectKeyException
+from bot_base_messages.messages_templates import err_mess_templates
+from exceptions.wb_exceptions import (WBApiResponseExceptions,
+                                      IncorrectKeyException,
+                                      TimeoutException,
+                                      UnexpectedException, ForUserException)
 from .response_handlers import ResponseHandlers
 from .urls_and_payloads import wb_api_urls, wb_api_payloads
+
+logger = logging.getLogger(__name__)  # TODO Добавить нормальное логирование ошибок
 
 
 class StatisticsRequests:
@@ -21,27 +29,47 @@ class StatisticsRequests:
 
     async def __get_response_post(self, url, data):
         """Сессия для получения ответа от WB API."""
-        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=15)) as session:  # TODO разобраться с таймаутом и отловом ошибки таймаута
-            async with session.post(url=url, data=json.dumps(data), headers=self.__headers) as response:
-                if response.status == HTTPStatus.OK:
-                    try:
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=15)) as session:
+            try:
+                async with session.post(url=url, data=json.dumps(data), headers=self.__headers) as response:
+                    if response.status == HTTPStatus.OK:
                         response_data = await response.json()
                         return response_data
-                    except Exception as e:
-                        raise WBApiResponseExceptions(message=e, url=url)
-                if response.status == HTTPStatus.UNAUTHORIZED:
-                    raise IncorrectKeyException
-                raise WBApiResponseExceptions(url=url, message=response.status)
+                    if response.status == HTTPStatus.UNAUTHORIZED:
+                        raise IncorrectKeyException('Ошибка авторизации.')
+                    raise WBApiResponseExceptions(url=url, message=response.status)
+            except TimeoutError:
+                raise TimeoutException(f'Время ожидания ответа истекло.')
+            except Exception as e:
+                raise UnexpectedException(f'Непредвиденная ошибка. URL: {url}, err: {e}')
 
-    @ResponseHandlers.nm_ids_handler
+    @staticmethod
+    def __check_errors(func):
+        @wraps(func)
+        async def wrapper(*args, **kwargs):
+            try:
+                response = await func(*args, **kwargs)
+                return response
+            except IncorrectKeyException as e:
+                logger.error(e)
+                raise ForUserException(err_mess_templates['incorrect_token'])
+            except TimeoutException as e:
+                logger.error(e)
+                raise ForUserException(err_mess_templates['timeout_error'])
+            except (UnexpectedException, WBApiResponseExceptions) as e:
+                logger.error(e)
+                raise ForUserException(err_mess_templates['try_later'])
+        return wrapper
+
+    @__check_errors
     async def get_nm_ids(self):
         """Запрос номенклатур продавца."""
         url = wb_api_urls['get_nm_ids_url']
         data = wb_api_payloads['nm_ids_payload']
         response = await self.__get_response_post(url=url, data=data)
-        return response
+        return ResponseHandlers.nm_ids_handler(response)
 
-    @ResponseHandlers.analytic_detail_days_handler
+    @__check_errors
     async def get_analytics_detail_days(self,
                                         nm_ids: list,
                                         period: int = 1,
@@ -58,9 +86,9 @@ class StatisticsRequests:
             'aggregationLevel': aggregation_lvl
         }
         response = await self.__get_response_post(url=url, data=data)
-        return response
+        return ResponseHandlers.analytic_detail_days_handler(response)
 
-    @ResponseHandlers.analytic_detail_period_handler
+    @__check_errors
     async def get_analytic_detail_periods(self, nm_ids: list, period: int = 7):
         """Запрос статистики товара по периодам."""
         url = wb_api_urls['analytic_detail_url_periods']
@@ -73,7 +101,7 @@ class StatisticsRequests:
             'page': 1
         }
         response = await self.__get_response_post(url=url, data=data)
-        return response
+        return ResponseHandlers.analytic_detail_period_handler(response)
 
     # TODO добавить просмотр остатков товаров (В документации -> статистика -> склад)
     # TODO добавить продажи (в документации -> статистика -> продажи)
