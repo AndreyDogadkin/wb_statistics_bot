@@ -7,6 +7,10 @@ class WBApiResponseExceptions(Exception):
         return f'Ошибка обработки ответа url: {self.url}\n{self.message}'
 
 
+class UnexpectedException(Exception):
+    pass
+
+
 class WBApiHandleException(Exception):
 
     def __init__(self, message: str = ''):
@@ -19,3 +23,14 @@ class WBApiHandleException(Exception):
 class IncorrectKeyException(Exception):
     pass
 
+
+class TimeoutException(Exception):
+    pass
+
+
+class ForUserException(Exception):
+    def __init__(self, message):
+        self.message = message
+
+    def __str__(self):
+        return self.message

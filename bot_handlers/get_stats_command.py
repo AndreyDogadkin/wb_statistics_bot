@@ -10,7 +10,7 @@ from aiogram.utils import markdown
 from bot_base_messages.messages_templates import get_stats_mess_templates, err_mess_templates, stickers
 from bot_keyboards.keyboards import MakeMarkup, NmIdsCallbackData, DaysCallbackData, PaginationNmIds
 from bot_states.states import GetStats
-from exceptions.wb_exceptions import WBApiResponseExceptions, IncorrectKeyException
+from exceptions.wb_exceptions import ForUserException
 from models.methods import DBMethods
 from wb_api.analytics_requests import StatisticsRequests
 
@@ -108,14 +108,9 @@ async def send_nm_ids(message: types.Message, state: FSMContext, token):
         else:
             await state.clear()
             await message.answer(err_mess_templates['no_active_nms'])
-    except IncorrectKeyException:
-        await message.answer_sticker(stickers['error_401_sticker'])
-        await message.answer(err_mess_templates['error_401'])
-        await state.clear()
-    except (WBApiResponseExceptions, Exception) as e:
-        loger.error(e)
-        await message.answer(err_mess_templates['try_later'])
+    except ForUserException as e:
         await message.answer_sticker(stickers['error_try_later_sticker'])
+        await message.answer(e.message)
         await state.clear()
     finally:
         await message.delete()
@@ -141,10 +136,10 @@ async def get_user_statistics(statistics: StatisticsRequests, nm_id: int, period
     statistics_nm_id: list = await get_stats_func(nm_ids=[nm_id], period=period)
     if statistics_nm_id:
         product: str = statistics_nm_id.pop(0)
-        answer_message: str = f'Товар: {markdown.hbold(product)}.\n\n'
+        answer_message: str = get_stats_mess_templates['product_vendor_code'].format(*product)
         for nm in statistics_nm_id:
             answer_message += message_template.format(*nm)
-        return product, answer_message
+        return product[1], answer_message
 
 
 @router.callback_query(StateFilter(GetStats.get_period), DaysCallbackData.filter())
@@ -163,10 +158,13 @@ async def send_user_statistics(callback: types.CallbackQuery, callback_data: Day
             await message_wait.edit_text(answer_message)
         else:
             await message_wait.edit_text(err_mess_templates['no_data'])
-    except (WBApiResponseExceptions, Exception) as e:
-        loger.error(e)
+    except ForUserException as e:
+        await message_wait.delete()
         await message_wait.answer_sticker(stickers['error_try_later_sticker'])
-        await message_wait.edit_text(err_mess_templates['try_later'])
+        await message_wait.answer(e.message)
     finally:
         await state.storage.close()
         await state.clear()
+
+
+# TODO обработать ошибки ТГ
