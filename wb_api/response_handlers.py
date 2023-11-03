@@ -32,6 +32,7 @@ class ResponseHandlers:
 
     @classmethod
     def nm_ids_handler(cls, response) -> list[tuple]:
+        """Обработчик ответа для запроса номеров номенклатур."""
         try:
             data: ResponseNmIDs = ResponseNmIDs.model_validate(response)
             cls.__check_error_key(data)
@@ -55,6 +56,7 @@ class ResponseHandlers:
 
     @classmethod
     def analytic_detail_days_handler(cls, response):
+        """Обработчик ответа для запроса статистики товара по дням."""
         try:
             data = ResponseStatsDays.model_validate(response)
             cls.__check_error_key(data)

@@ -45,6 +45,7 @@ class StatisticsRequests:
 
     @staticmethod
     def __check_errors(func):
+        """Проверить ошибки."""
         @wraps(func)
         async def wrapper(*args, **kwargs):
             try:
