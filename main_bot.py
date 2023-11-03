@@ -33,7 +33,7 @@ async def set_default_commands(bot):
 async def command_start_handler(message: types.Message) -> None:
     """Команда start."""
     await message.answer_sticker(stickers['start_sticker'])
-    await message.answer(info_mess_templates['start'].format(markdown.hbold(message.from_user.full_name)))
+    await message.answer(info_mess_templates['start'].format(markdown.hbold('@' + message.from_user.username)))
     await database.add_user(message.from_user.id)
 
 

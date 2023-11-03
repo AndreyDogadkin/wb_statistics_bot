@@ -1,6 +1,7 @@
 import logging
 
 from aiogram import types, F, Router
+from aiogram.exceptions import TelegramAPIError
 from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state
@@ -90,6 +91,7 @@ async def paginate_nm_ids(state: FSMContext) -> tuple[str, InlineKeyboardMarkup]
     message_for_ids: str = markdown.hbold(get_stats_mess_templates['change_nm_id'])
     for nm in nm_ids[page_number]:
         message_for_ids += get_stats_mess_templates['send_nm_ids_template'].format(*nm)
+        await state.update_data(data={f'photo:{nm[2]}': nm[3]})
     message_for_ids += markdown.hbold(get_stats_mess_templates['plus_send_nm_ids_template'])
     return message_for_ids, markup
 
@@ -150,18 +152,24 @@ async def send_user_statistics(callback: types.CallbackQuery, callback_data: Day
     state_data: dict = await state.get_data()
     nm_id: int = state_data.get('nm_id')
     token: str = state_data.get('token')
+    photo: str = state_data.get(f'photo:{nm_id}')
     statistics = StatisticsRequests(token)
     try:
         product, answer_message = await get_user_statistics(statistics, nm_id, period)
         if product and answer_message:
             await callback.answer(text=product)
-            await message_wait.edit_text(answer_message)
+            await message_wait.edit_text(answer_message + markdown.hlink(title='📸', url=photo))
         else:
             await message_wait.edit_text(err_mess_templates['no_data'])
     except ForUserException as e:
         await message_wait.delete()
         await message_wait.answer_sticker(stickers['error_try_later_sticker'])
         await message_wait.answer(e.message)
+    except TelegramAPIError as err:
+        loger.error(f'{err.message}, chat_id={err.method.chat_id}')
+        await message_wait.delete()
+        await message_wait.answer_sticker(stickers['error_try_later_sticker'])
+        await message_wait.answer(err_mess_templates['telegram_error'])
     finally:
         await state.storage.close()
         await state.clear()
