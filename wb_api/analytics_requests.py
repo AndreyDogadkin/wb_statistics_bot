@@ -3,6 +3,7 @@ import logging
 from datetime import datetime, timedelta
 from functools import wraps
 from http import HTTPStatus
+from typing import Coroutine
 
 import aiohttp
 
@@ -10,11 +11,11 @@ from bot_base_messages.messages_templates import err_mess_templates
 from exceptions.wb_exceptions import (WBApiResponseExceptions,
                                       IncorrectKeyException,
                                       TimeoutException,
-                                      UnexpectedException, ForUserException)
+                                      ForUserException)
 from .response_handlers import ResponseHandlers
 from .urls_and_payloads import wb_api_urls, wb_api_payloads
 
-logger = logging.getLogger(__name__)  # TODO Добавить нормальное логирование ошибок
+logger = logging.getLogger(__name__)  # TODO Добавить логирование ошибок в файл
 
 
 class StatisticsRequests:
@@ -36,28 +37,29 @@ class StatisticsRequests:
                         response_data = await response.json()
                         return response_data
                     if response.status == HTTPStatus.UNAUTHORIZED:
-                        raise IncorrectKeyException('Ошибка авторизации.')
-                    raise WBApiResponseExceptions(url=url, message=response.status)
+                        raise IncorrectKeyException(f'Ошибка авторизации. Невалидный токен.')
+                    raise WBApiResponseExceptions(url=url, message=f'Статус ответа-{response.status}')
             except TimeoutError:
-                raise TimeoutException(f'Время ожидания ответа истекло.')
-            except Exception as e:
-                raise UnexpectedException(f'Непредвиденная ошибка. URL: {url}, err: {e}')
+                raise TimeoutException('WB API не ответил за отведенное время.')
 
     @staticmethod
     def __check_errors(func):
         """Проверить ошибки."""
         @wraps(func)
-        async def wrapper(*args, **kwargs):
+        async def wrapper(*args, **kwargs) -> Coroutine:
             try:
+                start = datetime.now()
                 response = await func(*args, **kwargs)
+                fin = datetime.now()
+                logger.info(f'Ответ получен. Время - {(fin - start).total_seconds()} c.')
                 return response
             except IncorrectKeyException as e:
-                logger.error(e)
-                raise ForUserException(err_mess_templates['incorrect_token'])
+                logger.info(e)
+                raise ForUserException(err_mess_templates['error_401'])
             except TimeoutException as e:
                 logger.error(e)
                 raise ForUserException(err_mess_templates['timeout_error'])
-            except (UnexpectedException, WBApiResponseExceptions) as e:
+            except WBApiResponseExceptions as e:
                 logger.error(e)
                 raise ForUserException(err_mess_templates['try_later'])
         return wrapper

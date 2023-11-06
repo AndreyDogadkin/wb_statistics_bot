@@ -18,7 +18,7 @@ class ResponseHandlers:
         """Проверка поля ошибок в ответе."""
         if data.error is True:
             error = data.errorText
-            logger.error(f'В ответе присутствует ошибка: {error}.')
+            logger.error(f'В ответе присутствуют ошибки: {error}.')
             raise ForUserException(err_mess_templates['response_error_field_true'])
 
     @staticmethod
@@ -52,7 +52,7 @@ class ResponseHandlers:
                 out.append(page)
             return out
         except ValidationError as e:
-            logger.error(f'Ошибка валидации ответа: {e.json()}')
+            logger.critical(f'Ошибка валидации ответа: {e.json()}')
             raise ForUserException(err_mess_templates['response_validation_error'])
 
     @classmethod
@@ -71,7 +71,7 @@ class ResponseHandlers:
                 len_out_list -= 1
             return out
         except ValidationError as e:
-            logger.error(f'Ошибка валидации ответа: {e.json()}')
+            logger.critical(f'Ошибка валидации ответа: {e.json()}')
             raise ForUserException(err_mess_templates['response_validation_error'])
 
     @classmethod
@@ -98,5 +98,5 @@ class ResponseHandlers:
             return [(name, vendor_code), ('Выбранный период:', *select_period, select_period_buyouts),
                     ('Предыдущий период:', *previous_period, previous_period_buyouts)]
         except ValidationError as e:
-            logger.error(f'Ошибка валидации ответа: {e.json()}')
+            logger.critical(f'Ошибка валидации ответа: {e.json()}')
             raise ForUserException(err_mess_templates['response_validation_error'])
