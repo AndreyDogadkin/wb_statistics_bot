@@ -9,6 +9,7 @@ PAGINATION_SIZE = 5
 class BotSettings(BaseSettings):
     """Настройки бота."""
     TG_TOKEN: str
+    NGROK_URL: str
     ADMINS: list
 
 

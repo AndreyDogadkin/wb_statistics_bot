@@ -19,10 +19,10 @@ loger = logging.getLogger(__name__)
 
 database = DBMethods()
 
-router = Router()
+get_stats_router = Router()
 
 
-@router.message(Command(commands='get_stats'), StateFilter(default_state))
+@get_stats_router.message(Command(commands='get_stats'), StateFilter(default_state))
 async def set_get_stats_state(message: types.Message, state: FSMContext):
     """
     Отправка номенклатур пользователю, если токен сохранен,
@@ -40,7 +40,7 @@ async def set_get_stats_state(message: types.Message, state: FSMContext):
         await message.delete()
 
 
-@router.message(StateFilter(GetStats.get_token), F.text.len() == 149)  # TODO add token filter
+@get_stats_router.message(StateFilter(GetStats.get_token), F.text.len() == 149)  # TODO add token filter
 async def get_user_token_send_nm_ids(message: types.Message, state: FSMContext):
     """Получить токен пользователя."""
     await state.update_data(token=message.text)
@@ -52,7 +52,7 @@ async def get_user_token_send_nm_ids(message: types.Message, state: FSMContext):
     await send_nm_ids(message, state, token)
 
 
-@router.message(StateFilter(GetStats.get_token), F.text.len() != 149)
+@get_stats_router.message(StateFilter(GetStats.get_token), F.text.len() != 149)
 async def incorrect_key(message: types.Message, state: FSMContext):
     """Обработка некорректно введенного токена."""
     state_data = await state.get_data()
@@ -65,7 +65,7 @@ async def incorrect_key(message: types.Message, state: FSMContext):
     await message.delete()
 
 
-@router.callback_query(StateFilter(GetStats.get_nm_ids), PaginationNmIds.filter())
+@get_stats_router.callback_query(StateFilter(GetStats.get_nm_ids), PaginationNmIds.filter())
 async def change_page_for_nm_ids(callback: types.CallbackQuery, callback_data: PaginationNmIds, state: FSMContext):
     """Отправка выбранной страницы номеров номенклатур пользователю."""
     state_data = await state.get_data()
@@ -118,7 +118,7 @@ async def send_nm_ids(message: types.Message, state: FSMContext, token):
         await message.delete()
 
 
-@router.callback_query(StateFilter(GetStats.get_nm_ids), NmIdsCallbackData.filter())
+@get_stats_router.callback_query(StateFilter(GetStats.get_nm_ids), NmIdsCallbackData.filter())
 async def set_period_state(callback: types.CallbackQuery, callback_data: NmIdsCallbackData, state: FSMContext):
     """Получения номера номенклатуры от пользователя, установка состояния получения периода."""
     nm_id: int = callback_data.unpack(callback.data).nm_id
@@ -144,7 +144,7 @@ async def get_user_statistics(statistics: StatisticsRequests, nm_id: int, period
         return product[1], answer_message
 
 
-@router.callback_query(StateFilter(GetStats.get_period), DaysCallbackData.filter())
+@get_stats_router.callback_query(StateFilter(GetStats.get_period), DaysCallbackData.filter())
 async def send_user_statistics(callback: types.CallbackQuery, callback_data: DaysCallbackData, state: FSMContext):
     """Отправить статистику пользователю."""
     message_wait: types.Message = await callback.message.edit_text(markdown.hitalic('Выполняю запрос...🕐'))
