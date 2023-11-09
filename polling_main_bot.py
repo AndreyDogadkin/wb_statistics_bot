@@ -1,0 +1,42 @@
+import asyncio
+import logging
+import sys
+
+from aiogram import Bot, Dispatcher, types
+from aiogram.enums import ParseMode
+
+from bot_handlers import get_stats_command, save_tokens_command, start_help_commands
+from config_data.config import get_config
+from models.methods import DBMethods
+
+config = get_config()
+dp = Dispatcher()
+database = DBMethods()
+
+
+async def set_default_commands(bot):
+    """Добавление кнопки 'Меню' со списком команд."""
+    await bot.set_my_commands(
+        [
+            types.BotCommand(command='help', description='❓ Как пользоваться ботом.'),
+            types.BotCommand(command='token', description='🔑 Добавить/обновить токен.'),
+            types.BotCommand(command='get_stats', description='📈 Получить статистику.'),
+        ]
+    )
+
+
+async def main() -> None:
+    bot = Bot(config.bot.TG_TOKEN, parse_mode=ParseMode.HTML)
+    dp.include_router(start_help_commands.start_help_router)
+    dp.include_router(get_stats_command.get_stats_router)
+    dp.include_router(save_tokens_command.save_token_router)
+    await set_default_commands(bot)
+    await bot.delete_webhook(drop_pending_updates=True)
+    await dp.start_polling(bot)
+
+
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO,
+                        stream=sys.stdout,
+                        format='[%(levelname)s : %(name)s : line-%(lineno)s : %(asctime)s] -- %(message)s')  # noqa
+    asyncio.run(main())

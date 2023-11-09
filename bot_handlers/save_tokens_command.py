@@ -10,10 +10,10 @@ from bot_base_messages.messages_templates import save_token_mess_templates, err_
 
 database = DBMethods()
 
-router = Router()
+save_token_router = Router()
 
 
-@router.message(Command(commands='token'), StateFilter(default_state))
+@save_token_router.message(Command(commands='token'), StateFilter(default_state))
 async def set_save_token_state(message: types.Message, state: FSMContext):
     """Запуск состояния выбора типа сохраняемого токена."""
     await database.add_user(message.from_user.id)
@@ -23,7 +23,7 @@ async def set_save_token_state(message: types.Message, state: FSMContext):
     await state.set_state(SaveToken.get_token_type)
 
 
-@router.callback_query(StateFilter(SaveToken.get_token_type), TokenTypeCallbackData.filter())
+@save_token_router.callback_query(StateFilter(SaveToken.get_token_type), TokenTypeCallbackData.filter())
 async def get_token_type(callback: types.CallbackQuery, callback_data: TokenTypeCallbackData, state: FSMContext):
     """Запуск состояния ожидания выбранного типа токена."""
     state_data = await state.get_data()
@@ -39,7 +39,7 @@ async def get_token_type(callback: types.CallbackQuery, callback_data: TokenType
         await state.clear()
 
 
-@router.message(StateFilter(SaveToken.get_standard_token), F.text.len() == 149)
+@save_token_router.message(StateFilter(SaveToken.get_standard_token), F.text.len() == 149)
 async def save_standard_token(message: types.Message, state: FSMContext):
     """Получение и сохранения введенного токена."""
     state_data = await state.get_data()
@@ -50,7 +50,7 @@ async def save_standard_token(message: types.Message, state: FSMContext):
     await state.clear()
 
 
-@router.message(StateFilter(SaveToken.get_standard_token), F.text.len() != 149)
+@save_token_router.message(StateFilter(SaveToken.get_standard_token), F.text.len() != 149)
 async def invalid_token(message: types.Message, state: FSMContext):
     """Обработка некорректно введенного токена."""
     state_data = await state.get_data()

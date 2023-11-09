@@ -51,7 +51,7 @@ class StatisticsRequests:
                 start = datetime.now()
                 response = await func(*args, **kwargs)
                 fin = datetime.now()
-                logger.info(f'Ответ получен. Время - {(fin - start).total_seconds()} c.')
+                logger.info(f'Ответ от WB API получен. Время - {(fin - start).total_seconds()} c.')
                 return response
             except IncorrectKeyException as e:
                 logger.info(e)
