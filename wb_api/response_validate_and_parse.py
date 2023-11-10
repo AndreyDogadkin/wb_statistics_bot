@@ -1,35 +1,33 @@
-import json
-
-from pydantic import BaseModel, ValidationError
+from pydantic import BaseModel, Field
 
 
 class BaseResponse(BaseModel):
     """Базовый класс ответа WB API."""
     data: list
     error: bool
-    errorText: str
-    additionalErrors: None | dict[str, str]
+    error_text: str = Field(alias='errorText')
+    additional_errors: None | dict[str, str] = Field(alias='additionalErrors')
 
 
 class NmHistoryStatsDays(BaseModel):
     """Статистика по дням. Данные статистики."""
     dt: str
-    ordersSumRub: int
-    ordersCount: int
-    openCardCount: int
-    addToCartCount: int
-    buyoutsCount: int
-    buyoutsSumRub: int
-    buyoutPercent: int
-    addToCartConversion: int
-    cartToOrderConversion: int
+    orders_sum_rub: int = Field(alias='ordersSumRub')
+    orders_count: int = Field(alias='ordersCount')
+    open_card_count: int = Field(alias='openCardCount')
+    add_to_cart_count: int = Field(alias='addToCartCount')
+    buyouts_count: int = Field(alias='buyoutsCount')
+    buyouts_sum_rub: int = Field(alias='buyoutsSumRub')
+    buyout_percent: int = Field(alias='buyoutPercent')
+    add_to_cart_conversion: int = Field(alias='addToCartConversion')
+    cart_to_order_conversion: int = Field(alias='cartToOrderConversion')
 
 
 class NmDataStatsDays(BaseModel):
     """Статистика по дням. Данные о товаре."""
-    nmID: int
-    imtName: str
-    vendorCode: str
+    nm_id: int = Field(alias='nmID')
+    imt_name: str = Field(alias='imtName')
+    vendor_code: str = Field(alias='vendorCode')
     history: list[NmHistoryStatsDays]
 
 
@@ -41,16 +39,16 @@ class ResponseStatsDays(BaseResponse):
 class CardsNmIds(BaseModel):
     """Получение артикулов продавца. Данные о товарах."""
     sizes: list[dict]
-    mediaFiles: list[str]
+    media_files: list[str] = Field(alias='mediaFiles')
     colors: list[str]
-    updateAt: str
-    vendorCode: str
+    update_at: str = Field(alias='updateAt')
+    vendor_code: str = Field(alias='vendorCode')
     brand: str
     object: str
-    nmID: int
-    imtID: int
-    objectID: int
-    isProhibited: bool
+    nm_id: int = Field(alias='nmID')
+    imt_id: int = Field(alias='imtID')
+    object_id: int = Field(alias='objectID')
+    is_prohibited: bool = Field(alias='isProhibited')
     tags: list
 
 
@@ -65,28 +63,35 @@ class ResponseNmIDs(BaseResponse):
     data: DataNmIDs
 
 
+class ConversionsStatsPeriod(BaseModel):
+    """Статистика по периодам. Конверсия."""
+    add_to_cart_percent: int = Field(alias='addToCartPercent')
+    cart_to_order_percent: int = Field(alias='cartToOrderPercent')
+    buyout_percent: int = Field(alias='buyoutsPercent')
+
+
 class PeriodsStatsPeriod(BaseModel):
     """Статистика по периодам. Данные статистики."""
     begin: str
     end: str
-    ordersSumRub: int
-    ordersCount: int
-    openCardCount: int
-    addToCartCount: int
-    buyoutsCount: int
-    buyoutsSumRub: int
-    cancelCount: int
-    cancelSumRub: int
-    avgOrdersCountPerDay: float
-    avgPriceRub: int
-    conversions: dict[str, int]
+    orders_sum_rub: int = Field(alias='ordersSumRub')
+    orders_count: int = Field(alias='ordersCount')
+    open_card_count: int = Field(alias='openCardCount')
+    add_to_cart_count: int = Field(alias='addToCartCount')
+    buyouts_count: int = Field(alias='buyoutsCount')
+    buyouts_sum_rub: int = Field(alias='buyoutsSumRub')
+    cancel_count: int = Field(alias='cancelCount')
+    cancel_sum_rub: int = Field(alias='cancelSumRub')
+    avg_orders_count_per_day: float = Field(alias='avgOrdersCountPerDay')
+    avg_price_rub: int = Field(alias='avgPriceRub')
+    conversions: ConversionsStatsPeriod
 
 
 class StatisticsStatsPeriod(BaseModel):
     """Статистика по периодам. Выбранный и предыдущий периоды."""
-    selectedPeriod: PeriodsStatsPeriod
-    previousPeriod: PeriodsStatsPeriod
-    periodComparison: dict
+    selected_period: PeriodsStatsPeriod = Field(alias='selectedPeriod')
+    previous_period: PeriodsStatsPeriod = Field(alias='previousPeriod')
+    period_comparison: dict = Field(alias='periodComparison')
 
 
 class ObjectStatsPeriod(BaseModel):
@@ -97,9 +102,9 @@ class ObjectStatsPeriod(BaseModel):
 
 class CardsStatsPeriod(BaseModel):
     """Статистика по периодам. Данные о товаре."""
-    nmID: int
-    vendorCode: str
-    brandName: str
+    nm_id: int = Field(alias='nmID')
+    vendor_code: str = Field(alias='vendorCode')
+    brand_name: str = Field(alias='brandName')
     object: ObjectStatsPeriod
     statistics: StatisticsStatsPeriod
     stocks: dict[str, int]
@@ -108,26 +113,10 @@ class CardsStatsPeriod(BaseModel):
 class DataStatsPeriod(BaseModel):
     """Статистика по периодам."""
     page: int
-    isNextPage: bool
+    is_next_page: bool = Field(alias='isNextPage')
     cards: list[CardsStatsPeriod]
 
 
 class ResponseStatsPeriod(BaseResponse):
     """Статистика по периодам."""
     data: DataStatsPeriod
-
-
-if __name__ == '__main__':
-
-    #  TODO delete after tests
-    string_j = """
- 
-    """
-
-    j_data = json.loads(string_j)
-    try:
-        d = ResponseStatsPeriod.model_validate(j_data)
-    except ValidationError as e:
-        print('pydantic_error:', e.json())
-    else:
-        print(d.data.cards[0].nmID)
