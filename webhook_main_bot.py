@@ -2,14 +2,14 @@ import logging
 from contextlib import asynccontextmanager
 
 import uvicorn
+from aiogram import types, Dispatcher, Bot
 from aiogram.enums import ParseMode
 from aiogram.fsm.storage.memory import MemoryStorage
 from fastapi import FastAPI
-from aiogram import types, Dispatcher, Bot
 
-from bot_handlers.start_help_commands import start_help_router
 from bot_handlers.get_stats_command import get_stats_router
 from bot_handlers.save_tokens_command import save_token_router
+from bot_handlers.start_help_commands import start_help_router
 from polling_main_bot import config
 
 logger = logging.getLogger(__name__)
