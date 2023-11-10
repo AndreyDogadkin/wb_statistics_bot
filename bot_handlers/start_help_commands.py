@@ -5,10 +5,8 @@ from aiogram.fsm.state import default_state
 from aiogram.utils import markdown
 
 from bot_base_messages.messages_templates import info_mess_templates, stickers
-from config_data.config import get_config
 from models.methods import DBMethods
 
-config = get_config()
 start_help_router = Router()
 database = DBMethods()
 
