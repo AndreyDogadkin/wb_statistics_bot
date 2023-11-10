@@ -7,10 +7,10 @@ from models.models import Base
 
 config = get_config()
 
-db_url = config.database.DB_URL
+DB_URL = config.database.DB_URL
 
 engine = create_async_engine(
-    url=db_url,
+    url=DB_URL,
     echo=False
 )
 
