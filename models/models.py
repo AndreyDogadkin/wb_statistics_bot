@@ -7,6 +7,7 @@ class Base(DeclarativeBase):
 
 
 class User(Base):
+    """Тестовая модель для таблицы пользователя."""  # TODO Заменить на другие модели.
     __tablename__ = 'user_account'
 
     id: Mapped[int] = mapped_column(primary_key=True)
