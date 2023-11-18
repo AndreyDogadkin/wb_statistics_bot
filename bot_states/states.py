@@ -11,4 +11,5 @@ class GetStats(StatesGroup):
 class SaveToken(StatesGroup):
 	"""Состояния для сохранения токена."""
 	get_token_type = State()
-	get_standard_token = State()
+	get_content_token = State()
+	get_analytic_token = State()

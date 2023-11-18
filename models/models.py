@@ -12,5 +12,5 @@ class User(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     telegram_id: Mapped[int] = mapped_column(BigInteger, unique=True)
-    wb_token_standard = mapped_column(BLOB)
-    wb_token_statistics = mapped_column(BLOB)
+    wb_token_content = mapped_column(BLOB)
+    wb_token_analytic = mapped_column(BLOB)
