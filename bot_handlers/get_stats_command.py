@@ -28,19 +28,19 @@ async def set_get_stats_state(message: types.Message, state: FSMContext):
     Отправка номенклатур пользователю, если токен сохранен,
     иначе установка состояния получения токена
     """
-    token = await database.get_user_standard_token(message.from_user.id)
-    if token:
-        await send_nm_ids(message, state, token)
-        await state.update_data(token=token)
+    user_id = message.from_user.id
+    token_content = await database.get_user_content_token(user_id)
+    token_analytic = await database.get_user_analytic_token(user_id)
+    if token_content and token_analytic:
+        await send_nm_ids(message, state, token_content)
+        await state.update_data(token_content=token_content, token_analytic=token_analytic)
     else:
-        for_delete_message = await message.answer(text=get_stats_mess_templates['send_token_standard'],
-                                                  reply_markup=MakeMarkup.cancel_builder().as_markup())
-        await state.update_data(for_delete_message=for_delete_message)
-        await state.set_state(GetStats.get_token)
+        await message.answer(get_stats_mess_templates['save_tokens'])
         await message.delete()
+        await state.clear()
 
 
-@get_stats_router.message(StateFilter(GetStats.get_token), F.text.len() == 149)  # TODO add token filter
+@get_stats_router.message(StateFilter(GetStats.get_token), F.text.len() == 149)  # TODO Удалить
 async def get_user_token_send_nm_ids(message: types.Message, state: FSMContext):
     """Получить токен пользователя."""
     await state.update_data(token=message.text)
@@ -52,7 +52,7 @@ async def get_user_token_send_nm_ids(message: types.Message, state: FSMContext):
     await send_nm_ids(message, state, token)
 
 
-@get_stats_router.message(StateFilter(GetStats.get_token), F.text.len() != 149)
+@get_stats_router.message(StateFilter(GetStats.get_token), F.text.len() != 149)  # TODO Удалить
 async def incorrect_key(message: types.Message, state: FSMContext):
     """Обработка некорректно введенного токена."""
     state_data = await state.get_data()
@@ -96,9 +96,9 @@ async def paginate_nm_ids(state: FSMContext) -> tuple[str, InlineKeyboardMarkup]
     return message_for_ids, markup
 
 
-async def send_nm_ids(message: types.Message, state: FSMContext, token):
+async def send_nm_ids(message: types.Message, state: FSMContext, token_content):
     """Отправка первой страницы номеров номенклатур пользователю."""
-    statistics = StatisticsRequests(token)
+    statistics = StatisticsRequests(token_content)
     try:
         nm_ids: list[list[tuple]] = await statistics.get_nm_ids()
         if nm_ids:
@@ -151,9 +151,9 @@ async def send_user_statistics(callback: types.CallbackQuery, callback_data: Day
     period: int = callback_data.unpack(callback.data).period
     state_data: dict = await state.get_data()
     nm_id: int = state_data.get('nm_id')
-    token: str = state_data.get('token')
+    token_analytic: str = state_data.get('token_analytic')
     photo: str = state_data.get(f'photo:{nm_id}')
-    statistics = StatisticsRequests(token)
+    statistics = StatisticsRequests(token_analytic)
     try:
         product, answer_message = await get_user_statistics(statistics, nm_id, period)
         if product and answer_message:

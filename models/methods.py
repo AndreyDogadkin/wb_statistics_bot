@@ -27,19 +27,36 @@ class DBMethods:
                 s.add(user)
                 await s.commit()
 
-    async def save_standard_token(self, telegram_id, token_standard):
-        """Сохранение токена 'Стандартный' в БД."""
-        encrypted_token = AESEncryption().encrypt(token_standard)
+    async def save_content_token(self, telegram_id, token_content):
+        """Шифрование и сохранение токена типа 'Контент'."""
+        encrypted_token = AESEncryption().encrypt(token_content)
         async with self.session() as s:
             await s.execute(update(
                 User
-            ).where(User.telegram_id == telegram_id).values(wb_token_standard=encrypted_token))  # noqa
+            ).where(User.telegram_id == telegram_id).values(wb_token_content=encrypted_token))  # noqa
             await s.commit()
 
-    async def get_user_standard_token(self, telegram_id):
-        """Получение токена 'Стандартный' в БД"""
+    async def save_analytic_token(self, telegram_id, token_analytic):
+        """Шифрование и сохранение токена типа 'Аналитика'."""
+        encrypted_token = AESEncryption().encrypt(token_analytic)
+        async with self.session() as s:
+            await s.execute(update(
+                User
+            ).where(User.telegram_id == telegram_id).values(wb_token_analytic=encrypted_token))
+            await s.commit()
+
+    async def get_user_content_token(self, telegram_id):
+        """Получение токена типа 'Контент'."""
         async with self.session.begin() as s:
-            res = await s.execute(select(User.wb_token_standard).where(User.telegram_id == telegram_id))  # noqa
+            res = await s.execute(select(User.wb_token_content).where(User.telegram_id == telegram_id))  # noqa
+            token = res.scalar()
+            if token:
+                return AESEncryption().decrypt(token)
+
+    async def get_user_analytic_token(self, telegram_id):
+        """Получение токена типа 'Аналитика'."""
+        async with self.session.begin() as s:
+            res = await s.execute(select(User.wb_token_analytic).where(User.telegram_id == telegram_id))  # noqa
             token = res.scalar()
             if token:
                 return AESEncryption().decrypt(token)

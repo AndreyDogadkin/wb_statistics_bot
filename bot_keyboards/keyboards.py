@@ -67,8 +67,8 @@ class MakeMarkup:
     def change_token_markup(cls) -> InlineKeyboardMarkup:
         """Клавиатура для выбора типа сохраняемого токена."""
         markup = InlineKeyboardBuilder()
-        markup.button(text='Стандартный', callback_data=TokenTypeCallbackData(token_type='standard').pack())
-        markup.button(text='Статистика 🔒', callback_data=TokenTypeCallbackData(token_type='statistics').pack())
+        markup.button(text='Контент', callback_data=TokenTypeCallbackData(token_type='content').pack())
+        markup.button(text='Аналитика', callback_data=TokenTypeCallbackData(token_type='analytic').pack())
         markup.adjust(2)
         markup.attach(cls.cancel_builder())
         return markup.as_markup()

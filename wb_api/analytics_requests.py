@@ -24,7 +24,7 @@ class StatisticsRequests:
         self.token = wb_token
         self.__headers = {'Authorization': self.token,
                           'Content-type': 'application/json',
-                          'Accept': 'text/plain',
+                          'Accept': '*/*',
                           'Content-Encoding': 'utf-8',
                           }
 
