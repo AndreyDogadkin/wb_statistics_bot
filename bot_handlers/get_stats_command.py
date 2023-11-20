@@ -158,7 +158,7 @@ async def send_user_statistics(callback: types.CallbackQuery, callback_data: Day
         product, answer_message = await get_user_statistics(statistics, nm_id, period)
         if product and answer_message:
             await callback.answer(text=product)
-            await message_wait.edit_text(answer_message + markdown.hlink(title='📸', url=photo))
+            await message_wait.edit_text(answer_message + markdown.hlink(title='📸 Открыть фото.', url=photo))
         else:
             await message_wait.edit_text(err_mess_templates['no_data'])
     except ForUserException as e:
