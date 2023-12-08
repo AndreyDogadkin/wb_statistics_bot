@@ -3,7 +3,7 @@ import asyncio
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 
 from config_data.config import get_config
-from models.models import Base
+from database.models import Base
 
 config = get_config()
 

@@ -12,7 +12,7 @@ from bot_base_messages.messages_templates import get_stats_mess_templates, err_m
 from bot_keyboards.keyboards import MakeMarkup, NmIdsCallbackData, DaysCallbackData, PaginationNmIds
 from bot_states.states import GetStats
 from exceptions.wb_exceptions import ForUserException
-from models.methods import DBMethods
+from database.methods import DBMethods
 from wb_api.analytics_requests import StatisticsRequests
 
 loger = logging.getLogger(__name__)
