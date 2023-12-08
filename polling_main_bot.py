@@ -7,7 +7,7 @@ from aiogram.enums import ParseMode
 
 from bot_handlers import get_stats_command, save_tokens_command, start_help_commands
 from config_data.config import get_config
-from models.methods import DBMethods
+from database.methods import DBMethods
 
 config = get_config()
 dp = Dispatcher()

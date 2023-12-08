@@ -1,7 +1,7 @@
 from sqlalchemy import select, update
 
-from models.engine import session
-from models.models import User
+from database.engine import session
+from database.models import User
 from utils.aes_encryption import AESEncryption
 
 base_session = session
