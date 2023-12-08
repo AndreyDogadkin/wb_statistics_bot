@@ -174,5 +174,4 @@ async def send_user_statistics(callback: types.CallbackQuery, callback_data: Day
         await state.storage.close()
         await state.clear()
 
-
 # TODO обработать ошибки ТГ
