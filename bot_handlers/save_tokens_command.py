@@ -57,7 +57,7 @@ async def save_content_token(message: types.Message, state: FSMContext):
 
 
 @save_token_router.message(StateFilter(SaveToken.get_analytic_token), TokenFilter())
-async def save_content_token(message: types.Message, state: FSMContext):
+async def save_analytic_token(message: types.Message, state: FSMContext):
     """Получение и сохранения токена типа 'Аналитика'."""
     state_data = await state.get_data()
     token = message.text

@@ -1,7 +1,7 @@
 from sqlalchemy import select, update
 
 from database.engine import session
-from database.models import User
+from database.models import User, Token
 from utils.aes_encryption import AESEncryption
 
 base_session = session
@@ -15,7 +15,13 @@ class DBMethods:
     async def check_user(self, telegram_id):
         """Проверка наличия пользователя в БД."""
         async with self.session.begin() as s:
-            res = await s.execute(select(User).where(User.telegram_id == telegram_id))  # noqa
+            res = await s.execute(
+                select(
+                    User
+                ).where(
+                    User.telegram_id == telegram_id
+                )
+            )
         return res.scalar()
 
     async def add_user(self, telegram_id):
@@ -32,8 +38,8 @@ class DBMethods:
         encrypted_token = AESEncryption().encrypt(token_content)
         async with self.session() as s:
             await s.execute(update(
-                User
-            ).where(User.telegram_id == telegram_id).values(wb_token_content=encrypted_token))  # noqa
+                Token
+            ).values(wb_token_content=encrypted_token, user_id=telegram_id))
             await s.commit()
 
     async def save_analytic_token(self, telegram_id, token_analytic):
@@ -41,14 +47,20 @@ class DBMethods:
         encrypted_token = AESEncryption().encrypt(token_analytic)
         async with self.session() as s:
             await s.execute(update(
-                User
-            ).where(User.telegram_id == telegram_id).values(wb_token_analytic=encrypted_token))
+                Token
+            ).values(wb_token_analytic=encrypted_token, user_id=telegram_id))
             await s.commit()
 
     async def get_user_content_token(self, telegram_id):
         """Получение токена типа 'Контент'."""
         async with self.session.begin() as s:
-            res = await s.execute(select(User.wb_token_content).where(User.telegram_id == telegram_id))  # noqa
+            res = await s.execute(
+                select(
+                    Token.wb_token_content
+                ).where(
+                    Token.user_id == telegram_id
+                )
+            )
             token = res.scalar()
             if token:
                 return AESEncryption().decrypt(token)
@@ -56,7 +68,13 @@ class DBMethods:
     async def get_user_analytic_token(self, telegram_id):
         """Получение токена типа 'Аналитика'."""
         async with self.session.begin() as s:
-            res = await s.execute(select(User.wb_token_analytic).where(User.telegram_id == telegram_id))  # noqa
+            res = await s.execute(
+                select(
+                    Token.wb_token_analytic
+                ).where(
+                    Token.user_id == telegram_id
+                )
+            )
             token = res.scalar()
             if token:
                 return AESEncryption().decrypt(token)
