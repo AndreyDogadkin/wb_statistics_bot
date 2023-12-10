@@ -9,7 +9,7 @@ config = get_config()
 if config.database.DB_PROD:
     DB_URL = config.database.DB_URL
 else:
-    DB_URL = 'sqlite+aiosqlite:////' + str(BASE_DIR) + '/test_database.sqlite3'
+    DB_URL = config.database.DB_URL_TEST
 
 engine = create_async_engine(
     url=DB_URL,

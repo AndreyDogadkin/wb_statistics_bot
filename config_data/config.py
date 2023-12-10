@@ -24,6 +24,7 @@ class BotSettings(BaseSettings):
 class DatabaseSettings(BaseSettings):
     """Настройки базы данных."""
     DB_PROD: bool
+    DB_URL_TEST: str = 'sqlite+aiosqlite:////' + str(BASE_DIR) + '/test_database.sqlite3'
     DB_URL: str
     DB_PASSWORD: str
 
