@@ -9,6 +9,8 @@ from alembic import context
 from database.models import Base
 from config_data.config import get_config
 
+project_config = get_config()
+
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
@@ -28,6 +30,12 @@ target_metadata = Base.metadata
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
+
+if project_config.database.DB_PROD:
+    DB_URL = project_config.database.DB_URL
+else:
+    DB_URL = project_config.database.DB_URL_TEST
+
 config.set_main_option('sqlalchemy.url', get_config().database.DB_URL)
 
 
