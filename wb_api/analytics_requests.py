@@ -14,9 +14,10 @@ from exceptions.wb_exceptions import (WBApiResponseExceptions,
                                       ForUserException)
 from .response_handlers import ResponseHandlers
 from .urls_and_payloads import wb_api_urls, wb_api_payloads
+from  config_data.config import get_config
 
 logger = logging.getLogger(__name__)  # TODO Добавить логирование ошибок в файл
-
+config = get_config()
 
 class StatisticsRequests:
 
@@ -30,9 +31,16 @@ class StatisticsRequests:
 
     async def __get_response_post(self, url, data):
         """Сессия для получения ответа от WB API."""
+        proxy = 'http://proxy.server:3128' if config.bot.TEST_SERVER else ''
+
         async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=15)) as session:
             try:
-                async with session.post(url=url, data=json.dumps(data), headers=self.__headers) as response:
+                async with session.post(
+                        url=url,
+                        data=json.dumps(data),
+                        headers=self.__headers,
+                        proxy=proxy
+                                        ) as response:
                     if response.status == HTTPStatus.OK:
                         response_data = await response.json()
                         return response_data
