@@ -11,8 +11,9 @@ from aiogram.utils import markdown
 from bot_base_messages.messages_templates import get_stats_mess_templates, err_mess_templates, stickers
 from bot_keyboards.keyboards import MakeMarkup, NmIdsCallbackData, DaysCallbackData, PaginationNmIds
 from bot_states.states import GetStats
-from exceptions.wb_exceptions import ForUserException
 from database.methods import DBMethods
+from exceptions.wb_exceptions import ForUserException
+from helpers.set_limits_format import to_update_limits_format
 from wb_api.analytics_requests import StatisticsRequests
 
 loger = logging.getLogger(__name__)
@@ -29,15 +30,24 @@ async def set_get_stats_state(message: types.Message, state: FSMContext):
     иначе установка состояния получения токена
     """
     user_id = message.from_user.id
-    token_content = await database.get_user_content_token(user_id)
-    token_analytic = await database.get_user_analytic_token(user_id)
-    if token_content and token_analytic:
-        await send_nm_ids(message, state, token_content)
-        await state.update_data(token_content=token_content, token_analytic=token_analytic)
-    else:
-        await message.answer(get_stats_mess_templates['save_tokens'])
+    await database.add_user(user_id)
+    user_can_make_request, _, last_request = await database.check_user_limits(user_id)
+    if not user_can_make_request:
+        next_update_limit = to_update_limits_format(last_request)
+        await message.answer_sticker(stickers['limit_requests'])
+        await message.answer(get_stats_mess_templates["limit_requests"].format(next_update_limit))
         await message.delete()
         await state.clear()
+    else:
+        token_content = await database.get_user_content_token(user_id)
+        token_analytic = await database.get_user_analytic_token(user_id)
+        if token_content and token_analytic:
+            await send_nm_ids(message, state, token_content)
+            await state.update_data(token_content=token_content, token_analytic=token_analytic)
+        else:
+            await message.answer(get_stats_mess_templates['save_tokens'])
+            await message.delete()
+            await state.clear()
 
 
 @get_stats_router.message(StateFilter(GetStats.get_token), F.text.len() == 149)  # TODO Удалить
@@ -154,11 +164,14 @@ async def send_user_statistics(callback: types.CallbackQuery, callback_data: Day
     token_analytic: str = state_data.get('token_analytic')
     photo: str = state_data.get(f'photo:{nm_id}')
     statistics = StatisticsRequests(token_analytic)
+    user_id = callback.from_user.id
     try:
         product, answer_message = await get_user_statistics(statistics, nm_id, period)
         if product and answer_message:
             await callback.answer(text=product)
             await message_wait.edit_text(answer_message + markdown.hlink(title='📸 Открыть фото.', url=photo))
+            await database.set_user_last_request(user_id)
+            await database.set_plus_one_to_user_requests_per_day(user_id)
         else:
             await message_wait.edit_text(err_mess_templates['no_data'])
     except ForUserException as e:

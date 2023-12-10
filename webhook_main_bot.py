@@ -27,9 +27,9 @@ async def set_default_commands(_bot):
     await _bot.set_my_commands(
         [
             types.BotCommand(command='help', description='❓ Как пользоваться ботом.'),
+            types.BotCommand(command='my_limits', description='💯 Мои лимиты.'),
             types.BotCommand(command='token', description='🔑 Добавить/обновить токен.'),
             types.BotCommand(command='get_stats', description='📈 Получить статистику.'),
-            types.BotCommand(command='my_limits', description='💯 Мои лимиты.')
         ]
     )
 
