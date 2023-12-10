@@ -10,6 +10,7 @@ from fastapi import FastAPI
 from bot_handlers.get_stats_command import get_stats_router
 from bot_handlers.save_tokens_command import save_token_router
 from bot_handlers.start_help_commands import start_help_router
+from bot_handlers.my_limits_command import my_limits_router
 from polling_main_bot import config
 
 logger = logging.getLogger(__name__)
@@ -28,6 +29,7 @@ async def set_default_commands(_bot):
             types.BotCommand(command='help', description='❓ Как пользоваться ботом.'),
             types.BotCommand(command='token', description='🔑 Добавить/обновить токен.'),
             types.BotCommand(command='get_stats', description='📈 Получить статистику.'),
+            types.BotCommand(command='my_limits', description='💯 Мои лимиты.')
         ]
     )
 
@@ -40,6 +42,7 @@ async def lifespan(app: FastAPI):  # noqa
     dp.include_router(start_help_router)
     dp.include_router(get_stats_router)
     dp.include_router(save_token_router)
+    dp.include_router(my_limits_router)
     await set_default_commands(bot)
     logger.info('app start')
     yield
