@@ -5,7 +5,7 @@ import sys
 from aiogram import Bot, Dispatcher, types
 from aiogram.enums import ParseMode
 
-from bot_handlers import get_stats_command, save_tokens_command, start_help_commands
+from bot_handlers import get_stats_command, save_tokens_command, start_help_commands, my_limits_command
 from config_data.config import get_config
 from database.methods import DBMethods
 
@@ -19,6 +19,7 @@ async def set_default_commands(bot):
     await bot.set_my_commands(
         [
             types.BotCommand(command='help', description='❓ Как пользоваться ботом.'),
+            types.BotCommand(command='my_limits', description='💯 Мои лимиты.'),
             types.BotCommand(command='token', description='🔑 Добавить/обновить токен.'),
             types.BotCommand(command='get_stats', description='📈 Получить статистику.'),
         ]
@@ -30,6 +31,7 @@ async def main() -> None:
     dp.include_router(start_help_commands.start_help_router)
     dp.include_router(get_stats_command.get_stats_router)
     dp.include_router(save_tokens_command.save_token_router)
+    dp.include_router(my_limits_command.my_limits_router)
     await set_default_commands(bot)
     await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot)

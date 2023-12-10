@@ -74,6 +74,8 @@ API ключи хранятся в нашей базе в зашифрованн
 get_stats_mess_templates: dict = {
     'send_token_standard': '🔑 Для выполнения операции отправьте '
                            'токен WB API "Стандартный".',
+    'limit_requests': '📵 Достигнут лимит запросов.\n'
+                      '💡 Лимит будет обновлен через: {}',
 
     'save_tokens': '🔐 Для выполнения данной операции необходимо сохранить токены типов: '
                    '"Контент" и "Аналитика".\n\n'
@@ -135,6 +137,7 @@ stickers = {
     'start_sticker': 'CAACAgIAAxkBAAEBjxNlNEKVb0a0gj-L-BxBs8n5FWBQ_gACbwAD29t-AAGZW1Coe5OAdDAE',
     'error_401_sticker': 'CAACAgIAAxkBAAEBjx9lNEXeF9goYdFPj6v_195o3fkZRgACXwAD29t-AAGEsFSbEa7K4zAE',
     'error_try_later_sticker': 'CAACAgIAAxkBAAEBjxVlNENylv6-XrO94jUBR82Sisq-XAACYwAD29t-AAGMnQU950KD5zAE',
+    'limit_requests': 'CAACAgIAAxkBAAECXMBldPWCXWv2bAABCTixJxgZaC8gkWUAAjgAA9vbfgAB2ZN8mDds5SwzBA'
 }
 
 save_token_mess_templates: dict = {
@@ -150,4 +153,9 @@ save_token_mess_templates: dict = {
     'send_token_content': '🔑 Токен типа "Аналитика" сохранен!\n'
                           'Для работы бота не хватает одного токена.\n'
                           'Выполните команду /token, и сохраните токен "Контент".'
+}
+
+my_limits_mess_template = {
+    'my_limits': '📤 У вас осталось {} запросов.\n'
+                 '💡 Лимит будет обновлен через: {}',
 }
