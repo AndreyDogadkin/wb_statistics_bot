@@ -144,9 +144,12 @@ class DBMethods:
             )
             user = res.scalar_one()
             now = datetime.datetime.now()
-            if now - user.last_request >= DAY_LIMIT_DELTA:
-                user.last_request = now
+            last_request = user.last_request
+            if (now - last_request) >= DAY_LIMIT_DELTA:
+                last_request = now
+                user.last_request = last_request
             await s.commit()
+        return last_request
 
     async def set_plus_one_to_user_requests_per_day(self, telegram_id):
         """Прибавить пользователю счетчик запросов на 1."""
@@ -177,7 +180,7 @@ class DBMethods:
             last_request = user.last_request
             requests_per_day = user.requests_per_day
             check = False, requests_per_day, last_request
-            if now - last_request >= DAY_LIMIT_DELTA:
+            if (now - last_request) >= DAY_LIMIT_DELTA:
                 user.requests_per_day = 0
                 check = True, 0, last_request
             elif requests_per_day < REQUESTS_PER_DAY_LIMIT:

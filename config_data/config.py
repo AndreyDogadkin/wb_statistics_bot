@@ -6,8 +6,8 @@ from environs import Env
 from pydantic_settings import BaseSettings
 
 PAGINATION_SIZE = 5
-REQUESTS_PER_DAY_LIMIT = 10
-DAY_LIMIT = 12
+REQUESTS_PER_DAY_LIMIT = 40
+DAY_LIMIT = 6
 DAY_LIMIT_DELTA = datetime.timedelta(hours=DAY_LIMIT)
 
 BASE_DIR = Path(__file__).resolve().parent.parent
