@@ -36,7 +36,7 @@ if project_config.database.DB_PROD:
 else:
     DB_URL = project_config.database.DB_URL_TEST
 
-config.set_main_option('sqlalchemy.url', get_config().database.DB_URL)
+config.set_main_option('sqlalchemy.url', DB_URL)
 
 
 def run_migrations_offline() -> None:

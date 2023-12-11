@@ -75,7 +75,13 @@ get_stats_mess_templates: dict = {
     'send_token_standard': '🔑 Для выполнения операции отправьте '
                            'токен WB API "Стандартный".',
     'limit_requests': '📵 Достигнут лимит запросов.\n'
-                      '💡 Лимит будет обновлен через: {}',
+                      '🕖 Лимит будет обновлен через: {}\n\n'
+                      '💡 После окончания таймера '
+                      'ваш лимит будет обновлен автоматически. '
+                      'Таймер на следующее обновление лимита будет запущен '
+                      'после выполнения одной из этих команд:\n'
+                      '- /get_stats\n'
+                      '- /my_limits',
 
     'save_tokens': '🔐 Для выполнения данной операции необходимо сохранить токены типов: '
                    '"Контент" и "Аналитика".\n\n'
@@ -137,7 +143,9 @@ stickers = {
     'start_sticker': 'CAACAgIAAxkBAAEBjxNlNEKVb0a0gj-L-BxBs8n5FWBQ_gACbwAD29t-AAGZW1Coe5OAdDAE',
     'error_401_sticker': 'CAACAgIAAxkBAAEBjx9lNEXeF9goYdFPj6v_195o3fkZRgACXwAD29t-AAGEsFSbEa7K4zAE',
     'error_try_later_sticker': 'CAACAgIAAxkBAAEBjxVlNENylv6-XrO94jUBR82Sisq-XAACYwAD29t-AAGMnQU950KD5zAE',
-    'limit_requests': 'CAACAgIAAxkBAAECXMBldPWCXWv2bAABCTixJxgZaC8gkWUAAjgAA9vbfgAB2ZN8mDds5SwzBA'
+    'limit_requests': 'CAACAgIAAxkBAAECXMBldPWCXWv2bAABCTixJxgZaC8gkWUAAjgAA9vbfgAB2ZN8mDds5SwzBA',
+    'have_requests': 'CAACAgIAAxkBAAECZBVld5HmYoH2sIXacwOqtY8ZKLHSKAACPwAD29t-AAH05pw4AeSqaTME',
+    'dont_have_requests': 'CAACAgIAAxkBAAECZBdld5IUF6wdu9MoOO_MZ1xPSVg7WQACbgAD29t-AAFGnmdxMjn-kzME'
 }
 
 save_token_mess_templates: dict = {
@@ -157,5 +165,11 @@ save_token_mess_templates: dict = {
 
 my_limits_mess_template = {
     'my_limits': '📤 У вас осталось {} запросов.\n'
-                 '💡 Лимит будет обновлен через: {}',
+                 '🕖 Лимит будет обновлен через: {}\n\n'
+                 '💡 После окончания таймера '
+                 'ваш лимит будет обновлен автоматически. '
+                 'Таймер на следующее обновление лимита будет запущен '
+                 'после выполнения одной из этих команд:\n'
+                 '- /get_stats\n'
+                 '- /my_limits',
 }
