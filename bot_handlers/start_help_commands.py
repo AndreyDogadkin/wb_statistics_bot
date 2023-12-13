@@ -19,10 +19,11 @@ async def command_start_handler(message: types.Message) -> None:
     await database.add_user(message.from_user.id)
 
 
-@start_help_router.message(Command(commands='help'))  # TODO Исправить текст вывода инструкции для токенов
+@start_help_router.message(Command(commands='help'))
 async def command_help_handler(message: types.Message):
     """Команда help."""
     await message.answer(info_mess_templates['help'])
+    await message.delete()
 
 
 @start_help_router.callback_query(~StateFilter(default_state), F.data == 'cancel')

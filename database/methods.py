@@ -3,17 +3,14 @@ import datetime
 from sqlalchemy import select, update, insert
 
 from config_data.config import REQUESTS_PER_DAY_LIMIT, DAY_LIMIT_DELTA
-from database.engine import session
+from database import database_connector
 from database.models import User, Token
 from utils.aes_encryption import AESEncryption
-
-base_session = session
 
 
 class DBMethods:
 
-    def __init__(self, _session=base_session):
-        self.session = _session
+    session = database_connector.session_factory
 
     async def check_user(self, telegram_id):
         """Проверка наличия пользователя в БД."""
@@ -31,7 +28,7 @@ class DBMethods:
         """Добавление пользователя в БД."""
         user = await self.check_user(telegram_id)
         if not user:
-            async with self.session() as s:
+            async with self.session.begin() as s:
                 user = User(
                     telegram_id=telegram_id,
                     last_request=datetime.datetime.now()

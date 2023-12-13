@@ -8,58 +8,69 @@ from typing import Coroutine
 import aiohttp
 
 from bot_base_messages.messages_templates import err_mess_templates
-from exceptions.wb_exceptions import (WBApiResponseExceptions,
-                                      IncorrectKeyException,
-                                      TimeoutException,
-                                      ForUserException)
+from exceptions.wb_exceptions import (
+    WBApiResponseExceptions,
+    IncorrectKeyException,
+    TimeoutException,
+    ForUserException,
+)
 from .response_handlers import ResponseHandlers
 from .urls_and_payloads import wb_api_urls, wb_api_payloads
-from  config_data.config import get_config
+from config_data import main_config
 
 logger = logging.getLogger(__name__)  # TODO Добавить логирование ошибок в файл
-config = get_config()
+
 
 class StatisticsRequests:
-
     def __init__(self, wb_token):
         self.token = wb_token
-        self.__headers = {'Authorization': self.token,
-                          'Content-type': 'application/json',
-                          'Accept': '*/*',
-                          'Content-Encoding': 'utf-8',
-                          }
+        self.__headers = {
+            'Authorization': self.token,
+            'Content-type': 'application/json',
+            'Accept': '*/*',
+            'Content-Encoding': 'utf-8',
+        }
 
     async def __get_response_post(self, url, data):
         """Сессия для получения ответа от WB API."""
-        proxy = 'http://proxy.server:3128' if config.bot.TEST_SERVER else ''
+        proxy = 'http://proxy.server:3128' if main_config.bot.TEST_SERVER else ''
 
-        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=15)) as session:
+        async with aiohttp.ClientSession(
+            timeout=aiohttp.ClientTimeout(total=15)
+        ) as session:
             try:
                 async with session.post(
-                        url=url,
-                        data=json.dumps(data),
-                        headers=self.__headers,
-                        proxy=proxy
-                                        ) as response:
+                    url=url,
+                    data=json.dumps(data),
+                    headers=self.__headers,
+                    proxy=proxy,
+                ) as response:
                     if response.status == HTTPStatus.OK:
                         response_data = await response.json()
                         return response_data
                     if response.status == HTTPStatus.UNAUTHORIZED:
-                        raise IncorrectKeyException(f'Ошибка авторизации. Невалидный токен.')
-                    raise WBApiResponseExceptions(url=url, message=f'Статус ответа-{response.status}')
+                        raise IncorrectKeyException(
+                            f'Ошибка авторизации. Невалидный токен.'
+                        )
+                    raise WBApiResponseExceptions(
+                        url=url, message=f'Статус ответа-{response.status}'
+                    )
             except TimeoutError:
                 raise TimeoutException('WB API не ответил за отведенное время.')
 
     @staticmethod
     def __check_errors(func):
         """Проверить ошибки."""
+
         @wraps(func)
         async def wrapper(*args, **kwargs) -> Coroutine:
             try:
                 start = datetime.now()
                 response = await func(*args, **kwargs)
                 fin = datetime.now()
-                logger.info(f'Ответ от WB API получен. Время - {(fin - start).total_seconds()} c.')
+                logger.info(
+                    f'Ответ от WB API получен. Время - {(fin - start).total_seconds()} c.'
+                )
                 return response
             except IncorrectKeyException as e:
                 logger.info(e)
@@ -70,6 +81,7 @@ class StatisticsRequests:
             except WBApiResponseExceptions as e:
                 logger.error(e)
                 raise ForUserException(err_mess_templates['try_later'])
+
         return wrapper
 
     @__check_errors
@@ -81,20 +93,19 @@ class StatisticsRequests:
         return ResponseHandlers.nm_ids_handler(response)
 
     @__check_errors
-    async def get_analytics_detail_days(self,
-                                        nm_ids: list,
-                                        period: int = 1,
-                                        aggregation_lvl: str = 'day') -> dict:
+    async def get_analytics_detail_days(
+        self, nm_ids: list, period: int = 1, aggregation_lvl: str = 'day'
+    ) -> dict:
         """Запрос статистики товара по дням."""
         url = wb_api_urls['analytic_detail_url_days']
         data = {
             'nmIDs': nm_ids,
             'period': {
                 'begin': str(datetime.now().date() - timedelta(days=period)),
-                'end': str(datetime.now().date())
+                'end': str(datetime.now().date()),
             },
             'timezone': 'Europe/Moscow',
-            'aggregationLevel': aggregation_lvl
+            'aggregationLevel': aggregation_lvl,
         }
         response = await self.__get_response_post(url=url, data=data)
         return ResponseHandlers.analytic_detail_days_handler(response)
@@ -107,9 +118,9 @@ class StatisticsRequests:
             'nmIDs': nm_ids,
             'period': {
                 'begin': str(datetime.now() - timedelta(days=period)),
-                'end': str(datetime.now())
+                'end': str(datetime.now()),
             },
-            'page': 1
+            'page': 1,
         }
         response = await self.__get_response_post(url=url, data=data)
         return ResponseHandlers.analytic_detail_period_handler(response)
