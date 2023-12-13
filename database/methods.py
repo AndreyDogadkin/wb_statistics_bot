@@ -11,14 +11,32 @@ from utils.aes_encryption import AESEncryption
 class DBMethods:
 
     session = database_connector.session_factory
-    test_session = database_connector.session_dependency()
+
+    def __get_query_select_user(self, telegram_id):
+        query = select(User).where(
+            User.telegram_id == telegram_id
+        )
+        return query
+
+    def __get_query_select_token(
+            self,
+            telegram_id,
+            content: bool = False,
+            analytic: bool = False):
+        select_field = Token
+        if content:
+            select_field = Token.wb_token_content
+        elif analytic:
+            select_field = Token.wb_token_analytic
+        query = select(select_field).where(
+            Token.user_id == telegram_id
+        )
+        return query
 
     async def check_user(self, telegram_id):
         """Проверка наличия пользователя в БД."""
         async with self.session() as s:
-            query = select(User).where(
-                User.telegram_id == telegram_id
-            )
+            query = self.__get_query_select_user(telegram_id)
             user = await s.execute(query)
             return user.scalar_one_or_none()
 
@@ -37,9 +55,7 @@ class DBMethods:
     async def check_user_token(self, telegram_id):
         """Проверка наличия токенов у пользователя."""
         async with self.session() as s:
-            query = select(
-                Token
-            ).where(Token.user_id == telegram_id)
+            query = self.__get_query_select_token(telegram_id)
             token = await s.execute(query)
         return token.scalar_one_or_none()
 
@@ -78,11 +94,7 @@ class DBMethods:
     async def get_user_content_token(self, telegram_id):
         """Получение токена типа 'Контент'."""
         async with self.session.begin() as s:
-            query = select(
-                Token.wb_token_content
-            ).where(
-                Token.user_id == telegram_id
-            )
+            query = self.__get_query_select_token(telegram_id, content=True)
             token = await s.execute(query)
             if token:
                 return AESEncryption().decrypt(
@@ -92,11 +104,7 @@ class DBMethods:
     async def get_user_analytic_token(self, telegram_id):
         """Получение токена типа 'Аналитика'."""
         async with self.session.begin() as s:
-            query = select(
-                Token.wb_token_analytic
-            ).where(
-                Token.user_id == telegram_id
-            )
+            query = self.__get_query_select_token(telegram_id, analytic=True)
             token = await s.execute(query)
             if token:
                 return AESEncryption().decrypt(
@@ -106,9 +114,7 @@ class DBMethods:
     async def set_user_last_request(self, telegram_id):
         """Установить пользователю дату и время последнего запроса."""
         async with self.session.begin() as s:
-            query = select(User).where(
-                    User.telegram_id == telegram_id
-                )
+            query = self.__get_query_select_user(telegram_id)
             user = await s.execute(query)
             user = user.scalar_one()
             now = datetime.datetime.now()
@@ -122,9 +128,7 @@ class DBMethods:
     async def set_plus_one_to_user_requests_per_day(self, telegram_id):
         """Прибавить пользователю счетчик запросов на 1."""
         async with self.session.begin() as s:
-            query = select(User).where(
-                User.telegram_id == telegram_id
-            )
+            query = self.__get_query_select_user(telegram_id)
             user = await s.execute(query)
             user = user.scalar_one()
             user.requests_per_day = user.requests_per_day + 1
@@ -133,9 +137,7 @@ class DBMethods:
     async def check_user_limits(self, telegram_id):
         """Проверить и вернуть лимиты запросов пользователя."""
         async with self.session.begin() as s:
-            query = select(User).where(
-                User.telegram_id == telegram_id
-            )
+            query = self.__get_query_select_user(telegram_id)
             user = await s.execute(query)
             user = user.scalar_one()
             now = datetime.datetime.now()
