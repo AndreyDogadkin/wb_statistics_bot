@@ -11,15 +11,15 @@ from bot_handlers.get_stats_command import get_stats_router
 from bot_handlers.save_tokens_command import save_token_router
 from bot_handlers.start_help_commands import start_help_router
 from bot_handlers.my_limits_command import my_limits_router
-from polling_main_bot import config
+from polling_main_bot import main_config
 
 logger = logging.getLogger(__name__)
 
-bot = Bot(token=config.bot.TG_TOKEN, parse_mode=ParseMode.HTML)
+bot = Bot(token=main_config.bot.TG_TOKEN, parse_mode=ParseMode.HTML)
 storage = MemoryStorage()
 dp = Dispatcher(storage=storage)
-WEBHOOK_PATH = f'/bot/{config.bot.TG_TOKEN}'
-WEBHOOK_URL = f'{config.bot.NGROK_URL}{WEBHOOK_PATH}'
+WEBHOOK_PATH = f'/bot/{main_config.bot.TG_TOKEN}'
+WEBHOOK_URL = f'{main_config.bot.NGROK_URL}{WEBHOOK_PATH}'
 
 
 async def set_default_commands(_bot):
@@ -62,6 +62,6 @@ async def bot_webhook(update: dict):
 if __name__ == '__main__':
     logging.basicConfig(
         level=logging.INFO,
-        format=u'[%(levelname)s : %(name)s : line-%(lineno)s : %(asctime)s] -- %(message)s',  # noqa
+        format='[%(levelname)s : %(name)s : line-%(lineno)s : %(asctime)s] -- %(message)s',  # noqa
     )
     uvicorn.run(app)
