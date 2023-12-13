@@ -30,13 +30,17 @@ async def get_token_type(callback: types.CallbackQuery, callback_data: TokenType
     state_data = await state.get_data()
     await state_data.get('for_edit').delete()
     token_type = callback_data.unpack(callback.data).token_type
+    mess_for_format = ''
     if token_type == 'content':
         await state.set_state(SaveToken.get_content_token)
+        mess_for_format = 'Контент'
     elif token_type == 'analytic':
         await state.set_state(SaveToken.get_analytic_token)
+        mess_for_format = 'Аналитика'
     await callback.answer('🤫')
-    for_edit = await callback.message.answer(save_token_mess_templates['save_token'],
-                                             reply_markup=MakeMarkup.cancel_builder().as_markup())
+    for_edit = await callback.message.answer(
+        save_token_mess_templates['save_token'].format(mess_for_format),
+        reply_markup=MakeMarkup.cancel_builder().as_markup())
     await state.update_data(for_edit=for_edit)
 
 

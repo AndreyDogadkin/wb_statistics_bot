@@ -8,14 +8,5 @@ wb_api_urls: dict = {
 }
 
 wb_api_payloads: dict = {
-    'nm_ids_payload': {
-        'sort': {
-            'cursor': {
-                'limit': 50
-            },
-            'filter': {
-                'withPhoto': -1
-            }
-        }
-    },
+    'nm_ids_payload': {'sort': {'cursor': {'limit': 50}, 'filter': {'withPhoto': -1}}},
 }
