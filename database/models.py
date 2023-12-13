@@ -19,13 +19,13 @@ class User(Base):
     last_request = mapped_column(DateTime, nullable=True)
     requests_per_day: Mapped[int] = mapped_column(default=0)
 
-    tokens = relationship(
+    tokens: Mapped['Token'] = relationship(
         'Token',
         back_populates='user',
         cascade='all, delete',
         passive_deletes=True,
     )
-    favorites = relationship(
+    favorites: Mapped[list['FavoriteRequest']] = relationship(
         'FavoriteRequest',
         back_populates='user',
         cascade='all, delete',
