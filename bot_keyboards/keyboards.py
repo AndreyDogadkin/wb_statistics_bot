@@ -5,34 +5,38 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder, InlineKeyboardButton
 
 class NmIdsCallbackData(CallbackData, prefix='analytics'):
     """Callback data для номенклатур."""
+
     nm_id: int
 
 
 class PaginationNmIds(CallbackData, prefix='page_command'):
     """Callback data для пагинации номенклатур."""
+
     command: str
 
 
 class DaysCallbackData(CallbackData, prefix='days_for_stats'):
     """Callback data для периодов."""
+
     period: int
 
 
 class TokenTypeCallbackData(CallbackData, prefix='token'):
     """Callback data для выбора типа токена."""
+
     token_type: str
 
 
 class MakeMarkup:
     """Создание клавиатур."""
+
     @classmethod
     def nm_ids_markup(cls, data, page_number: int) -> InlineKeyboardMarkup:
         """Клавиатура для вывода номенклатур пользователя."""
         markup = InlineKeyboardBuilder()
         for nm in data[page_number]:
             markup.button(
-                text=nm[0],
-                callback_data=NmIdsCallbackData(nm_id=nm[2]).pack()
+                text=nm[0], callback_data=NmIdsCallbackData(nm_id=nm[2]).pack()
             )
         markup.adjust(2)
         markup.attach(cls.__pagination_builder(page_number, len(data)))
@@ -50,7 +54,9 @@ class MakeMarkup:
         markup.button(text='2 недели', callback_data=DaysCallbackData(period=14).pack())
         markup.button(text='Месяц', callback_data=DaysCallbackData(period=31).pack())
         markup.button(text='2 месяца', callback_data=DaysCallbackData(period=62).pack())
-        markup.button(text='6 месяцев', callback_data=DaysCallbackData(period=180).pack())
+        markup.button(
+            text='6 месяцев', callback_data=DaysCallbackData(period=180).pack()
+        )
         markup.adjust(3)
         markup.attach(cls.cancel_builder())
         return markup.as_markup()
@@ -67,8 +73,14 @@ class MakeMarkup:
     def change_token_markup(cls) -> InlineKeyboardMarkup:
         """Клавиатура для выбора типа сохраняемого токена."""
         markup = InlineKeyboardBuilder()
-        markup.button(text='Контент', callback_data=TokenTypeCallbackData(token_type='content').pack())
-        markup.button(text='Аналитика', callback_data=TokenTypeCallbackData(token_type='analytic').pack())
+        markup.button(
+            text='Контент',
+            callback_data=TokenTypeCallbackData(token_type='content').pack(),
+        )
+        markup.button(
+            text='Аналитика',
+            callback_data=TokenTypeCallbackData(token_type='analytic').pack(),
+        )
         markup.adjust(2)
         markup.attach(cls.cancel_builder())
         return markup.as_markup()
@@ -77,10 +89,16 @@ class MakeMarkup:
     def __pagination_builder(cls, page_number, page_count) -> InlineKeyboardBuilder:
         """Кнопки для пагинации."""
         markup = InlineKeyboardBuilder()
-        prev_button = InlineKeyboardButton(text='<<', callback_data=PaginationNmIds(command='prev').pack())
-        next_button = InlineKeyboardButton(text='>>', callback_data=PaginationNmIds(command='next').pack())
+        prev_button = InlineKeyboardButton(
+            text='<<', callback_data=PaginationNmIds(command='prev').pack()
+        )
+        next_button = InlineKeyboardButton(
+            text='>>', callback_data=PaginationNmIds(command='next').pack()
+        )
         empty_button = InlineKeyboardButton(text=' ', callback_data=' ')
-        counter_button = InlineKeyboardButton(text=f'{page_number + 1}/{page_count}', callback_data='center')
+        counter_button = InlineKeyboardButton(
+            text=f'{page_number + 1}/{page_count}', callback_data='center'
+        )
         if page_number + 1 == page_count and page_count != 1:
             markup.row(prev_button, counter_button, empty_button)
         elif page_number + 1 == page_count == 1:
