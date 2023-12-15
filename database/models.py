@@ -60,8 +60,8 @@ class FavoriteRequest(Base):
     __table_args__ = (
         UniqueConstraint(
             'user_id', 'nm_id', 'period',
-            'all_columns_uniq'
-        )
+            name='all_columns_uniq'
+        ),
     )
 
     user_id: Mapped[int] = mapped_column(
