@@ -24,8 +24,10 @@ async def set_save_token_state(message: types.Message, state: FSMContext):
     await state.set_state(SaveToken.get_token_type)
 
 
-@save_token_router.callback_query(StateFilter(SaveToken.get_token_type), TokenTypeCallbackData.filter())
-async def get_token_type(callback: types.CallbackQuery, callback_data: TokenTypeCallbackData, state: FSMContext):
+@save_token_router.callback_query(StateFilter(SaveToken.get_token_type),
+                                  TokenTypeCallbackData.filter())
+async def get_token_type(callback: types.CallbackQuery,
+                         callback_data: TokenTypeCallbackData, state: FSMContext):
     """Запуск состояния ожидания выбранного типа токена."""
     state_data = await state.get_data()
     await state_data.get('for_edit').delete()

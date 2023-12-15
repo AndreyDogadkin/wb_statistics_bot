@@ -1,4 +1,4 @@
-from sqlalchemy import BigInteger, BLOB, ForeignKey, DateTime
+from sqlalchemy import BigInteger, BLOB, ForeignKey, DateTime, CheckConstraint, UniqueConstraint
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
@@ -11,7 +11,16 @@ class User(Base):
     """Тестовая модель для таблицы пользователя."""
 
     __tablename__ = 'user_account'
-    __table_args__ = ()
+    __table_args__ = (
+        CheckConstraint(
+            'requests_per_day >= 0',
+            name='requests_per_day_not_negative'
+        ),
+        UniqueConstraint(
+            'telegram_id',
+            name='telegram_id_uniq'
+        )
+    )
 
     telegram_id: Mapped[int] = mapped_column(BigInteger, unique=True)
     is_active: Mapped[bool] = mapped_column(default=True)
@@ -48,7 +57,12 @@ class Token(Base):
 
 class FavoriteRequest(Base):
     __tablename__ = 'user_favorites_requests'
-    __table_args__ = ()
+    __table_args__ = (
+        UniqueConstraint(
+            'user_id', 'nm_id', 'period',
+            name='all_columns_uniq'
+        ),
+    )
 
     user_id: Mapped[int] = mapped_column(
         ForeignKey(User.telegram_id, ondelete='CASCADE')
