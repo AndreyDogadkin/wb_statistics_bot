@@ -1,3 +1,4 @@
+import asyncio
 import json
 import logging
 from datetime import datetime, timedelta
@@ -8,6 +9,7 @@ from typing import Coroutine
 import aiohttp
 
 from bot_base_messages.messages_templates import err_mess_templates
+from config_data import main_config
 from exceptions.wb_exceptions import (
     WBApiResponseExceptions,
     IncorrectKeyException,
@@ -16,7 +18,6 @@ from exceptions.wb_exceptions import (
 )
 from .response_handlers import ResponseHandlers
 from .urls_and_payloads import wb_api_urls, wb_api_payloads
-from config_data import main_config
 
 logger = logging.getLogger(__name__)  # TODO Добавить логирование ошибок в файл
 
@@ -36,7 +37,7 @@ class StatisticsRequests:
         proxy = 'http://proxy.server:3128' if main_config.bot.TEST_SERVER else ''
 
         async with aiohttp.ClientSession(
-            timeout=aiohttp.ClientTimeout(total=15)
+            timeout=aiohttp.ClientTimeout(total=20)
         ) as session:
             try:
                 async with session.post(
@@ -55,7 +56,7 @@ class StatisticsRequests:
                     raise WBApiResponseExceptions(
                         url=url, message=f'Статус ответа-{response.status}'
                     )
-            except TimeoutError:
+            except asyncio.TimeoutError:
                 raise TimeoutException('WB API не ответил за отведенное время.')
 
     @staticmethod
