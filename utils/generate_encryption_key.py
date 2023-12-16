@@ -6,7 +6,7 @@ env = Env()
 env.read_env()
 
 PASSWORD = env('PASSWORD_FOR_ENCRYPTION')
-dkLen = env.int('dkLen')
+dkLen = env.int('DKLEN')
 
 
 def generate_key():
