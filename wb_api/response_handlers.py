@@ -6,8 +6,8 @@ from pydantic import ValidationError
 from bot_base_messages.messages_templates import err_mess_templates
 from config_data.config import PAGINATION_SIZE
 from exceptions.wb_exceptions import ForUserException
-from .response_validate_and_parse import (ResponseStatsDays, ResponseNmIDs, CardsNmIds, ResponseStatsPeriod,
-                                          ConversionsStatsPeriod, BaseResponse)
+from wb_api import (ResponseStatsDays, ResponseNmIDs, CardsNmIds, ResponseStatsPeriod,
+                    ConversionsStatsPeriod, BaseResponse)
 
 logger = logging.getLogger(__name__)
 
