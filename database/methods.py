@@ -5,7 +5,7 @@ from sqlalchemy import select, Select
 from config_data.config import REQUESTS_PER_DAY_LIMIT, DAY_LIMIT_DELTA
 from database import database_connector
 from database.models import User, Token
-from utils.aes_encryption import AESEncryption
+from utils import AESEncryption
 
 
 class DBMethods:
