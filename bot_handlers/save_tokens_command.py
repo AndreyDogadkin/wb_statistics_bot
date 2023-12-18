@@ -4,9 +4,9 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state
 
 from bot_base_messages.messages_templates import save_token_mess_templates, err_mess_templates
-from bot_filters.token_filters import TokenFilter
-from bot_keyboards.keyboards import MakeMarkup, TokenTypeCallbackData
-from bot_states.states import SaveToken
+from bot_filters import TokenFilter
+from bot_keyboards import MakeMarkup, TokenTypeCallbackData
+from bot_states import SaveToken
 from database.methods import DBMethods
 
 database = DBMethods()

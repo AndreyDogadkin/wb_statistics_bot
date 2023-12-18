@@ -16,8 +16,8 @@ from exceptions.wb_exceptions import (
     TimeoutException,
     ForUserException,
 )
-from .response_handlers import ResponseHandlers
-from .urls_and_payloads import wb_api_urls, wb_api_payloads
+from wb_api import ResponseHandlers
+from wb_api.urls_and_payloads import wb_api_urls, wb_api_payloads
 
 logger = logging.getLogger(__name__)  # TODO Добавить логирование ошибок в файл
 
