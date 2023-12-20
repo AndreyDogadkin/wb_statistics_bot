@@ -97,9 +97,10 @@ class DBMethods:
         async with self.session.begin() as s:
             query = self.__get_query_select_token(telegram_id, content=True)
             token = await s.execute(query)
+            token = token.scalar_one_or_none()
             if token:
                 return AESEncryption().decrypt(
-                    token.scalar_one_or_none()
+                    token
                 )
 
     async def get_user_analytic_token(self, telegram_id) -> Token | None:
@@ -107,9 +108,10 @@ class DBMethods:
         async with self.session.begin() as s:
             query = self.__get_query_select_token(telegram_id, analytic=True)
             token = await s.execute(query)
+            token = token.scalar_one_or_none()
             if token:
                 return AESEncryption().decrypt(
-                    token.scalar_one_or_none()
+                    token
                 )
 
     async def set_user_last_request(self, telegram_id) -> datetime:
