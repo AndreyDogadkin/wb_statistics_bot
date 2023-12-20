@@ -1,6 +1,6 @@
 import logging
 
-from aiogram import types, F, Router
+from aiogram import types, Router
 from aiogram.exceptions import TelegramAPIError
 from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
@@ -8,8 +8,13 @@ from aiogram.fsm.state import default_state
 from aiogram.types import InlineKeyboardMarkup
 from aiogram.utils import markdown
 
-from bot_base_messages.messages_templates import get_stats_mess_templates, err_mess_templates, stickers
-from bot_keyboards import MakeMarkup, NmIdsCallbackData, DaysCallbackData, PaginationNmIds
+from bot_base_messages.messages_templates import (get_stats_mess_templates,
+                                                  err_mess_templates,
+                                                  stickers)
+from bot_keyboards import (MakeMarkup,
+                           NmIdsCallbackData,
+                           DaysCallbackData,
+                           PaginationNmIds)
 from bot_states import GetStats
 from database.methods import DBMethods
 from exceptions.wb_exceptions import ForUserException
@@ -50,37 +55,17 @@ async def set_get_stats_state(message: types.Message, state: FSMContext):
             await state.clear()
 
 
-@get_stats_router.message(StateFilter(GetStats.get_token), F.text.len() == 149)  # TODO Удалить
-async def get_user_token_send_nm_ids(message: types.Message, state: FSMContext):
-    """Получить токен пользователя."""
-    await state.update_data(token=message.text)
-    state_data: dict = await state.get_data()
-    for_delete_message: types.Message = state_data.get('for_delete_message')
-    if for_delete_message:
-        await for_delete_message.delete()
-    token: str = state_data.get('token')
-    await send_nm_ids(message, state, token)
-
-
-@get_stats_router.message(StateFilter(GetStats.get_token), F.text.len() != 149)  # TODO Удалить
-async def incorrect_key(message: types.Message, state: FSMContext):
-    """Обработка некорректно введенного токена."""
-    state_data = await state.get_data()
-    for_delete_message: types.Message = state_data.get('for_delete_message')
-    if for_delete_message:
-        await for_delete_message.delete()
-    markup = MakeMarkup.cancel_builder().as_markup()
-    for_delete_message = await message.answer(text=err_mess_templates['incorrect_token'], reply_markup=markup)
-    await state.update_data(for_delete_message=for_delete_message)
-    await message.delete()
-
-
 @get_stats_router.callback_query(StateFilter(GetStats.get_nm_ids), PaginationNmIds.filter())
-async def change_page_for_nm_ids(callback: types.CallbackQuery, callback_data: PaginationNmIds, state: FSMContext):
+async def change_page_for_nm_ids(
+        callback: types.CallbackQuery,
+        callback_data: PaginationNmIds,
+        state: FSMContext
+):
     """Отправка выбранной страницы номеров номенклатур пользователю."""
     state_data = await state.get_data()
     page_number = state_data.get('page_number')
     nm_ids = state_data.get('nm_ids')
+    add_in_favorite: bool | None = state_data.get('add_in_favorite')
     command = callback_data.unpack(callback.data).command
     if page_number and command == 'prev':
         await state.update_data(page_number=page_number - 1)
@@ -88,6 +73,13 @@ async def change_page_for_nm_ids(callback: types.CallbackQuery, callback_data: P
     elif command == 'next' and page_number < len(nm_ids):
         await state.update_data(page_number=page_number + 1)
         await callback.answer('>>')
+    elif command == 'favorite':
+        if add_in_favorite:
+            await state.update_data(add_in_favorite=False)
+            await callback.answer('Отмена добавления запроса в избранное')
+        else:
+            await state.update_data(add_in_favorite=True)
+            await callback.answer('Запрос будет добавлен в избранное')
     message, markup = await paginate_nm_ids(state)
     await callback.message.edit_text(text=message, reply_markup=markup)
 
@@ -97,7 +89,8 @@ async def paginate_nm_ids(state: FSMContext) -> tuple[str, InlineKeyboardMarkup]
     state_data = await state.get_data()
     nm_ids = state_data.get('nm_ids')
     page_number = state_data.get('page_number')
-    markup = MakeMarkup.nm_ids_markup(nm_ids, page_number)
+    add_in_favorite: bool | None = state_data.get('add_in_favorite')
+    markup = MakeMarkup.nm_ids_markup(nm_ids, page_number, add_to_favorite=add_in_favorite)
     message_for_ids: str = markdown.hbold(get_stats_mess_templates['change_nm_id'])
     for nm in nm_ids[page_number]:
         message_for_ids += get_stats_mess_templates['send_nm_ids_template'].format(*nm)
@@ -129,17 +122,28 @@ async def send_nm_ids(message: types.Message, state: FSMContext, token_content):
 
 
 @get_stats_router.callback_query(StateFilter(GetStats.get_nm_ids), NmIdsCallbackData.filter())
-async def set_period_state(callback: types.CallbackQuery, callback_data: NmIdsCallbackData, state: FSMContext):
+async def set_period_state(
+        callback: types.CallbackQuery,
+        callback_data: NmIdsCallbackData,
+        state: FSMContext
+):
     """Получения номера номенклатуры от пользователя, установка состояния получения периода."""
     nm_id: int = callback_data.unpack(callback.data).nm_id
     await state.update_data(nm_id=nm_id)
     markup = MakeMarkup.periods_markup()
-    await callback.message.edit_text(text=get_stats_mess_templates['set_get_period_state'], reply_markup=markup)
+    await callback.message.edit_text(
+        text=get_stats_mess_templates['set_get_period_state'],
+        reply_markup=markup
+    )
     await state.set_state(GetStats.get_period)
 
 
-async def get_user_statistics(statistics: StatisticsRequests, nm_id: int, period: int) -> tuple[str, str]:
-    """Получить статистику пользователя."""
+async def get_user_statistics(
+        statistics: StatisticsRequests,
+        nm_id: int,
+        period: int
+) -> tuple[str, str]:
+    """Получить и обработать статистику пользователя."""
     message_template = get_stats_mess_templates['send_analytic_detail_days_mess_template']
     get_stats_func = statistics.get_analytics_detail_days
     if period > 5:
@@ -147,7 +151,7 @@ async def get_user_statistics(statistics: StatisticsRequests, nm_id: int, period
         get_stats_func = statistics.get_analytic_detail_periods
     statistics_nm_id: list = await get_stats_func(nm_ids=[nm_id], period=period)
     if statistics_nm_id:
-        product: str = statistics_nm_id.pop(0)
+        product: tuple[str, str] = statistics_nm_id.pop(0)
         answer_message: str = get_stats_mess_templates['product_vendor_code'].format(*product)
         for nm in statistics_nm_id:
             answer_message += message_template.format(*nm)
@@ -155,7 +159,11 @@ async def get_user_statistics(statistics: StatisticsRequests, nm_id: int, period
 
 
 @get_stats_router.callback_query(StateFilter(GetStats.get_period), DaysCallbackData.filter())
-async def send_user_statistics(callback: types.CallbackQuery, callback_data: DaysCallbackData, state: FSMContext):
+async def send_user_statistics(
+        callback: types.CallbackQuery,
+        callback_data: DaysCallbackData,
+        state: FSMContext
+):
     """Отправить статистику пользователю."""
     message_wait: types.Message = await callback.message.edit_text(markdown.hitalic('Выполняю запрос...🕐'))
     period: int = callback_data.unpack(callback.data).period
@@ -163,6 +171,7 @@ async def send_user_statistics(callback: types.CallbackQuery, callback_data: Day
     nm_id: int = state_data.get('nm_id')
     token_analytic: str = state_data.get('token_analytic')
     photo: str = state_data.get(f'photo:{nm_id}')
+    add_in_favorite: bool | None = state_data.get('add_in_favorite')
     statistics = StatisticsRequests(token_analytic)
     user_id = callback.from_user.id
     try:
@@ -172,6 +181,14 @@ async def send_user_statistics(callback: types.CallbackQuery, callback_data: Day
             await message_wait.edit_text(answer_message + markdown.hlink(title='📸 Открыть фото.', url=photo))
             await database.set_user_last_request(user_id)
             await database.set_plus_one_to_user_requests_per_day(user_id)
+            if add_in_favorite:
+                await database.add_favorite_request(
+                    telegram_id=user_id,
+                    name=f'{product}, дней: {period + 1}.',
+                    nm_id=nm_id,
+                    period=period,
+                    photo_url=photo
+                )
         else:
             await message_wait.edit_text(err_mess_templates['no_data'])
     except ForUserException as e:
@@ -186,5 +203,6 @@ async def send_user_statistics(callback: types.CallbackQuery, callback_data: Day
     finally:
         await state.storage.close()
         await state.clear()
+        loger.info(f'Состояние закрыто, хранилище очищено.')
 
 # TODO обработать ошибки ТГ
