@@ -11,6 +11,7 @@ from bot_handlers import (
     save_tokens_command,
     start_help_commands,
     my_limits_command,
+    get_favorite_command
 )
 from config_data import main_config
 from database.methods import DBMethods
@@ -26,6 +27,7 @@ async def set_default_commands(bot):
             types.BotCommand(command='help', description='❓ Как пользоваться ботом.'),
             types.BotCommand(command='my_limits', description='💯 Мои лимиты.'),
             types.BotCommand(command='token', description='🔑 Добавить/обновить токен.'),
+            types.BotCommand(command='favorites', description='⭐️ Избранные запросы.'),
             types.BotCommand(command='get_stats', description='📈 Получить статистику.'),
         ]
     )
@@ -41,6 +43,7 @@ async def main() -> None:
     dp.include_router(get_stats_command.get_stats_router)
     dp.include_router(save_tokens_command.save_token_router)
     dp.include_router(my_limits_command.my_limits_router)
+    dp.include_router(get_favorite_command.get_favorite_router)
     await set_default_commands(bot)
     await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot)

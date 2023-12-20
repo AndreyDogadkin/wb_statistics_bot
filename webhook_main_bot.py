@@ -7,10 +7,11 @@ from aiogram.enums import ParseMode
 from aiogram.fsm.storage.memory import MemoryStorage
 from fastapi import FastAPI
 
+from bot_handlers.get_favorite_command import get_favorite_router
 from bot_handlers.get_stats_command import get_stats_router
+from bot_handlers.my_limits_command import my_limits_router
 from bot_handlers.save_tokens_command import save_token_router
 from bot_handlers.start_help_commands import start_help_router
-from bot_handlers.my_limits_command import my_limits_router
 from polling_main_bot import main_config
 
 logger = logging.getLogger(__name__)
@@ -29,6 +30,7 @@ async def set_default_commands(_bot):
             types.BotCommand(command='help', description='❓ Как пользоваться ботом.'),
             types.BotCommand(command='my_limits', description='💯 Мои лимиты.'),
             types.BotCommand(command='token', description='🔑 Добавить/обновить токен.'),
+            types.BotCommand(command='favorites', description='⭐️ Избранные запросы.'),
             types.BotCommand(command='get_stats', description='📈 Получить статистику.'),
         ]
     )
@@ -43,6 +45,7 @@ async def lifespan(app: FastAPI):  # noqa
     dp.include_router(get_stats_router)
     dp.include_router(save_token_router)
     dp.include_router(my_limits_router)
+    dp.include_router(get_favorite_router)
     await set_default_commands(bot)
     logger.info('app start')
     yield
