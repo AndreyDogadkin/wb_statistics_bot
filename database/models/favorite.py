@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 
-from sqlalchemy import UniqueConstraint, ForeignKey, BigInteger
+from sqlalchemy import UniqueConstraint, ForeignKey, BigInteger, String
 from sqlalchemy.orm import mapped_column, Mapped, relationship
 
 from database.models.base import Base
@@ -21,6 +21,8 @@ class FavoriteRequest(Base):
     user_id: Mapped[int] = mapped_column(
         ForeignKey('user_account.telegram_id', ondelete='CASCADE')
     )
+    name: Mapped[str] = mapped_column(String)
+    photo_url: Mapped[str] = mapped_column(String)
     nm_id: Mapped[int] = mapped_column(BigInteger)
     period: Mapped[int] = mapped_column(default=1)
 

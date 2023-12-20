@@ -4,7 +4,7 @@ from sqlalchemy import select, Select
 
 from config_data.config import REQUESTS_PER_DAY_LIMIT, DAY_LIMIT_DELTA
 from database import database_connector
-from database.models import User, Token
+from database.models import User, Token, FavoriteRequest
 from utils import AESEncryption
 
 
@@ -97,9 +97,10 @@ class DBMethods:
         async with self.session.begin() as s:
             query = self.__get_query_select_token(telegram_id, content=True)
             token = await s.execute(query)
+            token = token.scalar_one_or_none()
             if token:
                 return AESEncryption().decrypt(
-                    token.scalar_one_or_none()
+                    token
                 )
 
     async def get_user_analytic_token(self, telegram_id) -> Token | None:
@@ -107,9 +108,10 @@ class DBMethods:
         async with self.session.begin() as s:
             query = self.__get_query_select_token(telegram_id, analytic=True)
             token = await s.execute(query)
+            token = token.scalar_one_or_none()
             if token:
                 return AESEncryption().decrypt(
-                    token.scalar_one_or_none()
+                    token
                 )
 
     async def set_user_last_request(self, telegram_id) -> datetime:
@@ -152,3 +154,16 @@ class DBMethods:
                 check = True, requests_per_day, last_request
             await s.commit()
             return check
+
+    async def add_favorite_request(self, telegram_id, name, nm_id, period, photo_url):
+        """Добавить запрос в избранное."""
+        async with self.session.begin() as s:
+            favorite = FavoriteRequest(
+                name=name,
+                user_id=telegram_id,
+                nm_id=nm_id,
+                period=period,
+                photo_url=photo_url
+            )
+            s.add(favorite)
+            await s.commit()

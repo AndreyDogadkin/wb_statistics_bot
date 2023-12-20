@@ -10,7 +10,10 @@ class MakeMarkup:
     """Создание клавиатур."""
 
     @classmethod
-    def nm_ids_markup(cls, data, page_number: int) -> InlineKeyboardMarkup:
+    def nm_ids_markup(cls,
+                      data,
+                      page_number: int,
+                      add_to_favorite: bool | None = False) -> InlineKeyboardMarkup:
         """Клавиатура для вывода номенклатур пользователя."""
         markup = InlineKeyboardBuilder()
         for nm in data[page_number]:
@@ -19,6 +22,7 @@ class MakeMarkup:
             )
         markup.adjust(2)
         markup.attach(cls.__pagination_builder(page_number, len(data)))
+        markup.attach(cls.add_to_favorite_builder(add_to_favorite=add_to_favorite))
         markup.attach(cls.cancel_builder())
         return markup.as_markup()
 
@@ -46,6 +50,17 @@ class MakeMarkup:
         markup = InlineKeyboardBuilder()
         cancel_button = InlineKeyboardButton(text='❌', callback_data='cancel')
         markup.row(cancel_button)
+        return markup
+
+    @classmethod
+    def add_to_favorite_builder(cls, add_to_favorite: bool | None):
+        text = '☆' if not add_to_favorite else '⭐️'
+        markup = InlineKeyboardBuilder()
+        add_to_favorite_button = InlineKeyboardButton(
+            text=text,
+            callback_data=PaginationNmIds(command='favorite').pack()
+        )
+        markup.row(add_to_favorite_button)
         return markup
 
     @classmethod
