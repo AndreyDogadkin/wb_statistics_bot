@@ -7,6 +7,12 @@ class NmIdsCallbackData(CallbackData, prefix='analytics'):
     nm_id: int
 
 
+class FavoritesCallbackData(CallbackData, prefix='favorites'):
+    nm_id: int
+    period: int
+    index_in_data: int
+
+
 class PaginationNmIds(CallbackData, prefix='page_command'):
     """Callback data для пагинации номенклатур."""
 

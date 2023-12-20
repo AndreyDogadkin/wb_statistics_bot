@@ -3,7 +3,8 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder, InlineKeyboardButton
 from bot_keyboards.callback_datas import (NmIdsCallbackData,
                                           PaginationNmIds,
                                           DaysCallbackData,
-                                          TokenTypeCallbackData)
+                                          TokenTypeCallbackData,
+                                          FavoritesCallbackData)
 
 
 class MakeMarkup:
@@ -23,6 +24,22 @@ class MakeMarkup:
         markup.adjust(2)
         markup.attach(cls.__pagination_builder(page_number, len(data)))
         markup.attach(cls.add_to_favorite_builder(add_to_favorite=add_to_favorite))
+        markup.attach(cls.cancel_builder())
+        return markup.as_markup()
+
+    @classmethod
+    def favorites_markup(cls, favorites):
+        markup = InlineKeyboardBuilder()
+        for i, favorite in enumerate(favorites):
+            markup.button(
+                text=favorite.name,
+                callback_data=FavoritesCallbackData(
+                    nm_id=favorite.nm_id,
+                    period=favorite.period,
+                    index_in_data=i
+                ).pack()
+            )
+        markup.adjust(1)
         markup.attach(cls.cancel_builder())
         return markup.as_markup()
 

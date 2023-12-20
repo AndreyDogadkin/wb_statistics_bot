@@ -155,15 +155,37 @@ class DBMethods:
             await s.commit()
             return check
 
+    async def check_favorite(self, telegram_id, nm_id, period):
+        query = select(FavoriteRequest).where(
+            FavoriteRequest.user_id == telegram_id,
+            FavoriteRequest.nm_id == nm_id,
+            FavoriteRequest.period == period,
+        )
+        async with self.session() as s:
+            favorite = await s.execute(query)
+            favorite = favorite.scalar_one_or_none()
+            return favorite
+
     async def add_favorite_request(self, telegram_id, name, nm_id, period, photo_url):
         """Добавить запрос в избранное."""
-        async with self.session.begin() as s:
-            favorite = FavoriteRequest(
-                name=name,
-                user_id=telegram_id,
-                nm_id=nm_id,
-                period=period,
-                photo_url=photo_url
-            )
-            s.add(favorite)
-            await s.commit()
+        favorite = await self.check_favorite(telegram_id, nm_id, period)
+        if not favorite:
+            async with self.session() as s:
+                favorite = FavoriteRequest(
+                    name=name,
+                    user_id=telegram_id,
+                    nm_id=nm_id,
+                    period=period,
+                    photo_url=photo_url
+                )
+                s.add(favorite)
+                await s.commit()
+
+    async def get_user_favorites(self, telegram_id):
+        query = select(FavoriteRequest).where(
+            FavoriteRequest.user_id == telegram_id
+        )
+        async with self.session() as s:
+            favorites = await s.execute(query)
+            favorites = favorites.scalars()
+            return favorites
