@@ -22,6 +22,7 @@ class FavoriteRequest(Base):
         ForeignKey('user_account.telegram_id', ondelete='CASCADE')
     )
     name: Mapped[str] = mapped_column(String)
+    photo_url: Mapped[str] = mapped_column(String)
     nm_id: Mapped[int] = mapped_column(BigInteger)
     period: Mapped[int] = mapped_column(default=1)
 
