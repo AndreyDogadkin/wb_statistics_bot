@@ -34,8 +34,6 @@ class MakeMarkup:
             markup.button(
                 text=favorite.name,
                 callback_data=FavoritesCallbackData(
-                    nm_id=favorite.nm_id,
-                    period=favorite.period,
                     index_in_data=i
                 ).pack()
             )

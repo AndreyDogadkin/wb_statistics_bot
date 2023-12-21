@@ -8,8 +8,6 @@ class NmIdsCallbackData(CallbackData, prefix='analytics'):
 
 
 class FavoritesCallbackData(CallbackData, prefix='favorites'):
-    nm_id: int
-    period: int
     index_in_data: int
 
 
