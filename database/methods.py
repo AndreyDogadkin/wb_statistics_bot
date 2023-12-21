@@ -187,5 +187,5 @@ class DBMethods:
         )
         async with self.session() as s:
             favorites = await s.execute(query)
-            favorites = favorites.scalars()
+            favorites = favorites.scalars().all()
             return favorites
