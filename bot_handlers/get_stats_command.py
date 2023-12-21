@@ -184,7 +184,7 @@ async def send_user_statistics(
             if add_in_favorite:
                 await database.add_favorite_request(
                     telegram_id=user_id,
-                    name=f'{product}, дней: {period + 1}.',
+                    name=f'{product}, дней- {period + 1}.',
                     nm_id=nm_id,
                     period=period,
                     photo_url=photo
