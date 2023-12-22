@@ -12,28 +12,24 @@ from bot_handlers.get_stats_command import get_stats_router
 from bot_handlers.my_limits_command import my_limits_router
 from bot_handlers.save_tokens_command import save_token_router
 from bot_handlers.start_help_commands import start_help_router
+from config_data.config import bot_commands
 from polling_main_bot import main_config
 
 logger = logging.getLogger(__name__)
 
 bot = Bot(token=main_config.bot.TG_TOKEN, parse_mode=ParseMode.HTML)
+
 storage = MemoryStorage()
+
 dp = Dispatcher(storage=storage)
+
 WEBHOOK_PATH = f'/bot/{main_config.bot.TG_TOKEN}'
 WEBHOOK_URL = f'{main_config.bot.NGROK_URL}{WEBHOOK_PATH}'
 
 
 async def set_default_commands(_bot):
     """Добавление кнопки 'Меню' со списком команд."""
-    await _bot.set_my_commands(
-        [
-            types.BotCommand(command='help', description='❓ Как пользоваться ботом.'),
-            types.BotCommand(command='my_limits', description='💯 Мои лимиты.'),
-            types.BotCommand(command='token', description='🔑 Добавить/обновить токен.'),
-            types.BotCommand(command='favorites', description='⭐️ Избранные запросы.'),
-            types.BotCommand(command='get_stats', description='📈 Получить статистику.'),
-        ]
-    )
+    await _bot.set_my_commands(bot_commands)
 
 
 @asynccontextmanager
