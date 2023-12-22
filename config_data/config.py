@@ -6,7 +6,7 @@ from aiogram import types
 from environs import Env
 from pydantic_settings import BaseSettings
 
-bot_commands = [
+BOT_COMMANDS = [
     types.BotCommand(command='help', description='❓ Как пользоваться ботом.'),
     types.BotCommand(command='token', description='🔑 Добавить/обновить токен.'),
     types.BotCommand(command='favorites', description='⭐️ Избранные запросы.'),

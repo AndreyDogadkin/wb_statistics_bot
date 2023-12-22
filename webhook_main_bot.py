@@ -12,7 +12,7 @@ from bot_handlers.get_stats_command import get_stats_router
 from bot_handlers.my_limits_command import my_limits_router
 from bot_handlers.save_tokens_command import save_token_router
 from bot_handlers.start_help_commands import start_help_router
-from config_data.config import bot_commands
+from config_data.config import BOT_COMMANDS
 from polling_main_bot import main_config
 
 logger = logging.getLogger(__name__)
@@ -29,7 +29,7 @@ WEBHOOK_URL = f'{main_config.bot.NGROK_URL}{WEBHOOK_PATH}'
 
 async def set_default_commands(_bot):
     """Добавление кнопки 'Меню' со списком команд."""
-    await _bot.set_my_commands(bot_commands)
+    await _bot.set_my_commands(BOT_COMMANDS)
 
 
 @asynccontextmanager

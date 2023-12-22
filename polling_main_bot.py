@@ -14,7 +14,7 @@ from bot_handlers import (
     get_favorite_command
 )
 from config_data import main_config
-from config_data.config import bot_commands
+from config_data.config import BOT_COMMANDS
 from database.methods import DBMethods
 
 dp = Dispatcher()
@@ -23,7 +23,7 @@ database = DBMethods()
 
 async def set_default_commands(bot):
     """Добавление кнопки 'Меню' со списком команд."""
-    await bot.set_my_commands(bot_commands)
+    await bot.set_my_commands(BOT_COMMANDS)
 
 
 async def main() -> None:
