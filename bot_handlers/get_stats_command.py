@@ -65,7 +65,7 @@ async def change_page_for_nm_ids(
     state_data = await state.get_data()
     page_number = state_data.get('page_number')
     nm_ids = state_data.get('nm_ids')
-    add_in_favorite: bool | None = state_data.get('add_in_favorite')
+    add_in_favorite: bool = state_data.get('add_in_favorite', False)
     command = callback_data.unpack(callback.data).command
     if page_number and command == 'prev':
         await state.update_data(page_number=page_number - 1)
@@ -177,10 +177,6 @@ async def send_user_statistics(
     try:
         product, answer_message = await get_user_statistics(statistics, nm_id, period)
         if product and answer_message:
-            await callback.answer(text=product)
-            await message_wait.edit_text(answer_message + markdown.hlink(title='📸 Открыть фото.', url=photo))
-            await database.set_user_last_request(user_id)
-            await database.set_plus_one_to_user_requests_per_day(user_id)
             if add_in_favorite:
                 await database.add_favorite_request(
                     telegram_id=user_id,
@@ -189,6 +185,10 @@ async def send_user_statistics(
                     period=period,
                     photo_url=photo
                 )
+            await callback.answer(text=product)
+            await message_wait.edit_text(answer_message + markdown.hlink(title='📸 Открыть фото.', url=photo))
+            await database.set_user_last_request(user_id)
+            await database.set_plus_one_to_user_requests_per_day(user_id)
         else:
             await message_wait.edit_text(err_mess_templates['no_data'])
     except ForUserException as e:

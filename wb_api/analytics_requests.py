@@ -44,6 +44,7 @@ class StatisticsRequests:
                     url=url,
                     data=json.dumps(data),
                     headers=self.__headers,
+                    timeout=aiohttp.ClientTimeout(total=20),
                     proxy=proxy,
                 ) as response:
                     if response.status == HTTPStatus.OK:

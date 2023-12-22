@@ -12,6 +12,7 @@ BOT_COMMANDS = [
     types.BotCommand(command='favorites', description='⭐️ Избранные запросы.'),
     types.BotCommand(command='get_stats', description='📈 Получить статистику.'),
     types.BotCommand(command='my_limits', description='💯 Мои лимиты.'),
+    types.BotCommand(command='cancel', description='↩️ Сброс состояния.')
 ]
 
 PAGINATION_SIZE = 5

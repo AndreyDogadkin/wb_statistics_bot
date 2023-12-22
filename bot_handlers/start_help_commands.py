@@ -26,9 +26,18 @@ async def command_help_handler(message: types.Message):
     await message.delete()
 
 
+@start_help_router.message(Command(commands='cancel'))
+async def close_any_state_command(message: types.Message, state: FSMContext):
+    await message.delete()
+    await state.clear()
+    await message.answer('😉 Состояние сброшено, вы снова можете использовать все команды.')
+
+
 @start_help_router.callback_query(~StateFilter(default_state), F.data == 'cancel')
-async def close_any_state(callback: types.CallbackQuery, state: FSMContext):
+async def close_any_state_callback(callback: types.CallbackQuery, state: FSMContext):
     """Отмена любого состояния. """
     await callback.message.delete()
-    await callback.answer('Отмена.')
     await state.clear()
+    await callback.answer('Отмена.')
+
+
