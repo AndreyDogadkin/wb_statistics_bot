@@ -2,9 +2,15 @@ import datetime
 
 from sqlalchemy import select, Select
 
-from config_data.config import REQUESTS_PER_DAY_LIMIT, DAY_LIMIT_DELTA
+from bot_base_messages.messages_templates import get_favorite_message_templates
+from config_data.config import (
+    REQUESTS_PER_DAY_LIMIT,
+    DAY_LIMIT_DELTA,
+    MAX_LEN_FAVORITES,
+)
 from database import database_connector
 from database.models import User, Token, FavoriteRequest
+from exceptions.wb_exceptions import ForUserException
 from utils import AESEncryption
 
 
@@ -166,10 +172,24 @@ class DBMethods:
             favorite = favorite.scalar_one_or_none()
             return favorite
 
+    async def check_limit_favorite(self, telegram_id):
+        query = select(FavoriteRequest).where(
+            FavoriteRequest.user_id == telegram_id
+        )
+        async with self.session() as s:
+            favorites = await s.execute(query)
+            len_favorites = len(favorites.scalars().all())
+            return len_favorites < MAX_LEN_FAVORITES
+
     async def add_favorite_request(self, telegram_id, name, nm_id, period, photo_url):
         """Добавить запрос в избранное."""
         favorite = await self.check_favorite(telegram_id, nm_id, period)
+        limit_favorites = await self.check_limit_favorite(telegram_id)
         if not favorite:
+            if not limit_favorites:
+                raise ForUserException(
+                    message=get_favorite_message_templates['max_limit_favorite']
+                )
             async with self.session() as s:
                 favorite = FavoriteRequest(
                     name=name,

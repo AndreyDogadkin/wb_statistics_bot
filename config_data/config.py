@@ -2,14 +2,25 @@ import datetime
 from dataclasses import dataclass
 from pathlib import Path
 
+from aiogram import types
 from environs import Env
 from pydantic_settings import BaseSettings
+
+bot_commands = [
+    types.BotCommand(command='help', description='❓ Как пользоваться ботом.'),
+    types.BotCommand(command='token', description='🔑 Добавить/обновить токен.'),
+    types.BotCommand(command='favorites', description='⭐️ Избранные запросы.'),
+    types.BotCommand(command='get_stats', description='📈 Получить статистику.'),
+    types.BotCommand(command='my_limits', description='💯 Мои лимиты.'),
+]
 
 PAGINATION_SIZE = 5
 
 REQUESTS_PER_DAY_LIMIT = 40
 DAY_LIMIT = 6
 DAY_LIMIT_DELTA = datetime.timedelta(hours=DAY_LIMIT)
+
+MAX_LEN_FAVORITES = 5
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
