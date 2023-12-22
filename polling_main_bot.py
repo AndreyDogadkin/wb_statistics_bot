@@ -2,7 +2,7 @@ import asyncio
 import logging
 import sys
 
-from aiogram import Bot, Dispatcher, types
+from aiogram import Bot, Dispatcher
 from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.enums import ParseMode
 
@@ -14,6 +14,7 @@ from bot_handlers import (
     get_favorite_command
 )
 from config_data import main_config
+from config_data.config import bot_commands
 from database.methods import DBMethods
 
 dp = Dispatcher()
@@ -22,15 +23,7 @@ database = DBMethods()
 
 async def set_default_commands(bot):
     """Добавление кнопки 'Меню' со списком команд."""
-    await bot.set_my_commands(
-        [
-            types.BotCommand(command='help', description='❓ Как пользоваться ботом.'),
-            types.BotCommand(command='my_limits', description='💯 Мои лимиты.'),
-            types.BotCommand(command='token', description='🔑 Добавить/обновить токен.'),
-            types.BotCommand(command='favorites', description='⭐️ Избранные запросы.'),
-            types.BotCommand(command='get_stats', description='📈 Получить статистику.'),
-        ]
-    )
+    await bot.set_my_commands(bot_commands)
 
 
 async def main() -> None:

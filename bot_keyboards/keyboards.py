@@ -5,6 +5,7 @@ from bot_keyboards.callback_datas import (NmIdsCallbackData,
                                           DaysCallbackData,
                                           TokenTypeCallbackData,
                                           FavoritesCallbackData)
+from database.models import FavoriteRequest
 
 
 class MakeMarkup:
@@ -28,7 +29,7 @@ class MakeMarkup:
         return markup.as_markup()
 
     @classmethod
-    def favorites_markup(cls, favorites):
+    def favorites_markup(cls, favorites: list[FavoriteRequest], delete: bool = False):
         markup = InlineKeyboardBuilder()
         for i, favorite in enumerate(favorites):
             markup.button(
@@ -38,6 +39,7 @@ class MakeMarkup:
                 ).pack()
             )
         markup.adjust(1)
+        markup.attach(cls.delete_builder(delete))
         markup.attach(cls.cancel_builder())
         return markup.as_markup()
 
@@ -76,6 +78,17 @@ class MakeMarkup:
             callback_data=PaginationNmIds(command='favorite').pack()
         )
         markup.row(add_to_favorite_button)
+        return markup
+
+    @classmethod
+    def delete_builder(cls, delete: bool | None):
+        text = '♲' if not delete else '♻️'
+        markup = InlineKeyboardBuilder()
+        delete_button = InlineKeyboardButton(
+            text=text,
+            callback_data='delete'
+        )
+        markup.row(delete_button)
         return markup
 
     @classmethod

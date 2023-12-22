@@ -31,7 +31,7 @@ get_favorite_router = Router()
 async def set_save_token_state(message: types.Message, state: FSMContext):
     """Установка состояния выбора номера номенклатуры из списка избранных."""
 
-    # TODO Добавить проверку лимитов
+    # TODO Добавить проверку лимитов запросов
 
     user_id = message.from_user.id
     await database.add_user(user_id)
@@ -46,6 +46,7 @@ async def set_save_token_state(message: types.Message, state: FSMContext):
         await state.set_state(Favorites.get_favorite)
     else:
         await message.answer(get_favorite_message_templates['no_favorites'])
+    await message.delete()
 
 
 @get_favorite_router.callback_query(StateFilter(Favorites.get_favorite),
