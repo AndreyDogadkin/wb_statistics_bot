@@ -4,7 +4,7 @@ from bot_keyboards.callback_datas import (NmIdsCallbackData,
                                           PaginationNmIds,
                                           DaysCallbackData,
                                           TokenTypeCallbackData,
-                                          FavoritesCallbackData)
+                                          FavoritesCallbackData, FavoritesDeleteCallbackData)
 from database.models import FavoriteRequest
 
 
@@ -15,7 +15,7 @@ class MakeMarkup:
     def nm_ids_markup(cls,
                       data,
                       page_number: int,
-                      add_to_favorite: bool | None = False) -> InlineKeyboardMarkup:
+                      add_to_favorite: bool = False) -> InlineKeyboardMarkup:
         """Клавиатура для вывода номенклатур пользователя."""
         markup = InlineKeyboardBuilder()
         for nm in data[page_number]:
@@ -31,10 +31,11 @@ class MakeMarkup:
     @classmethod
     def favorites_markup(cls, favorites: list[FavoriteRequest], delete: bool = False):
         markup = InlineKeyboardBuilder()
+        callback_class = FavoritesCallbackData if not delete else FavoritesDeleteCallbackData
         for i, favorite in enumerate(favorites):
             markup.button(
                 text=favorite.name,
-                callback_data=FavoritesCallbackData(
+                callback_data=callback_class(
                     index_in_data=i
                 ).pack()
             )
@@ -70,7 +71,7 @@ class MakeMarkup:
         return markup
 
     @classmethod
-    def add_to_favorite_builder(cls, add_to_favorite: bool | None):
+    def add_to_favorite_builder(cls, add_to_favorite: bool = False):
         text = '☆' if not add_to_favorite else '⭐️'
         markup = InlineKeyboardBuilder()
         add_to_favorite_button = InlineKeyboardButton(
@@ -81,12 +82,12 @@ class MakeMarkup:
         return markup
 
     @classmethod
-    def delete_builder(cls, delete: bool | None):
+    def delete_builder(cls, delete: bool = False):
         text = '♲' if not delete else '♻️'
         markup = InlineKeyboardBuilder()
         delete_button = InlineKeyboardButton(
             text=text,
-            callback_data='delete'
+            callback_data='delete_favorite'
         )
         markup.row(delete_button)
         return markup
