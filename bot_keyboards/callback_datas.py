@@ -8,10 +8,12 @@ class NmIdsCallbackData(CallbackData, prefix='analytics'):
 
 
 class FavoritesCallbackData(CallbackData, prefix='favorites'):
+
     index_in_data: int
 
 
 class FavoritesDeleteCallbackData(FavoritesCallbackData, prefix='del_favorite'):
+
     pass
 
 
