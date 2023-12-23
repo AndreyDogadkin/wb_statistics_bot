@@ -162,6 +162,7 @@ class DBMethods:
             return check
 
     async def check_favorite(self, telegram_id, nm_id, period):
+        """Проверить наличие запроса пользователя в избранном."""
         query = select(FavoriteRequest).where(
             FavoriteRequest.user_id == telegram_id,
             FavoriteRequest.nm_id == nm_id,
@@ -173,6 +174,7 @@ class DBMethods:
             return favorite
 
     async def check_limit_favorite(self, telegram_id):
+        """Проверить лимит на добавление в избранное."""
         query = select(FavoriteRequest).where(
             FavoriteRequest.user_id == telegram_id
         )
@@ -202,6 +204,7 @@ class DBMethods:
                 await s.commit()
 
     async def get_user_favorites(self, telegram_id):
+        """Получить все избранные запросы пользователя."""
         query = select(FavoriteRequest).where(
             FavoriteRequest.user_id == telegram_id
         )
@@ -209,3 +212,16 @@ class DBMethods:
             favorites = await s.execute(query)
             favorites = favorites.scalars().all()
             return favorites
+
+    async def delete_user_favorite(self, telegram_id, nm_id, period):
+        """Удалить избранный запрос пользователя."""
+        query = select(FavoriteRequest).where(
+            FavoriteRequest.user_id == telegram_id,
+            FavoriteRequest.nm_id == nm_id,
+            FavoriteRequest.period == period
+        )
+        async with self.session() as s:
+            favorite = await s.execute(query)
+            favorite = favorite.scalar_one()
+            await s.delete(favorite)
+            await s.commit()
