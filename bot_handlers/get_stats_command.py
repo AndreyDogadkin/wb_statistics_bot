@@ -89,7 +89,7 @@ async def paginate_nm_ids(state: FSMContext) -> tuple[str, InlineKeyboardMarkup]
     state_data = await state.get_data()
     nm_ids = state_data.get('nm_ids')
     page_number = state_data.get('page_number')
-    add_in_favorite: bool | None = state_data.get('add_in_favorite')
+    add_in_favorite: bool = state_data.get('add_in_favorite', False)
     markup = MakeMarkup.nm_ids_markup(nm_ids, page_number, add_to_favorite=add_in_favorite)
     message_for_ids: str = markdown.hbold(get_stats_mess_templates['change_nm_id'])
     for nm in nm_ids[page_number]:
