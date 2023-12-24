@@ -2,11 +2,11 @@ from aiogram import Router, types
 from aiogram.filters import Command, StateFilter
 from aiogram.fsm.state import default_state
 
-from bot_base_messages.messages_templates import my_limits_mess_template, stickers
-from bot_handlers.save_tokens_command import save_token_router
+from bot.base_messages.messages_templates import my_limits_mess_template, stickers
+from bot.handlers.save_tokens_command import save_token_router
 from config_data.config import REQUESTS_PER_DAY_LIMIT
 from database.methods import DBMethods
-from helpers.set_limits_format import to_update_limits_format
+from bot.helpers.set_limits_format import to_update_limits_format
 
 database = DBMethods()
 

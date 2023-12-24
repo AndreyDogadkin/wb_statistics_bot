@@ -4,7 +4,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state
 from aiogram.utils import markdown
 
-from bot_base_messages.messages_templates import info_mess_templates, stickers
+from bot.base_messages.messages_templates import info_mess_templates, stickers
 from database.methods import DBMethods
 
 start_help_router = Router()

@@ -8,17 +8,17 @@ from aiogram.fsm.state import default_state
 from aiogram.types import InlineKeyboardMarkup
 from aiogram.utils import markdown
 
-from bot_base_messages.messages_templates import (get_stats_mess_templates,
+from bot.base_messages.messages_templates import (get_stats_mess_templates,
                                                   err_mess_templates,
                                                   stickers)
-from bot_keyboards import (MakeMarkup,
+from bot.keyboards import (MakeMarkup,
                            NmIdsCallbackData,
                            DaysCallbackData,
                            PaginationNmIds)
-from bot_states import GetStats
+from bot.states import GetStats
 from database.methods import DBMethods
 from exceptions.wb_exceptions import ForUserException
-from helpers.set_limits_format import to_update_limits_format
+from bot.helpers.set_limits_format import to_update_limits_format
 from wb_api.analytics_requests import StatisticsRequests
 
 loger = logging.getLogger(__name__)

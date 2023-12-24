@@ -7,16 +7,16 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state
 from aiogram.utils import markdown
 
-from bot_base_messages.messages_templates import (
+from bot.base_messages.messages_templates import (
     get_favorite_message_templates,
     err_mess_templates,
     stickers,
 )
-from bot_handlers.get_stats_command import get_user_statistics
-from bot_keyboards import MakeMarkup
-from bot_states import Favorites
+from bot.handlers.get_stats_command import get_user_statistics
+from bot.keyboards import MakeMarkup
+from bot.states import Favorites
 from database.methods import DBMethods
-from bot_keyboards.callback_datas import FavoritesCallbackData, FavoritesDeleteCallbackData
+from bot.keyboards import FavoritesCallbackData, FavoritesDeleteCallbackData
 from exceptions.wb_exceptions import ForUserException
 from wb_api.analytics_requests import StatisticsRequests
 

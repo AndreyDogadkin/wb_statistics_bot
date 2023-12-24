@@ -2,7 +2,7 @@ import datetime
 
 from sqlalchemy import select, Select
 
-from bot_base_messages.messages_templates import get_favorite_message_templates
+from bot.base_messages.messages_templates import get_favorite_message_templates
 from config_data.config import (
     REQUESTS_PER_DAY_LIMIT,
     DAY_LIMIT_DELTA,

@@ -6,13 +6,11 @@ from aiogram import Bot, Dispatcher
 from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.enums import ParseMode
 
-from bot_handlers import (
-    get_stats_command,
-    save_tokens_command,
-    start_help_commands,
-    my_limits_command,
-    get_favorite_command
-)
+from bot.handlers import (get_favorite_router,
+                          get_stats_router,
+                          save_token_router,
+                          start_help_router,
+                          my_limits_router)
 from config_data import main_config
 from config_data.config import BOT_COMMANDS
 from database.methods import DBMethods
@@ -32,11 +30,11 @@ async def main() -> None:
         bot = Bot(main_config.bot.TG_TOKEN, parse_mode=ParseMode.HTML, session=session)
     else:
         bot = Bot(main_config.bot.TG_TOKEN, parse_mode=ParseMode.HTML)
-    dp.include_router(start_help_commands.start_help_router)
-    dp.include_router(get_stats_command.get_stats_router)
-    dp.include_router(save_tokens_command.save_token_router)
-    dp.include_router(my_limits_command.my_limits_router)
-    dp.include_router(get_favorite_command.get_favorite_router)
+    dp.include_router(start_help_router)
+    dp.include_router(get_stats_router)
+    dp.include_router(save_token_router)
+    dp.include_router(my_limits_router)
+    dp.include_router(get_favorite_router)
     await set_default_commands(bot)
     await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot)
