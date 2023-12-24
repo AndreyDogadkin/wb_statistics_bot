@@ -8,7 +8,7 @@ from typing import Coroutine
 
 import aiohttp
 
-from bot_base_messages.messages_templates import err_mess_templates
+from bot.base_messages.messages_templates import err_mess_templates
 from config_data import main_config
 from exceptions.wb_exceptions import (
     WBApiResponseExceptions,

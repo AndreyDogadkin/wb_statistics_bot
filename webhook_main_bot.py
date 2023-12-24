@@ -7,11 +7,11 @@ from aiogram.enums import ParseMode
 from aiogram.fsm.storage.memory import MemoryStorage
 from fastapi import FastAPI
 
-from bot_handlers.get_favorite_command import get_favorite_router
-from bot_handlers.get_stats_command import get_stats_router
-from bot_handlers.my_limits_command import my_limits_router
-from bot_handlers.save_tokens_command import save_token_router
-from bot_handlers.start_help_commands import start_help_router
+from bot.handlers import (get_favorite_router,
+                          get_stats_router,
+                          save_token_router,
+                          start_help_router,
+                          my_limits_router)
 from config_data.config import BOT_COMMANDS
 from polling_main_bot import main_config
 

@@ -1,10 +1,10 @@
 from aiogram.types import InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder, InlineKeyboardButton
-from bot_keyboards.callback_datas import (NmIdsCallbackData,
-                                          PaginationNmIds,
-                                          DaysCallbackData,
-                                          TokenTypeCallbackData,
-                                          FavoritesCallbackData, FavoritesDeleteCallbackData)
+from bot.keyboards import (NmIdsCallbackData,
+                           PaginationNmIds,
+                           DaysCallbackData,
+                           TokenTypeCallbackData,
+                           FavoritesCallbackData, FavoritesDeleteCallbackData)
 from database.models import FavoriteRequest
 
 

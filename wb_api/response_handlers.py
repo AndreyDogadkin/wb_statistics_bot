@@ -3,7 +3,7 @@ from datetime import datetime
 
 from pydantic import ValidationError
 
-from bot_base_messages.messages_templates import err_mess_templates
+from bot.base_messages.messages_templates import err_mess_templates
 from config_data.config import PAGINATION_SIZE
 from exceptions.wb_exceptions import ForUserException
 from wb_api import (ResponseStatsDays, ResponseNmIDs, CardsNmIds, ResponseStatsPeriod,
