@@ -9,11 +9,17 @@ env.read_env()
 
 PASSWORD = env('PASSWORD_FOR_ENCRYPTION')
 DKLEN = env.int('DKLEN')
+ITERATIONS = env.int('ITERATIONS_FOR_ENCRYPTION')
 
 
 def generate_key():
     """Сгенерировать ключ шифрования."""
-    bytes_key = PBKDF2(PASSWORD, get_random_bytes(32), dkLen=DKLEN)
+    bytes_key = PBKDF2(
+        PASSWORD,
+        get_random_bytes(DKLEN),
+        dkLen=DKLEN,
+        count=ITERATIONS
+    )
     return base64.b64encode(bytes_key)
 
 
