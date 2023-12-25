@@ -1,4 +1,4 @@
-import ast
+import base64
 
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad, unpad
@@ -10,12 +10,12 @@ env.read_env()
 
 class AESEncryption:
 
-    __key = ast.literal_eval(env('ENCRYPTION_KEY'))
+    __KEY = base64.b64decode(bytes(env('ENCRYPTION_KEY'), 'utf-8'))
 
     @classmethod
     def encrypt(cls, token):
         """Шифрование токена."""
-        cipher = AES.new(cls.__key, AES.MODE_CBC)
+        cipher = AES.new(cls.__KEY, AES.MODE_CBC)
         cipher_data = cipher.encrypt(pad(token.encode(), AES.block_size))
         return cipher.iv + cipher_data
 
@@ -23,6 +23,6 @@ class AESEncryption:
     def decrypt(cls, encrypted_token):
         """Расшифровка токена."""
         iv = encrypted_token[:16]
-        cipher = AES.new(cls.__key, AES.MODE_CBC, iv=iv)
+        cipher = AES.new(cls.__KEY, AES.MODE_CBC, iv=iv)
         orig = unpad(cipher.decrypt(encrypted_token[16:]), AES.block_size)
         return orig.decode()
