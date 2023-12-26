@@ -46,15 +46,26 @@ class DatabaseSettings(BaseSettings):
     DB_PASSWORD: str
 
 
+class EncryptionSettings(BaseSettings):
+    """Настройки шифрования."""
+
+    ENCRYPTION_KEY: bytes
+
+
 @dataclass
 class MainConfig:
     bot: BotSettings
     database: DatabaseSettings
+    encryption: EncryptionSettings
 
 
 def get_config():
     Env().read_env()
-    return MainConfig(bot=BotSettings(), database=DatabaseSettings())
+    return MainConfig(
+        bot=BotSettings(),
+        database=DatabaseSettings(),
+        encryption=EncryptionSettings()
+    )
 
 
 main_config = get_config()
