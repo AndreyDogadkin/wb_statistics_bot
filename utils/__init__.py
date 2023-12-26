@@ -2,4 +2,4 @@ __all__ = (
     'AESEncryption',
 )
 
-from utils.aes_encryption import AESEncryption
+from utils.AES_encryption.encryption import AESEncryption
