@@ -2,15 +2,13 @@ import base64
 
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad, unpad
-from environs import Env
 
-env = Env()
-env.read_env()
+from config_data import main_config
 
 
 class AESEncryption:
 
-    __KEY = base64.b64decode(bytes(env('ENCRYPTION_KEY'), 'utf-8'))
+    __KEY = base64.b64decode(main_config.encryption.ENCRYPTION_KEY)
 
     @classmethod
     def encrypt(cls, token):
