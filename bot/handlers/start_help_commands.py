@@ -15,7 +15,13 @@ database = DBMethods()
 async def command_start_handler(message: types.Message) -> None:
     """Команда start."""
     await message.answer_sticker(stickers['start_sticker'])
-    await message.answer(info_mess_templates['start'].format(markdown.hbold('@' + message.from_user.username)))
+    await message.answer(
+        info_mess_templates['start'].format(
+            markdown.hbold(
+                '@' + message.from_user.username
+            )
+        )
+    )
     await database.add_user(message.from_user.id)
 
 
@@ -30,7 +36,7 @@ async def command_help_handler(message: types.Message):
 async def close_any_state_command(message: types.Message, state: FSMContext):
     await message.delete()
     await state.clear()
-    await message.answer('😉 Состояние сброшено, вы снова можете использовать все команды.')
+    await message.answer(info_mess_templates['cancel'])
 
 
 @start_help_router.callback_query(~StateFilter(default_state), F.data == 'cancel')

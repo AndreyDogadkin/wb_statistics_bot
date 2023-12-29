@@ -18,7 +18,7 @@ from bot.keyboards import (MakeMarkup,
 from bot.states import GetStats
 from database.methods import DBMethods
 from exceptions.wb_exceptions import ForUserException
-from bot.helpers.set_limits_format import to_update_limits_format
+from bot.helpers import to_update_limits_format, get_user_statistics
 from wb_api.analytics_requests import StatisticsRequests
 
 loger = logging.getLogger(__name__)
@@ -136,26 +136,6 @@ async def set_period_state(
         reply_markup=markup
     )
     await state.set_state(GetStats.get_period)
-
-
-async def get_user_statistics(
-        statistics: StatisticsRequests,
-        nm_id: int,
-        period: int
-) -> tuple[str, str]:
-    """Получить и обработать статистику пользователя."""
-    message_template = get_stats_mess_templates['send_analytic_detail_days_mess_template']
-    get_stats_func = statistics.get_analytics_detail_days
-    if period > 5:
-        message_template = get_stats_mess_templates['send_analytic_detail_period_mess_template']
-        get_stats_func = statistics.get_analytic_detail_periods
-    statistics_nm_id: list = await get_stats_func(nm_ids=[nm_id], period=period)
-    if statistics_nm_id:
-        product: tuple[str, str] = statistics_nm_id.pop(0)
-        answer_message: str = get_stats_mess_templates['product_vendor_code'].format(*product)
-        for nm in statistics_nm_id:
-            answer_message += message_template.format(*nm)
-        return product[1], answer_message
 
 
 @get_stats_router.callback_query(StateFilter(GetStats.get_period), DaysCallbackData.filter())
