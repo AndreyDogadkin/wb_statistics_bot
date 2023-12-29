@@ -12,7 +12,7 @@ from bot.base_messages.messages_templates import (
     err_mess_templates,
     stickers,
 )
-from bot.handlers.get_stats_command import get_user_statistics
+from bot.helpers import get_user_statistics
 from bot.keyboards import MakeMarkup
 from bot.states import Favorites
 from database.methods import DBMethods
@@ -152,10 +152,10 @@ async def send_statistics_from_favorite(
         await message_wait.answer_sticker(stickers['error_try_later_sticker'])
         await message_wait.answer(e.message)
     except TelegramAPIError as err:
-        loger.error(f'{err.message}, chat_id={err.method.chat_id}')
         await message_wait.delete()
         await message_wait.answer_sticker(stickers['error_try_later_sticker'])
         await message_wait.answer(err_mess_templates['telegram_error'])
+        loger.error(f'{err.message}, chat_id={err.method.chat_id}')
     finally:
         await state.storage.close()
         await state.clear()
