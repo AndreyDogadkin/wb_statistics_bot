@@ -3,7 +3,10 @@ from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state
 
-from bot.base_messages.messages_templates import save_token_mess_templates, err_mess_templates
+from bot.base_messages.messages_templates import (
+    save_token_mess_templates,
+    err_mess_templates
+)
 from bot.filters import TokenFilter
 from bot.keyboards import MakeMarkup, TokenTypeCallbackData
 from bot.states import SaveToken
@@ -14,20 +17,30 @@ database = DBMethods()
 save_token_router = Router()
 
 
-@save_token_router.message(Command(commands='token'), StateFilter(default_state))
+@save_token_router.message(
+    Command(commands='token'),
+    StateFilter(default_state)
+)
 async def set_save_token_state(message: types.Message, state: FSMContext):
     """Запуск состояния выбора типа сохраняемого токена."""
     await database.add_user(message.from_user.id)
-    for_edit = await message.answer(text=save_token_mess_templates['change_token_type'],
-                                    reply_markup=MakeMarkup.change_token_markup())
+    for_edit = await message.answer(
+        text=save_token_mess_templates['change_token_type'],
+        reply_markup=MakeMarkup.change_token_markup()
+    )
     await state.update_data(for_edit=for_edit)
     await state.set_state(SaveToken.get_token_type)
 
 
-@save_token_router.callback_query(StateFilter(SaveToken.get_token_type),
-                                  TokenTypeCallbackData.filter())
-async def get_token_type(callback: types.CallbackQuery,
-                         callback_data: TokenTypeCallbackData, state: FSMContext):
+@save_token_router.callback_query(
+    StateFilter(SaveToken.get_token_type),
+    TokenTypeCallbackData.filter()
+)
+async def get_token_type(
+        callback: types.CallbackQuery,
+        callback_data: TokenTypeCallbackData,
+        state: FSMContext
+):
     """Запуск состояния ожидания выбранного типа токена."""
     state_data = await state.get_data()
     await state_data.get('for_edit').delete()
@@ -46,40 +59,61 @@ async def get_token_type(callback: types.CallbackQuery,
     await state.update_data(for_edit=for_edit)
 
 
-@save_token_router.message(StateFilter(SaveToken.get_content_token), TokenFilter())
+@save_token_router.message(
+    StateFilter(SaveToken.get_content_token),
+    TokenFilter()
+)
 async def save_content_token(message: types.Message, state: FSMContext):
     """Получение и сохранения токена типа 'Контент'."""
     state_data = await state.get_data()
     token = message.text
     await database.save_content_token(message.from_user.id, token)
-    token_analytic = await database.get_user_analytic_token(message.from_user.id)
+    token_analytic = await database.get_user_analytic_token(
+        message.from_user.id
+    )
     message_for_edit: types.Message = state_data.get('for_edit')
     if token_analytic:
-        await message_for_edit.edit_text(save_token_mess_templates['token_updated'])
+        await message_for_edit.edit_text(
+            save_token_mess_templates['token_updated']
+        )
     else:
-        await message_for_edit.edit_text(save_token_mess_templates['send_token_analytic'])
+        await message_for_edit.edit_text(
+            save_token_mess_templates['send_token_analytic']
+        )
     await message.delete()
     await state.clear()
 
 
-@save_token_router.message(StateFilter(SaveToken.get_analytic_token), TokenFilter())
+@save_token_router.message(
+    StateFilter(SaveToken.get_analytic_token),
+    TokenFilter()
+)
 async def save_analytic_token(message: types.Message, state: FSMContext):
     """Получение и сохранения токена типа 'Аналитика'."""
     state_data = await state.get_data()
     token = message.text
     await database.save_analytic_token(message.from_user.id, token)
-    token_content = await database.get_user_content_token(message.from_user.id)
+    token_content = await database.get_user_content_token(
+        message.from_user.id
+    )
     message_for_edit: types.Message = state_data.get('for_edit')
     if token_content:
-        await message_for_edit.edit_text(save_token_mess_templates['token_updated'])
+        await message_for_edit.edit_text(
+            save_token_mess_templates['token_updated']
+        )
     else:
-        await message_for_edit.edit_text(save_token_mess_templates['send_token_content'])
+        await message_for_edit.edit_text(
+            save_token_mess_templates['send_token_content']
+        )
     await message.delete()
     await state.clear()
 
 
-@save_token_router.message(StateFilter(SaveToken.get_content_token,
-                                       SaveToken.get_analytic_token))
+@save_token_router.message(
+    StateFilter(
+        SaveToken.get_content_token,
+        SaveToken.get_analytic_token)
+)
 async def invalid_token(message: types.Message, state: FSMContext):
     """Обработка некорректно введенного токена."""
     state_data = await state.get_data()
@@ -87,6 +121,9 @@ async def invalid_token(message: types.Message, state: FSMContext):
     if for_edit:
         await for_edit.delete()
     markup = MakeMarkup.cancel_builder().as_markup()
-    for_edit = await message.answer(text=err_mess_templates['incorrect_token'], reply_markup=markup)
+    for_edit = await message.answer(
+        text=err_mess_templates['incorrect_token'],
+        reply_markup=markup
+    )
     await state.update_data(for_edit=for_edit)
     await message.delete()
