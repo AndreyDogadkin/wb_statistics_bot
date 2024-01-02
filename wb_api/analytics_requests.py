@@ -14,10 +14,10 @@ from exceptions.wb_exceptions import (
     WBApiResponseExceptions,
     IncorrectKeyException,
     TimeoutException,
-    ForUserException,
+    ForUserException, ToManyRequestsException,
 )
 from wb_api import ResponseHandlers
-from wb_api.urls_and_payloads import wb_api_urls, wb_api_payloads
+from wb_api.urls_and_payloads import WBApiUrls, WBApiPayloads
 
 logger = logging.getLogger(__name__)  # TODO Добавить логирование ошибок в файл
 
@@ -34,7 +34,8 @@ class StatisticsRequests:
 
     async def __get_response_post(self, url, data):
         """Сессия для получения ответа от WB API."""
-        proxy = 'http://proxy.server:3128' if main_config.bot.TEST_SERVER else ''
+        proxy = ('http://proxy.server:3128' if main_config.bot.TEST_SERVER
+                 else '')
 
         async with aiohttp.ClientSession(
             timeout=aiohttp.ClientTimeout(total=20)
@@ -52,13 +53,19 @@ class StatisticsRequests:
                         return response_data
                     if response.status == HTTPStatus.UNAUTHORIZED:
                         raise IncorrectKeyException(
-                            f'Ошибка авторизации. Невалидный токен.'
+                            'Ошибка авторизации. Невалидный токен.'
+                        )
+                    if response.status == HTTPStatus.TOO_MANY_REQUESTS:
+                        raise ToManyRequestsException(
+                            f'Слишком много запросов. URL: {url}'
                         )
                     raise WBApiResponseExceptions(
                         url=url, message=f'Статус ответа-{response.status}'
                     )
             except asyncio.TimeoutError:
-                raise TimeoutException('WB API не ответил за отведенное время.')
+                raise TimeoutException(
+                    'WB API не ответил за отведенное время.'
+                )
 
     @staticmethod
     def __check_errors(func):
@@ -71,12 +78,16 @@ class StatisticsRequests:
                 response = await func(*args, **kwargs)
                 fin = datetime.now()
                 logger.info(
-                    f'Ответ от WB API получен. Время - {(fin - start).total_seconds()} c.'
+                    f'Ответ от WB API получен. '
+                    f'Время - {(fin - start).total_seconds()} c.'
                 )
                 return response
             except IncorrectKeyException as e:
                 logger.info(e)
                 raise ForUserException(err_mess_templates['error_401'])
+            except ToManyRequestsException as e:
+                logger.error(e)
+                raise ForUserException(err_mess_templates['error_429'])
             except TimeoutException as e:
                 logger.error(e)
                 raise ForUserException(err_mess_templates['timeout_error'])
@@ -89,8 +100,8 @@ class StatisticsRequests:
     @__check_errors
     async def get_nm_ids(self):
         """Запрос номенклатур продавца."""
-        url = wb_api_urls['get_nm_ids_url']
-        data = wb_api_payloads['nm_ids_payload']
+        url = WBApiUrls.GET_NM_IDS
+        data = WBApiPayloads.NM_IDS
         response = await self.__get_response_post(url=url, data=data)
         return ResponseHandlers.nm_ids_handler(response)
 
@@ -99,15 +110,15 @@ class StatisticsRequests:
         self, nm_ids: list, period: int = 1, aggregation_lvl: str = 'day'
     ) -> dict:
         """Запрос статистики товара по дням."""
-        url = wb_api_urls['analytic_detail_url_days']
+        url = WBApiUrls.DETAIL_DAYS
         data = {
             'nmIDs': nm_ids,
             'period': {
                 'begin': str(datetime.now().date() - timedelta(days=period)),
                 'end': str(datetime.now().date()),
             },
-            'timezone': 'Europe/Moscow',
             'aggregationLevel': aggregation_lvl,
+            'timezone': 'Europe/Moscow',
         }
         response = await self.__get_response_post(url=url, data=data)
         return ResponseHandlers.analytic_detail_days_handler(response)
@@ -115,17 +126,21 @@ class StatisticsRequests:
     @__check_errors
     async def get_analytic_detail_periods(self, nm_ids: list, period: int = 7):
         """Запрос статистики товара по периодам."""
-        url = wb_api_urls['analytic_detail_url_periods']
+        url = WBApiUrls.DETAIL_PERIODS
         data = {
             'nmIDs': nm_ids,
             'period': {
                 'begin': str(datetime.now() - timedelta(days=period)),
                 'end': str(datetime.now()),
             },
+            'timezone': 'Europe/Moscow',
             'page': 1,
         }
         response = await self.__get_response_post(url=url, data=data)
         return ResponseHandlers.analytic_detail_period_handler(response)
 
-    # TODO добавить просмотр остатков товаров (В документации -> статистика -> склад)
-    # TODO добавить продажи (в документации -> статистика -> продажи)
+    # TODO добавить просмотр остатков товаров
+    #  (В документации -> статистика -> склад)
+
+    # TODO добавить продажи
+    #  (в документации -> статистика -> продажи)
