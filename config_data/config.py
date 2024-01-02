@@ -6,6 +6,10 @@ from aiogram import types
 from environs import Env
 from pydantic_settings import BaseSettings
 
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+
 BOT_COMMANDS = [
     types.BotCommand(command='help', description='❓ Как пользоваться ботом.'),
     types.BotCommand(command='token', description='🔑 Добавить/обновить токен.'),
@@ -22,8 +26,6 @@ DAY_LIMIT = 6
 DAY_LIMIT_DELTA = datetime.timedelta(hours=DAY_LIMIT)
 
 MAX_LEN_FAVORITES = 5
-
-BASE_DIR = Path(__file__).resolve().parent.parent
 
 DB_TEST_PATH = BASE_DIR / 'test_database.sqlite3'
 
