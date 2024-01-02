@@ -2,6 +2,7 @@ import datetime
 
 from sqlalchemy import select, Select
 
+import database
 from bot.base_messages.messages_templates import get_favorite_message_templates
 from config_data.config import (
     REQUESTS_PER_DAY_LIMIT,
@@ -19,6 +20,7 @@ class DBMethods:
     session = database_connector.session_factory
 
     def __get_query_select_user(self, telegram_id: int) -> Select:
+        """Запрос на получение пользователя."""
         query = select(User).where(
             User.telegram_id == telegram_id
         )
@@ -30,6 +32,7 @@ class DBMethods:
             content: bool = False,
             analytic: bool = False
     ) -> Select:
+        """Запрос на получение токена."""
         select_field = Token
         if content:
             select_field = Token.wb_token_content
@@ -121,6 +124,7 @@ class DBMethods:
                 )
 
     async def get_user_tokens(self, telegram_id: int) -> dict[str: str] | None:
+        """Получить токены пользователя."""
         query = select(Token).where(
             Token.user_id == telegram_id
         )
