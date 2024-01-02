@@ -14,6 +14,10 @@ class IncorrectKeyException(Exception):
     pass
 
 
+class ToManyRequestsException(Exception):
+    pass
+
+
 class TimeoutException(Exception):
     """Ошибка времени ожидания."""
     pass
