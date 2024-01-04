@@ -37,6 +37,18 @@ BOT_COMMANDS = [
     )
 ]
 
+PERIODS_FOR_REQUESTS = (
+    ('Сегодня', 0),
+    ('2 Дня', 1),
+    ('3 Дня', 2),
+    ('5 Дней', 4),
+    ('Неделя', 7),
+    ('2 Недели', 14),
+    ('Месяц', 31),
+    ('2 Месяца', 62),
+    ('6 Месяцев', 180)
+)
+
 PAGINATION_SIZE = 5
 
 REQUESTS_PER_DAY_LIMIT = 40
@@ -53,6 +65,7 @@ class BotSettings(BaseSettings):
 
     TEST_SERVER: bool
     TG_TOKEN: str
+    TG_TOKEN_SUPPORT: str
     NGROK_URL: str
     ADMINS: list
 
