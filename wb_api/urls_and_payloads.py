@@ -11,6 +11,3 @@ class WBApiPayloads:
     NM_IDS = {
         'sort': {'cursor': {'limit': 100}, 'filter': {'withPhoto': -1}}
     }
-    DETAIL_DAYS = {
-
-    }
