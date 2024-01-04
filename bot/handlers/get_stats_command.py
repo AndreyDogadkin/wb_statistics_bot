@@ -32,7 +32,10 @@ database = DBMethods()
 get_stats_router = Router()
 
 
-@get_stats_router.message(Command(commands='get_stats'), StateFilter(default_state))
+@get_stats_router.message(
+    Command(commands='get_stats'),
+    StateFilter(default_state)
+)
 async def set_get_stats_state(message: types.Message, state: FSMContext):
     """
     Отправка номенклатур пользователю, если токен сохранен.
@@ -98,18 +101,30 @@ async def change_page_for_nm_ids(
     await callback.message.edit_text(text=message, reply_markup=markup)
 
 
-async def paginate_nm_ids(state: FSMContext) -> tuple[str, InlineKeyboardMarkup]:
+async def paginate_nm_ids(
+        state: FSMContext
+) -> tuple[str, InlineKeyboardMarkup]:
     """Подготовка сообщения и клавиатуры для номеров номенклатур."""
     state_data = await state.get_data()
     nm_ids = state_data.get('nm_ids')
     page_number = state_data.get('page_number')
     add_in_favorite: bool = state_data.get('add_in_favorite', False)
-    markup = MakeMarkup.nm_ids_markup(nm_ids, page_number, add_to_favorite=add_in_favorite)
-    message_for_ids: str = markdown.hbold(get_stats_mess_templates['change_nm_id'])
+    markup = MakeMarkup.nm_ids_markup(
+        nm_ids,
+        page_number,
+        add_to_favorite=add_in_favorite
+    )
+    message_for_ids: str = markdown.hbold(
+        get_stats_mess_templates['change_nm_id']
+    )
     for nm in nm_ids[page_number]:
-        message_for_ids += get_stats_mess_templates['send_nm_ids_template'].format(*nm)
+        message_for_ids += (
+            get_stats_mess_templates['send_nm_ids_template'].format(*nm)
+        )
         await state.update_data(data={f'photo:{nm[2]}': nm[3]})
-    message_for_ids += markdown.hbold(get_stats_mess_templates['plus_send_nm_ids_template'])
+    message_for_ids += (
+        markdown.hbold(get_stats_mess_templates['plus_send_nm_ids_template'])
+    )
     return message_for_ids, markup
 
 
