@@ -1,7 +1,7 @@
 from aiogram.fsm.state import State, StatesGroup
 
 
-class SaveToken(StatesGroup):
+class SaveTokenStates(StatesGroup):
     """Состояния для сохранения токена."""
     get_token_type = State()
     get_content_token = State()

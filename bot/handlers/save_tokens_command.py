@@ -9,7 +9,7 @@ from bot.base_messages.messages_templates import (
 )
 from bot.filters import TokenFilter
 from bot.keyboards import MakeMarkup, TokenTypeCallbackData
-from bot.states import SaveToken
+from bot.states import SaveTokenStates
 from database.methods import DBMethods
 
 database = DBMethods()
@@ -29,11 +29,11 @@ async def set_save_token_state(message: types.Message, state: FSMContext):
         reply_markup=MakeMarkup.change_token_markup()
     )
     await state.update_data(for_edit=for_edit)
-    await state.set_state(SaveToken.get_token_type)
+    await state.set_state(SaveTokenStates.get_token_type)
 
 
 @save_token_router.callback_query(
-    StateFilter(SaveToken.get_token_type),
+    StateFilter(SaveTokenStates.get_token_type),
     TokenTypeCallbackData.filter()
 )
 async def get_token_type(
@@ -47,10 +47,10 @@ async def get_token_type(
     token_type = callback_data.unpack(callback.data).token_type
     mess_for_format = ''
     if token_type == 'content':
-        await state.set_state(SaveToken.get_content_token)
+        await state.set_state(SaveTokenStates.get_content_token)
         mess_for_format = 'Контент'
     elif token_type == 'analytic':
-        await state.set_state(SaveToken.get_analytic_token)
+        await state.set_state(SaveTokenStates.get_analytic_token)
         mess_for_format = 'Аналитика'
     await callback.answer('🤫')
     for_edit = await callback.message.answer(
@@ -60,7 +60,7 @@ async def get_token_type(
 
 
 @save_token_router.message(
-    StateFilter(SaveToken.get_content_token),
+    StateFilter(SaveTokenStates.get_content_token),
     TokenFilter()
 )
 async def save_content_token(message: types.Message, state: FSMContext):
@@ -85,7 +85,7 @@ async def save_content_token(message: types.Message, state: FSMContext):
 
 
 @save_token_router.message(
-    StateFilter(SaveToken.get_analytic_token),
+    StateFilter(SaveTokenStates.get_analytic_token),
     TokenFilter()
 )
 async def save_analytic_token(message: types.Message, state: FSMContext):
@@ -111,8 +111,8 @@ async def save_analytic_token(message: types.Message, state: FSMContext):
 
 @save_token_router.message(
     StateFilter(
-        SaveToken.get_content_token,
-        SaveToken.get_analytic_token)
+        SaveTokenStates.get_content_token,
+        SaveTokenStates.get_analytic_token)
 )
 async def invalid_token(message: types.Message, state: FSMContext):
     """Обработка некорректно введенного токена."""
