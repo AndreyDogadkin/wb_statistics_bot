@@ -12,7 +12,7 @@ database = DBMethods()
 
 
 @start_help_router.message(CommandStart(), StateFilter(default_state))
-async def command_start_handler(message: types.Message) -> None:
+async def command_start_handler(message: types.Message):
     """Команда start."""
     await message.answer_sticker(stickers['start_sticker'])
     await message.answer(
@@ -33,14 +33,23 @@ async def command_help_handler(message: types.Message):
 
 
 @start_help_router.message(Command(commands='cancel'))
-async def close_any_state_command(message: types.Message, state: FSMContext):
+async def close_any_state_command(
+        message: types.Message,
+        state: FSMContext
+):
     await message.delete()
     await state.clear()
     await message.answer(info_mess_templates['cancel'])
 
 
-@start_help_router.callback_query(~StateFilter(default_state), F.data == 'cancel')
-async def close_any_state_callback(callback: types.CallbackQuery, state: FSMContext):
+@start_help_router.callback_query(
+    ~StateFilter(default_state),
+    F.data == 'cancel'
+)
+async def close_any_state_callback(
+        callback: types.CallbackQuery,
+        state: FSMContext
+):
     """Отмена любого состояния. """
     await callback.message.delete()
     await state.clear()
