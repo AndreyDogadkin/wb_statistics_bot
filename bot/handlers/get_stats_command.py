@@ -20,7 +20,7 @@ from bot.keyboards import (
     DaysCallbackData,
     PaginationNmIds
 )
-from bot.states import GetStats
+from bot.states import GetStatsStates
 from database.methods import DBMethods
 from exceptions.wb_exceptions import ForUserException
 from wb_api.analytics_requests import StatisticsRequests
@@ -70,7 +70,7 @@ async def set_get_stats_state(message: types.Message, state: FSMContext):
 
 
 @get_stats_router.callback_query(
-    StateFilter(GetStats.get_nm_ids),
+    StateFilter(GetStatsStates.get_nm_ids),
     PaginationNmIds.filter()
 )
 async def change_page_for_nm_ids(
@@ -141,7 +141,7 @@ async def send_nm_ids(
             await state.update_data(nm_ids=nm_ids)
             await state.update_data(page_number=0)
             message_for_ids, markup = await paginate_nm_ids(state)
-            await state.set_state(GetStats.get_nm_ids)
+            await state.set_state(GetStatsStates.get_nm_ids)
             await message.answer(message_for_ids, reply_markup=markup)
         else:
             await state.clear()
@@ -155,7 +155,7 @@ async def send_nm_ids(
 
 
 @get_stats_router.callback_query(
-    StateFilter(GetStats.get_nm_ids),
+    StateFilter(GetStatsStates.get_nm_ids),
     NmIdsCallbackData.filter()
 )
 async def set_period_state(
@@ -174,11 +174,11 @@ async def set_period_state(
         text=get_stats_mess_templates['set_get_period_state'],
         reply_markup=markup
     )
-    await state.set_state(GetStats.get_period)
+    await state.set_state(GetStatsStates.get_period)
 
 
 @get_stats_router.callback_query(
-    StateFilter(GetStats.get_period),
+    StateFilter(GetStatsStates.get_period),
     DaysCallbackData.filter()
 )
 async def send_user_statistics(
