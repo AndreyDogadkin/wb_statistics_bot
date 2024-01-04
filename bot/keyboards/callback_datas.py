@@ -12,7 +12,10 @@ class FavoritesCallbackData(CallbackData, prefix='favorites'):
     index_in_data: int
 
 
-class FavoritesDeleteCallbackData(FavoritesCallbackData, prefix='del_favorite'):
+class FavoritesDeleteCallbackData(
+    FavoritesCallbackData,
+    prefix='del_favorite'
+):
 
     pass
 
@@ -33,3 +36,8 @@ class TokenTypeCallbackData(CallbackData, prefix='token'):
     """Callback data для выбора типа токена."""
 
     token_type: str
+
+
+class HelpCallbackData(CallbackData, prefix='help'):
+
+    command: str

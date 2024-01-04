@@ -5,14 +5,18 @@ __all__ = (
     'DaysCallbackData',
     'TokenTypeCallbackData',
     'FavoritesCallbackData',
-    'FavoritesDeleteCallbackData'
+    'FavoritesDeleteCallbackData',
+    'HelpCallbackData'
 )
 
-from bot.keyboards.callback_datas import (NmIdsCallbackData,
-                                          PaginationNmIds,
-                                          DaysCallbackData,
-                                          TokenTypeCallbackData,
-                                          FavoritesCallbackData,
-                                          FavoritesDeleteCallbackData)
+from bot.keyboards.callback_datas import (
+    NmIdsCallbackData,
+    PaginationNmIds,
+    DaysCallbackData,
+    TokenTypeCallbackData,
+    FavoritesCallbackData,
+    FavoritesDeleteCallbackData,
+    HelpCallbackData
+)
 from bot.keyboards.keyboards import MakeMarkup
 
