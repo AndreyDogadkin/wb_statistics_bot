@@ -15,7 +15,7 @@ from bot.base_messages.messages_templates import (
 from bot.helpers import get_user_statistics, to_update_limits_format
 from bot.keyboards import FavoritesCallbackData, FavoritesDeleteCallbackData
 from bot.keyboards import MakeMarkup
-from bot.states import Favorites
+from bot.states import FavoritesStates
 from database.methods import DBMethods
 from exceptions.wb_exceptions import ForUserException
 from wb_api.analytics_requests import StatisticsRequests
@@ -66,9 +66,11 @@ async def get_favorites_gateway(message: types.Message, state: FSMContext):
                     get_favorite_message_templates['favorite_requests'],
                     reply_markup=markup
                 )
-                await state.set_state(Favorites.get_favorite)
+                await state.set_state(FavoritesStates.get_favorite)
             else:
-                await message.answer(get_favorite_message_templates['no_favorites'])
+                await message.answer(
+                    get_favorite_message_templates['no_favorites']
+                )
             await message.delete()
         else:
             await message.answer(get_stats_mess_templates['save_tokens'])
@@ -78,8 +80,8 @@ async def get_favorites_gateway(message: types.Message, state: FSMContext):
 
 @get_favorite_router.callback_query(
     StateFilter(
-        Favorites.get_favorite,
-        Favorites.delete_favorite
+        FavoritesStates.get_favorite,
+        FavoritesStates.delete_favorite
     ),
     F.data == 'delete_favorite'
 )
@@ -95,8 +97,11 @@ async def set_delete_favorite_state(
         if not delete_flag:
             await callback.answer('Теперь выбранный запрос будет удален.')
             await state.update_data(delete_favorite=True)
-            await state.set_state(Favorites.delete_favorite)
-            markup = MakeMarkup.favorites_markup(favorites=favorites, delete=True)
+            await state.set_state(FavoritesStates.delete_favorite)
+            markup = MakeMarkup.favorites_markup(
+                favorites=favorites,
+                delete=True
+            )
             await callback.message.edit_text(
                 get_favorite_message_templates['del_favorite_request'],
                 reply_markup=markup
@@ -104,19 +109,21 @@ async def set_delete_favorite_state(
         else:
             await callback.answer('Отмена удаления.')
             await state.update_data(delete_favorite=False)
-            await state.set_state(Favorites.get_favorite)
+            await state.set_state(FavoritesStates.get_favorite)
             markup = MakeMarkup.favorites_markup(favorites=favorites)
             await callback.message.edit_text(
                 get_favorite_message_templates['favorite_requests'],
                 reply_markup=markup
             )
     else:
-        await callback.message.edit_text(get_favorite_message_templates['no_favorites'])
+        await callback.message.edit_text(
+            get_favorite_message_templates['no_favorites']
+        )
         await state.clear()
 
 
 @get_favorite_router.callback_query(
-    StateFilter(Favorites.delete_favorite),
+    StateFilter(FavoritesStates.delete_favorite),
     FavoritesDeleteCallbackData.filter()
 )
 async def delete_favorite(
@@ -143,7 +150,7 @@ async def delete_favorite(
 
 
 @get_favorite_router.callback_query(
-    StateFilter(Favorites.get_favorite),
+    StateFilter(FavoritesStates.get_favorite),
     FavoritesCallbackData.filter()
 )
 async def send_statistics_from_favorite(

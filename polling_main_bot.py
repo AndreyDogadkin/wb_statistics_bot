@@ -6,11 +6,13 @@ from aiogram import Bot, Dispatcher
 from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.enums import ParseMode
 
-from bot.handlers import (get_favorite_router,
-                          get_stats_router,
-                          save_token_router,
-                          start_help_router,
-                          my_limits_router)
+from bot.handlers import (
+    get_favorite_router,
+    get_stats_router,
+    save_token_router,
+    start_help_router,
+    my_limits_router
+)
 from config_data import main_config
 from config_data.config import BOT_COMMANDS
 from database.methods import DBMethods
@@ -27,9 +29,15 @@ async def set_default_commands(bot):
 async def main() -> None:
     if main_config.bot.TEST_SERVER:
         session = AiohttpSession(proxy='http://proxy.server:3128')
-        bot = Bot(main_config.bot.TG_TOKEN, parse_mode=ParseMode.HTML, session=session)
+        bot = Bot(
+            main_config.bot.TG_TOKEN,
+            parse_mode=ParseMode.HTML,
+            session=session)
     else:
-        bot = Bot(main_config.bot.TG_TOKEN, parse_mode=ParseMode.HTML)
+        bot = Bot(
+            main_config.bot.TG_TOKEN,
+            parse_mode=ParseMode.HTML
+        )
     dp.include_router(start_help_router)
     dp.include_router(get_stats_router)
     dp.include_router(save_token_router)

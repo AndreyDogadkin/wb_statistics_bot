@@ -20,7 +20,7 @@ from bot.keyboards import (
     DaysCallbackData,
     PaginationNmIds
 )
-from bot.states import GetStats
+from bot.states import GetStatsStates
 from database.methods import DBMethods
 from exceptions.wb_exceptions import ForUserException
 from wb_api.analytics_requests import StatisticsRequests
@@ -32,7 +32,10 @@ database = DBMethods()
 get_stats_router = Router()
 
 
-@get_stats_router.message(Command(commands='get_stats'), StateFilter(default_state))
+@get_stats_router.message(
+    Command(commands='get_stats'),
+    StateFilter(default_state)
+)
 async def set_get_stats_state(message: types.Message, state: FSMContext):
     """
     Отправка номенклатур пользователю, если токен сохранен.
@@ -67,7 +70,7 @@ async def set_get_stats_state(message: types.Message, state: FSMContext):
 
 
 @get_stats_router.callback_query(
-    StateFilter(GetStats.get_nm_ids),
+    StateFilter(GetStatsStates.get_nm_ids),
     PaginationNmIds.filter()
 )
 async def change_page_for_nm_ids(
@@ -98,18 +101,30 @@ async def change_page_for_nm_ids(
     await callback.message.edit_text(text=message, reply_markup=markup)
 
 
-async def paginate_nm_ids(state: FSMContext) -> tuple[str, InlineKeyboardMarkup]:
+async def paginate_nm_ids(
+        state: FSMContext
+) -> tuple[str, InlineKeyboardMarkup]:
     """Подготовка сообщения и клавиатуры для номеров номенклатур."""
     state_data = await state.get_data()
     nm_ids = state_data.get('nm_ids')
     page_number = state_data.get('page_number')
     add_in_favorite: bool = state_data.get('add_in_favorite', False)
-    markup = MakeMarkup.nm_ids_markup(nm_ids, page_number, add_to_favorite=add_in_favorite)
-    message_for_ids: str = markdown.hbold(get_stats_mess_templates['change_nm_id'])
+    markup = MakeMarkup.nm_ids_markup(
+        nm_ids,
+        page_number,
+        add_to_favorite=add_in_favorite
+    )
+    message_for_ids: str = markdown.hbold(
+        get_stats_mess_templates['change_nm_id']
+    )
     for nm in nm_ids[page_number]:
-        message_for_ids += get_stats_mess_templates['send_nm_ids_template'].format(*nm)
+        message_for_ids += (
+            get_stats_mess_templates['send_nm_ids_template'].format(*nm)
+        )
         await state.update_data(data={f'photo:{nm[2]}': nm[3]})
-    message_for_ids += markdown.hbold(get_stats_mess_templates['plus_send_nm_ids_template'])
+    message_for_ids += (
+        markdown.hbold(get_stats_mess_templates['plus_send_nm_ids_template'])
+    )
     return message_for_ids, markup
 
 
@@ -126,7 +141,7 @@ async def send_nm_ids(
             await state.update_data(nm_ids=nm_ids)
             await state.update_data(page_number=0)
             message_for_ids, markup = await paginate_nm_ids(state)
-            await state.set_state(GetStats.get_nm_ids)
+            await state.set_state(GetStatsStates.get_nm_ids)
             await message.answer(message_for_ids, reply_markup=markup)
         else:
             await state.clear()
@@ -140,7 +155,7 @@ async def send_nm_ids(
 
 
 @get_stats_router.callback_query(
-    StateFilter(GetStats.get_nm_ids),
+    StateFilter(GetStatsStates.get_nm_ids),
     NmIdsCallbackData.filter()
 )
 async def set_period_state(
@@ -159,11 +174,11 @@ async def set_period_state(
         text=get_stats_mess_templates['set_get_period_state'],
         reply_markup=markup
     )
-    await state.set_state(GetStats.get_period)
+    await state.set_state(GetStatsStates.get_period)
 
 
 @get_stats_router.callback_query(
-    StateFilter(GetStats.get_period),
+    StateFilter(GetStatsStates.get_period),
     DaysCallbackData.filter()
 )
 async def send_user_statistics(
