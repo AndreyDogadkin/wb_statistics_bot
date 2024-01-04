@@ -1,9 +1,11 @@
 __all__ = (
-    'GetStats',
-    'SaveToken',
-    'Favorites'
+    'GetStatsStates',
+    'SaveTokenStates',
+    'FavoritesStates',
+    'HelpStates'
 )
 
-from bot.states.get_favorites import Favorites
-from bot.states.get_stats import GetStats
-from bot.states.save_token import SaveToken
+from bot.states.get_favorites import FavoritesStates
+from bot.states.get_stats import GetStatsStates
+from bot.states.save_token import SaveTokenStates
+from bot.states.help_states import HelpStates
