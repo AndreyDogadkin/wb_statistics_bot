@@ -1,3 +1,5 @@
+import logging
+
 from aiogram import types, F, Router
 from aiogram.filters import StateFilter, CommandStart, Command
 from aiogram.fsm.context import FSMContext
@@ -5,9 +7,11 @@ from aiogram.fsm.state import default_state
 from aiogram.utils import markdown
 
 from bot.base_messages.messages_templates import info_mess_templates, stickers
-from bot.states import HelpStates
 from bot.keyboards import MakeMarkup, HelpCallbackData
+from bot.states import HelpStates
 from database.methods import DBMethods
+
+loger = logging.getLogger(__name__)
 
 start_help_router = Router()
 database = DBMethods()
@@ -38,7 +42,6 @@ async def command_help_handler(
         reply_markup=MakeMarkup.help_markup()
     )
     await state.set_state(HelpStates.change_capter)
-    # await message.answer(info_mess_templates['help'])
     await message.delete()
 
 
@@ -90,5 +93,3 @@ async def close_any_state_callback(
     await callback.message.delete()
     await state.clear()
     await callback.answer('Отмена.')
-
-

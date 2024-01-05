@@ -12,7 +12,8 @@ from bot.handlers import (
     get_stats_router,
     save_token_router,
     start_help_router,
-    my_limits_router
+    my_limits_router,
+    support_router
 )
 from config_data.config import BOT_COMMANDS
 from polling_main_bot import main_config
@@ -44,6 +45,7 @@ async def lifespan(app: FastAPI):  # noqa
     dp.include_router(save_token_router)
     dp.include_router(my_limits_router)
     dp.include_router(get_favorite_router)
+    dp.include_router(support_router)
     await set_default_commands(bot)
     logger.info('app start')
     yield
