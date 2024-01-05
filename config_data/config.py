@@ -6,7 +6,6 @@ from aiogram import types
 from environs import Env
 from pydantic_settings import BaseSettings
 
-
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
@@ -34,6 +33,10 @@ BOT_COMMANDS = [
     types.BotCommand(
         command='cancel',
         description='↩️ Сброс состояния.'
+    ),
+    types.BotCommand(
+        command='support',
+        description='🔔 Сообщить о проблеме.'
     )
 ]
 
@@ -68,6 +71,7 @@ class BotSettings(BaseSettings):
     TG_TOKEN_SUPPORT: str
     NGROK_URL: str
     ADMINS: list
+    SUPPORT_ID: int
 
 
 class DatabaseSettings(BaseSettings):
