@@ -1,14 +1,13 @@
 import asyncio
 from logging.config import fileConfig
 
+from alembic import context
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
-from alembic import context
-from database.models import Base
 from config_data import main_config
-
+from database.models import Base
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -31,7 +30,7 @@ target_metadata = Base.metadata
 # ... etc.
 
 if main_config.database.DB_PROD:
-    DB_URL = main_config.database.DB_URL
+    DB_URL = main_config.database.db_url
 else:
     DB_URL = main_config.database.DB_URL_TEST
 

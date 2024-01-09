@@ -79,8 +79,17 @@ class DatabaseSettings(BaseSettings):
 
     DB_PROD: bool
     DB_URL_TEST: str = f'sqlite+aiosqlite:///{DB_TEST_PATH}'
-    DB_URL: str
+    DB_HOST: str
+    DB_PORT: int
+    DB_NAME: str
+    DB_USER: str
     DB_PASSWORD: str
+
+    @property
+    def db_url(self):
+        return ('postgresql+asyncpg://'
+                f'{self.DB_USER}:{self.DB_PASSWORD}'
+                f'@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}')
 
 
 class EncryptionSettings(BaseSettings):

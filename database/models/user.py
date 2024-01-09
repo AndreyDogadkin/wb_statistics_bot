@@ -36,10 +36,12 @@ class User(Base):
         back_populates='user',
         cascade='all, delete',
         passive_deletes=True,
+        single_parent=True
     )
     favorites: Mapped[list['FavoriteRequest']] = relationship(
         'FavoriteRequest',
         back_populates='user',
         cascade='all, delete',
         passive_deletes=True,
+        single_parent=True
     )

@@ -26,4 +26,7 @@ class FavoriteRequest(Base):
     nm_id: Mapped[int] = mapped_column(BigInteger)
     period: Mapped[int] = mapped_column(default=1)
 
-    user: Mapped["User"] = relationship('User', back_populates='favorites')
+    user: Mapped["User"] = relationship(
+        'User',
+        back_populates='favorites',
+    )

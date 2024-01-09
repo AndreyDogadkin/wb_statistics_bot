@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import (
 from config_data import main_config
 
 if main_config.database.DB_PROD:
-    DB_URL = main_config.database.DB_URL
+    DB_URL = main_config.database.db_url
 else:
     DB_URL = main_config.database.DB_URL_TEST
 

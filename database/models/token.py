@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 
-from sqlalchemy import ForeignKey, BLOB
+from sqlalchemy import ForeignKey, LargeBinary
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from database.models.base import Base
@@ -16,7 +16,10 @@ class Token(Base):
     user_id: Mapped[int] = mapped_column(
         ForeignKey('user_account.telegram_id', ondelete='CASCADE'),
     )
-    wb_token_content = mapped_column(BLOB, nullable=True)
-    wb_token_analytic = mapped_column(BLOB, nullable=True)
+    wb_token_content = mapped_column(LargeBinary, nullable=True)
+    wb_token_analytic = mapped_column(LargeBinary, nullable=True)
 
-    user: Mapped['User'] = relationship('User', back_populates='tokens')
+    user: Mapped['User'] = relationship(
+        'User',
+        back_populates='tokens'
+    )

@@ -93,3 +93,11 @@ async def close_any_state_callback(
     await callback.message.delete()
     await state.clear()
     await callback.answer('Отмена.')
+
+
+@start_help_router.message(Command(commands='delete_me'))
+async def delete_user(message: types.Message):
+    """Удаление данных пользователя."""
+    await database.delete_user_account(message.from_user.id)
+    await message.answer('Ваши данные успешно удалены.')
+    await message.delete()
