@@ -2,7 +2,6 @@ import datetime
 
 from sqlalchemy import select, Select
 
-import database
 from bot.base_messages.messages_templates import get_favorite_message_templates
 from config_data.config import (
     REQUESTS_PER_DAY_LIMIT,
@@ -262,3 +261,13 @@ class DBMethods:
             favorite = favorite.scalar_one()
             await s.delete(favorite)
             await s.commit()
+
+    async def delete_user_account(self, telegram_id):
+        """Удаление пользователя."""
+        query = self.__get_query_select_user(telegram_id)
+        async with self.session() as s:
+            user = await s.execute(query)
+            user = user.scalar_one_or_none()
+            if user:
+                await s.delete(user)
+                await s.commit()
