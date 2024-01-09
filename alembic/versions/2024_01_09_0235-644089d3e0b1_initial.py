@@ -1,18 +1,17 @@
-"""empty message
+"""initial
 
-Revision ID: d847334bd42c
+Revision ID: 644089d3e0b1
 Revises: 
-Create Date: 2023-12-20 03:15:24.271222
+Create Date: 2024-01-09 02:35:31.348626
 
 """
 from typing import Sequence, Union
 
-from alembic import op
 import sqlalchemy as sa
-
+from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = 'd847334bd42c'
+revision: str = '644089d3e0b1'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -45,8 +44,8 @@ def upgrade() -> None:
     )
     op.create_table('user_tokens',
     sa.Column('user_id', sa.BigInteger(), nullable=False),
-    sa.Column('wb_token_content', sa.BLOB(), nullable=True),
-    sa.Column('wb_token_analytic', sa.BLOB(), nullable=True),
+    sa.Column('wb_token_content', sa.LargeBinary(), nullable=True),
+    sa.Column('wb_token_analytic', sa.LargeBinary(), nullable=True),
     sa.Column('id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['user_id'], ['user_account.telegram_id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
