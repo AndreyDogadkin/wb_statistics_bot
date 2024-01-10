@@ -68,9 +68,16 @@ class DBMethods:
             token = await s.execute(query)
         return token.scalar_one_or_none()
 
-    async def save_content_token(self, telegram_id: int, token_content: str) -> None:
+    async def save_content_token(
+            self,
+            telegram_id: int,
+            token_content: str
+    ) -> None:
         """Сохранение или обновление токена типа 'Контент'."""
-        encrypted_token = AESEncryption.encrypt(token_content)
+        tokens_dict: dict = AESEncryption.encrypt_keys(
+            token_content=token_content
+        )
+        encrypted_token = tokens_dict.get('token_content')
         async with self.session() as s:
             token = await self.check_user_token(telegram_id)
             if token:
@@ -84,9 +91,16 @@ class DBMethods:
                 s.add(token)
             await s.commit()
 
-    async def save_analytic_token(self, telegram_id: int, token_analytic: str) -> None:
+    async def save_analytic_token(
+            self,
+            telegram_id: int,
+            token_analytic: str
+    ) -> None:
         """Сохранение или обновление токена типа 'Аналитика'."""
-        encrypted_token = AESEncryption.encrypt(token_analytic)
+        tokens_dict: dict = AESEncryption.encrypt_keys(
+            token_analytic=token_analytic
+        )
+        encrypted_token = tokens_dict.get('token_analytic')
         async with self.session() as s:
             token = await self.check_user_token(telegram_id)
             if token:
@@ -100,27 +114,31 @@ class DBMethods:
                 s.add(token)
             await s.commit()
 
-    async def get_user_content_token(self, telegram_id: int) -> Token | None:
+    async def get_user_content_token(self, telegram_id: int) -> str | None:
         """Получение токена типа 'Контент'."""
         async with self.session.begin() as s:
             query = self.__get_query_select_token(telegram_id, content=True)
             token = await s.execute(query)
             token = token.scalar_one_or_none()
             if token:
-                return AESEncryption.decrypt(
-                    token
+                tokens_dict: dict = AESEncryption.encrypt_keys(
+                    decrypt=True,
+                    token_content=token
                 )
+                return tokens_dict.get('token_content')
 
-    async def get_user_analytic_token(self, telegram_id: int) -> Token | None:
+    async def get_user_analytic_token(self, telegram_id: int) -> str | None:
         """Получение токена типа 'Аналитика'."""
         async with self.session.begin() as s:
             query = self.__get_query_select_token(telegram_id, analytic=True)
             token = await s.execute(query)
             token = token.scalar_one_or_none()
             if token:
-                return AESEncryption.decrypt(
-                    token
+                tokens_dict: dict = AESEncryption.encrypt_keys(
+                    decrypt=True,
+                    token_analytic=token
                 )
+                return tokens_dict.get('token_analytic')
 
     async def get_user_tokens(self, telegram_id: int) -> dict[str: str] | None:
         """Получить токены пользователя."""
@@ -139,7 +157,10 @@ class DBMethods:
                 )
                 return encrypted_tokens
 
-    async def set_user_last_request(self, telegram_id: int) -> datetime.datetime:
+    async def set_user_last_request(
+            self,
+            telegram_id: int
+    ) -> datetime.datetime:
         """Установить пользователю дату и время последнего запроса."""
         async with self.session.begin() as s:
             query = self.__get_query_select_user(telegram_id)
@@ -153,7 +174,10 @@ class DBMethods:
             await s.commit()
         return last_request
 
-    async def set_plus_one_to_user_requests_per_day(self, telegram_id: int) -> None:
+    async def set_plus_one_to_user_requests_per_day(
+            self,
+            telegram_id: int
+    ) -> None:
         """Прибавить пользователю счетчик запросов на 1."""
         async with self.session.begin() as s:
             query = self.__get_query_select_user(telegram_id)
@@ -162,7 +186,10 @@ class DBMethods:
             user.requests_per_day = user.requests_per_day + 1
             await s.commit()
 
-    async def check_user_limits(self, telegram_id: int) -> tuple[bool, int, datetime.datetime]:
+    async def check_user_limits(
+            self,
+            telegram_id: int
+    ) -> tuple[bool, int, datetime.datetime]:
         """Проверить и вернуть лимиты запросов пользователя."""
         async with self.session.begin() as s:
             query = self.__get_query_select_user(telegram_id)
@@ -221,7 +248,9 @@ class DBMethods:
         if not favorite:
             if not limit_favorites:
                 raise ForUserException(
-                    message=get_favorite_message_templates['max_limit_favorite']
+                    message=get_favorite_message_templates[
+                        'max_limit_favorite'
+                    ]
                 )
             async with self.session() as s:
                 favorite = FavoriteRequest(
@@ -234,7 +263,10 @@ class DBMethods:
                 s.add(favorite)
                 await s.commit()
 
-    async def get_user_favorites(self, telegram_id: int) -> list[FavoriteRequest]:
+    async def get_user_favorites(
+            self,
+            telegram_id: int
+    ) -> list[FavoriteRequest]:
         """Получить все избранные запросы пользователя."""
         query = select(FavoriteRequest).where(
             FavoriteRequest.user_id == telegram_id
