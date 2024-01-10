@@ -98,7 +98,6 @@ class MakeMarkup:
         markup.attach(cls.cancel_builder())
         return markup.as_markup()
 
-
     @classmethod
     def cancel_builder(cls) -> InlineKeyboardBuilder:
         """Кнопка отмены любого состояния."""
