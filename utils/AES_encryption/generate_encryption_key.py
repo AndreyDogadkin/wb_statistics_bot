@@ -4,7 +4,7 @@ from Crypto.Protocol.KDF import PBKDF2
 from Crypto.Random import get_random_bytes
 
 
-def generate_key(password: str, dklen: int, iterations: int):
+def generate_key(password: str, dklen: int, iterations: int) -> bytes:
     """Сгенерировать ключ шифрования."""
     bytes_key = PBKDF2(
         password=password,

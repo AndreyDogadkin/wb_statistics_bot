@@ -27,7 +27,7 @@ class AESEncryption:
         return kwargs
 
     @classmethod
-    def __check_keys(cls, keys: dict, decrypt: bool):
+    def __check_keys(cls, keys: dict, decrypt: bool) -> None:
         if not isinstance(keys, dict):
             raise TypeError('Wrong keys type')
         if not keys:
@@ -42,14 +42,14 @@ class AESEncryption:
                     raise TypeError('Wrong key or value type')
 
     @classmethod
-    def encrypt(cls, token):
+    def encrypt(cls, token) -> bytes:
         """Шифрование токена."""
         cipher = AES.new(cls.__KEY, AES.MODE_CBC)
         cipher_data = cipher.encrypt(pad(token.encode(), AES.block_size))
         return cipher.iv + cipher_data
 
     @classmethod
-    def decrypt(cls, encrypted_token):
+    def decrypt(cls, encrypted_token) -> str:
         """Расшифровка токена."""
         iv = encrypted_token[:16]
         cipher = AES.new(cls.__KEY, AES.MODE_CBC, iv=iv)
