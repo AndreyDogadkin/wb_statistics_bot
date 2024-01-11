@@ -29,6 +29,11 @@ class ResponseHandlers:
             raise ForUserException(
                 err_mess_templates['response_error_field_true']
             )
+        if not data.data:
+            logger.warning('Получен пустой ответ.')
+            raise ForUserException(
+                err_mess_templates['empty_response']
+            )
 
     @staticmethod
     def __get_datetime_format(_datetime: str, method: str):
