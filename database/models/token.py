@@ -6,20 +6,20 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from database.models.base import Base
 
 if TYPE_CHECKING:
-    from database.models.user import User
+    from database.models.account import WBAccount
 
 
 class Token(Base):
-    __tablename__ = 'user_tokens'
+    __tablename__ = 'wb_tokens'
     __table_args__ = ()
 
-    user_id: Mapped[int] = mapped_column(
-        ForeignKey('user_account.telegram_id', ondelete='CASCADE'),
+    wb_account_id: Mapped[int] = mapped_column(
+        ForeignKey('wb_account.id', ondelete='CASCADE'),
     )
     wb_token_content = mapped_column(LargeBinary, nullable=True)
     wb_token_analytic = mapped_column(LargeBinary, nullable=True)
 
-    user: Mapped['User'] = relationship(
-        'User',
+    wb_account: Mapped['WBAccount'] = relationship(
+        'WBAccount',
         back_populates='tokens'
     )
