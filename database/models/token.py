@@ -21,5 +21,6 @@ class Token(Base):
 
     wb_account: Mapped['WBAccount'] = relationship(
         'WBAccount',
-        back_populates='tokens'
+        back_populates='tokens',
+        uselist=False
     )

@@ -6,21 +6,18 @@ from sqlalchemy.orm import mapped_column, Mapped, relationship
 from database.models.base import Base
 
 if TYPE_CHECKING:
-    from database.models.user import User
+    from database.models.user import WBAccount
 
 
 class FavoriteRequest(Base):
-    __tablename__ = 'user_favorites_requests'
+    __tablename__ = 'account_favorites_requests'
     __table_args__ = (
         UniqueConstraint(
-            'user_id', 'nm_id', 'period',
+            'wb_account_id', 'nm_id', 'period',
             name='all_columns_uniq'
         ),
     )
 
-    user_id: Mapped[int] = mapped_column(
-        ForeignKey('user_account.telegram_id', ondelete='CASCADE')
-    )
     wb_account_id: Mapped[int] = mapped_column(
         ForeignKey('wb_account.id')
     )
@@ -29,8 +26,7 @@ class FavoriteRequest(Base):
     nm_id: Mapped[int] = mapped_column(BigInteger)
     period: Mapped[int] = mapped_column(default=1)
 
-    user: Mapped['User'] = relationship(
-        'User',
+    wb_account: Mapped['WBAccount'] = relationship(
+        'WBAccount',
         back_populates='favorites',
     )
-    # TODO Добавить поле wb_account_id

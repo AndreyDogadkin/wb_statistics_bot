@@ -7,7 +7,6 @@ from database.models.base import Base
 
 if TYPE_CHECKING:
     from database.models.account import WBAccount
-    from database.models.favorite import FavoriteRequest
 
 
 class User(Base):
@@ -33,13 +32,6 @@ class User(Base):
 
     wb_accounts: Mapped[list['WBAccount']] = relationship(
         'WBAccount',
-        back_populates='user',
-        cascade='all, delete',
-        passive_deletes=True,
-        single_parent=True
-    )
-    favorites: Mapped[list['FavoriteRequest']] = relationship(
-        'FavoriteRequest',
         back_populates='user',
         cascade='all, delete',
         passive_deletes=True,

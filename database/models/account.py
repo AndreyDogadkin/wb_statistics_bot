@@ -6,8 +6,7 @@ from sqlalchemy.orm import mapped_column, Mapped, relationship
 from database.models.base import Base
 
 if TYPE_CHECKING:
-    from database.models.user import User
-    from database.models.token import Token
+    from database.models import User, Token
 
 
 class WBAccount(Base):
@@ -29,6 +28,13 @@ class WBAccount(Base):
 
     tokens: Mapped['Token'] = relationship(
         'Token',
+        back_populates='wb_account',
+        cascade='all, delete',
+        passive_deletes=True,
+        single_parent=True
+    )
+    favorites: Mapped[list['WBAccount']] = relationship(
+        'FavoriteRequest',
         back_populates='wb_account',
         cascade='all, delete',
         passive_deletes=True,
