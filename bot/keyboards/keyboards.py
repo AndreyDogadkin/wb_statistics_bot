@@ -11,10 +11,13 @@ from bot.keyboards import (
     TokenTypeCallbackData,
     FavoritesCallbackData,
     FavoritesDeleteCallbackData,
-    HelpCallbackData
+    HelpCallbackData,
+    AccountsCallbackData,
+    AccountsEditCallbackData,
+    AccountsDeleteCallbackData
 )
 from config_data.config import PERIODS_FOR_REQUESTS
-from database.models import FavoriteRequest
+from database.models import FavoriteRequest, WBAccount
 
 
 class MakeMarkup:
@@ -43,10 +46,38 @@ class MakeMarkup:
         return markup.as_markup()
 
     @classmethod
+    def account_markup(
+            cls,
+            accounts: list[WBAccount],
+            edit: bool = False,
+            delete: bool = False
+    ) -> InlineKeyboardMarkup:
+        """Клавиатура для аккаунтов пользователя."""
+        markup = InlineKeyboardBuilder()
+        callback_class = AccountsCallbackData
+        if edit:
+            callback_class = AccountsEditCallbackData
+        elif delete:
+            callback_class = AccountsDeleteCallbackData
+        for account in accounts:
+            markup.button(
+                text=account.name,
+                callback_data=callback_class(
+                    name=account.name,
+                    id=account.id
+                ).pack()
+            )
+        markup.adjust(1)
+        markup.attach(cls.edit_builder())
+        # TODO Добавить кнопку удаления аккаунта
+        markup.attach(cls.cancel_builder())
+        return markup.as_markup()
+
+    @classmethod
     def favorites_markup(
             cls, favorites: list[FavoriteRequest],
             delete: bool = False
-    ):
+    ) -> InlineKeyboardMarkup:
         """Клавиатура для избранных запросов."""
         markup = InlineKeyboardBuilder()
         callback_class = (
@@ -79,7 +110,7 @@ class MakeMarkup:
         return markup.as_markup()
 
     @classmethod
-    def help_markup(cls):
+    def help_markup(cls) -> InlineKeyboardMarkup:
         """Клавиатура для выбора раздела инструкции."""
         commands = (
             ('API Ключи', 'token'),
@@ -110,7 +141,10 @@ class MakeMarkup:
         return markup
 
     @classmethod
-    def add_to_favorite_builder(cls, add_to_favorite: bool = False):
+    def add_to_favorite_builder(
+            cls,
+            add_to_favorite: bool = False
+    ) -> InlineKeyboardBuilder:
         """Кнопка добавления в избранное."""
         text = '☆' if not add_to_favorite else '⭐️'
         markup = InlineKeyboardBuilder()
@@ -122,7 +156,19 @@ class MakeMarkup:
         return markup
 
     @classmethod
-    def delete_builder(cls, delete: bool = False):
+    def edit_builder(cls, edit: bool = False) -> InlineKeyboardBuilder:
+        """Кнопка редактирования."""
+        text = '✎'if not edit else '✏️'
+        markup = InlineKeyboardBuilder()
+        edit_button = InlineKeyboardButton(
+            text=text,
+            callback_data='edit'
+        )
+        markup.row(edit_button)
+        return markup
+
+    @classmethod
+    def delete_builder(cls, delete: bool = False) -> InlineKeyboardBuilder:
         """Кнопка удаления из избранного."""
         text = '♲' if not delete else '♻️'
         markup = InlineKeyboardBuilder()
