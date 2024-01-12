@@ -1,4 +1,5 @@
 import logging
+import random
 
 from aiogram import types, F, Router
 from aiogram.filters import StateFilter, CommandStart, Command
@@ -98,11 +99,14 @@ async def close_any_state_callback(
 @start_help_router.message(Command(commands='delete_me'))
 async def send_confirm_delete_user(message: types.Message, state: FSMContext):
     """Удаление данных пользователя."""
-    confirm_string = f'Удалить {message.from_user.username}'
+    random_number = random.randint(1000, 9999)
+    confirm_string = f'Удалить {message.from_user.username} {random_number}'
     await state.update_data(confirm_string=confirm_string)
     await message.delete()
-    await message.answer('🚨 Для удаления пользователя введите:\n'
-                         f'"{confirm_string}"')
+    await message.answer(
+        info_mess_templates['delete_user_warning'].format(confirm_string),
+        reply_markup=MakeMarkup.cancel_builder().as_markup()
+    )
     await state.set_state(DeleteUserStates.delete_user)
 
 
