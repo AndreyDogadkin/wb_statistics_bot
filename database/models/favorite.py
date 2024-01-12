@@ -19,7 +19,7 @@ class FavoriteRequest(Base):
     )
 
     wb_account_id: Mapped[int] = mapped_column(
-        ForeignKey('wb_account.id')
+        ForeignKey('wb_account.id', ondelete='CASCADE')
     )
     name: Mapped[str] = mapped_column(String)
     photo_url: Mapped[str] = mapped_column(String)
