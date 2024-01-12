@@ -8,7 +8,7 @@ from aiogram.utils import markdown
 
 from bot.base_messages.messages_templates import info_mess_templates, stickers
 from bot.keyboards import MakeMarkup, HelpCallbackData
-from bot.states import HelpStates
+from bot.states import HelpStates, DeleteUserStates
 from database.methods import DBMethods
 
 loger = logging.getLogger(__name__)
@@ -96,8 +96,29 @@ async def close_any_state_callback(
 
 
 @start_help_router.message(Command(commands='delete_me'))
-async def delete_user(message: types.Message):
+async def send_confirm_delete_user(message: types.Message, state: FSMContext):
     """Удаление данных пользователя."""
-    await database.delete_user_account(message.from_user.id)
-    await message.answer('Ваши данные успешно удалены.')
+    confirm_string = f'Удалить {message.from_user.username}'
+    await state.update_data(confirm_string=confirm_string)
     await message.delete()
+    await message.answer('🚨 Для удаления пользователя введите:\n'
+                         f'"{confirm_string}"')
+    await state.set_state(DeleteUserStates.delete_user)
+
+
+@start_help_router.message(StateFilter(DeleteUserStates.delete_user))
+async def get_confirm_delete_user(message: types.Message, state: FSMContext):
+    state_data = await state.get_data()
+    confirm_string = state_data.get('confirm_string')
+    if confirm_string == message.text:
+        await database.delete_user(message.from_user.id)
+        await message.answer('🥲 Ваши данные успешно удалены,'
+                             'но мы надеемся на ваше возвращение.')
+        await message.delete()
+    else:
+        await message.answer(
+            '⛔️ Введенное сообщение не соответствует ожидаемому.\n'
+            'Удаление отменено.'
+        )
+        await message.delete()
+    await state.clear()
