@@ -1,3 +1,5 @@
+from sqlalchemy import event
+from sqlalchemy.engine import Engine
 from sqlalchemy.ext.asyncio import (
     create_async_engine,
     async_sessionmaker,
@@ -10,12 +12,18 @@ if main_config.database.DB_PROD:
 else:
     DB_URL = main_config.database.DB_URL_TEST
 
+    @event.listens_for(Engine, 'connect')
+    def set_sqlite_pragma(dbapi_connection, connection_record):
+        cursor = dbapi_connection.cursor()
+        cursor.execute("PRAGMA foreign_keys=ON")
+        cursor.close()
+
 
 class DBConnector:
-    def __init__(self, url, echo=False):
+    def __init__(self, url):
         self.engine = create_async_engine(
             url=url,
-            echo=echo,
+            echo=False,
         )
         self.session_factory = async_sessionmaker(
             bind=self.engine,
