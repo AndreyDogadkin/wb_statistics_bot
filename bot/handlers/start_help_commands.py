@@ -101,11 +101,14 @@ async def send_confirm_delete_user(message: types.Message, state: FSMContext):
     """Удаление данных пользователя."""
     random_number = random.randint(1000, 9999)
     confirm_string = f'Удалить {message.from_user.username} {random_number}'
-    await state.update_data(confirm_string=confirm_string)
     await message.delete()
-    await message.answer(
+    for_del_message = await message.answer(
         info_mess_templates['delete_user_warning'].format(confirm_string),
         reply_markup=MakeMarkup.cancel_builder().as_markup()
+    )
+    await state.update_data(
+        confirm_string=confirm_string,
+        for_del_message=for_del_message
     )
     await state.set_state(DeleteUserStates.delete_user)
 
@@ -113,7 +116,8 @@ async def send_confirm_delete_user(message: types.Message, state: FSMContext):
 @start_help_router.message(StateFilter(DeleteUserStates.delete_user))
 async def get_confirm_delete_user(message: types.Message, state: FSMContext):
     state_data = await state.get_data()
-    confirm_string = state_data.get('confirm_string')
+    confirm_string: str = state_data.get('confirm_string')
+    for_del_message: types.Message = state_data.get('for_del_message')
     if confirm_string == message.text:
         await database.delete_user(message.from_user.id)
         await message.answer('🥲 Ваши данные успешно удалены,'
@@ -125,4 +129,5 @@ async def get_confirm_delete_user(message: types.Message, state: FSMContext):
             'Удаление отменено.'
         )
         await message.delete()
+    await for_del_message.delete()
     await state.clear()
