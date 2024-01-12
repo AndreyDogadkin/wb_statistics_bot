@@ -27,8 +27,24 @@ database = DBMethods()
 get_favorite_router = Router()
 
 
-async def update_favorites_in_state_data(user_id: int, state: FSMContext):
+async def send_favorites_and_update_in_state_data(
+        state: FSMContext,
+        callback: types.CallbackQuery | types.Message
+):
+    user_id = callback.from_user.id
     favorites = await database.get_user_favorites(user_id)
+    markup = MakeMarkup.favorites_markup(favorites=favorites)
+    if favorites:
+        await callback.message.edit_text(
+            get_favorite_message_templates['favorite_requests'],
+            reply_markup=markup
+        )
+        await state.set_state(FavoritesStates.get_favorite)
+    else:
+        await callback.message.edit_text(
+            get_favorite_message_templates['no_favorites']
+        )
+        await state.clear()
     await state.update_data(favorites=favorites)
 
 
@@ -51,15 +67,15 @@ async def get_favorites_gateway(message: types.Message, state: FSMContext):
                 next_update_limit
             )
         )
-        await message.delete()
         await state.clear()
     else:
         token_analytic = await database.get_user_analytic_token(user_id)
         if token_analytic:
-            await update_favorites_in_state_data(user_id=user_id, state=state)
-            state_data = await state.get_data()
-            favorites = state_data.get('favorites')
-            await state.update_data(token_analytic=token_analytic)
+            favorites = await database.get_user_favorites(telegram_id=user_id)
+            await state.update_data(
+                token_analytic=token_analytic,
+                favorites=favorites
+            )
             markup = MakeMarkup.favorites_markup(favorites=favorites)
             if favorites:
                 await message.answer(
@@ -71,11 +87,10 @@ async def get_favorites_gateway(message: types.Message, state: FSMContext):
                 await message.answer(
                     get_favorite_message_templates['no_favorites']
                 )
-            await message.delete()
         else:
             await message.answer(get_stats_mess_templates['save_tokens'])
-            await message.delete()
             await state.clear()
+        await message.delete()
 
 
 @get_favorite_router.callback_query(
@@ -83,7 +98,7 @@ async def get_favorites_gateway(message: types.Message, state: FSMContext):
         FavoritesStates.get_favorite,
         FavoritesStates.delete_favorite
     ),
-    F.data == 'delete'
+    F.func(lambda x: x.data in ('delete', 'cancel_delete'))
 )
 async def set_delete_favorite_state(
         callback: types.CallbackQuery,
@@ -92,9 +107,8 @@ async def set_delete_favorite_state(
     """Выбор состояния удаления либо получения избранного."""
     state_data = await state.get_data()
     favorites = state_data.get('favorites')
-    delete_flag: bool = state_data.get('delete_favorite', False)
     if favorites:
-        if not delete_flag:
+        if callback.data == 'delete':
             await callback.answer('Теперь выбранный запрос будет удален.')
             await state.update_data(delete_favorite=True)
             await state.set_state(FavoritesStates.delete_favorite)
@@ -106,7 +120,7 @@ async def set_delete_favorite_state(
                 get_favorite_message_templates['del_favorite_request'],
                 reply_markup=markup
             )
-        else:
+        elif callback.data == 'cancel_delete':
             await callback.answer('Отмена удаления.')
             await state.update_data(delete_favorite=False)
             await state.set_state(FavoritesStates.get_favorite)
@@ -145,8 +159,10 @@ async def delete_favorite(
         period=period
     )
     await callback.answer(f'Запрос "{name}" удален.')
-    await update_favorites_in_state_data(user_id=user_id, state=state)
-    await set_delete_favorite_state(callback=callback, state=state)
+    await send_favorites_and_update_in_state_data(
+        callback=callback,
+        state=state
+    )
 
 
 @get_favorite_router.callback_query(
