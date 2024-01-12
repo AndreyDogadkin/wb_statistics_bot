@@ -4,9 +4,11 @@ __all__ = (
     'FavoritesStates',
     'HelpStates',
     'SupportStates',
-    'DeleteUserStates'
+    'DeleteUserStates',
+    'AccountsStates'
 )
 
+from bot.states.accounts import AccountsStates
 from bot.states.delete_user import DeleteUserStates
 from bot.states.get_favorites import FavoritesStates
 from bot.states.get_stats import GetStatsStates
