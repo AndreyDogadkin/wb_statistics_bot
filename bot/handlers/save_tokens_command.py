@@ -28,6 +28,7 @@ async def set_save_token_state(message: types.Message, state: FSMContext):
         text=save_token_mess_templates['change_token_type'],
         reply_markup=MakeMarkup.change_token_markup()
     )
+    await message.delete()
     await state.update_data(for_edit=for_edit)
     await state.set_state(SaveTokenStates.get_token_type)
 
