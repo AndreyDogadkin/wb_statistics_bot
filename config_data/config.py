@@ -15,16 +15,8 @@ BOT_COMMANDS = [
         description='❓ Как пользоваться ботом.'
     ),
     types.BotCommand(
-        command='donate',
-        description='🩶 Пожертвовать на развитие.'
-    ),
-    types.BotCommand(
         command='set_account',
-        description='🗂️ Выбрать активный аккаунт.'
-    ),
-    types.BotCommand(
-        command='token',
-        description='🔑 Добавить/обновить токен.'
+        description='🗂️ Управление аккаунтами.'
     ),
     types.BotCommand(
         command='favorites',
@@ -35,8 +27,16 @@ BOT_COMMANDS = [
         description='📈 Получить статистику.'
     ),
     types.BotCommand(
+        command='token',
+        description='🔑 Добавить/обновить токен.'
+    ),
+    types.BotCommand(
         command='my_limits',
         description='💯 Мои лимиты.'
+    ),
+    types.BotCommand(
+        command='donate',
+        description='🩶 Пожертвовать на развитие.'
     ),
     types.BotCommand(
         command='cancel',
@@ -67,6 +67,7 @@ DAY_LIMIT = 6
 DAY_LIMIT_DELTA = datetime.timedelta(hours=DAY_LIMIT)
 
 MAX_LEN_FAVORITES = 5
+MAX_LEN_ACCOUNTS = 3
 
 DB_TEST_PATH = BASE_DIR / 'test_database.sqlite3'
 
