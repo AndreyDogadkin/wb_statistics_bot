@@ -60,6 +60,8 @@ class MakeMarkup:
         elif delete:
             callback_class = AccountsDeleteCallbackData
         for account in accounts:
+            if account.is_now_active:
+                account.name = f'❖ {account.name} ❖'
             markup.button(
                 text=account.name,
                 callback_data=callback_class(
