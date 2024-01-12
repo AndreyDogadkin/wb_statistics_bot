@@ -83,7 +83,7 @@ async def get_favorites_gateway(message: types.Message, state: FSMContext):
         FavoritesStates.get_favorite,
         FavoritesStates.delete_favorite
     ),
-    F.data == 'delete_favorite'
+    F.data == 'delete'
 )
 async def set_delete_favorite_state(
         callback: types.CallbackQuery,
