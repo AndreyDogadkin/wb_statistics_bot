@@ -11,10 +11,13 @@ from bot.keyboards import (
     TokenTypeCallbackData,
     FavoritesCallbackData,
     FavoritesDeleteCallbackData,
-    HelpCallbackData
+    HelpCallbackData,
+    AccountsCallbackData,
+    AccountsEditCallbackData,
+    AccountsDeleteCallbackData
 )
 from config_data.config import PERIODS_FOR_REQUESTS
-from database.models import FavoriteRequest
+from database.models import FavoriteRequest, WBAccount
 
 
 class MakeMarkup:
@@ -43,10 +46,43 @@ class MakeMarkup:
         return markup.as_markup()
 
     @classmethod
+    def account_markup(
+            cls,
+            accounts: list[WBAccount],
+            edit: bool = False,
+            delete: bool = False
+    ) -> InlineKeyboardMarkup:
+        """Клавиатура для аккаунтов пользователя."""
+        markup = InlineKeyboardBuilder()
+        callback_class = AccountsCallbackData
+        if edit:
+            callback_class = AccountsEditCallbackData
+        elif delete:
+            callback_class = AccountsDeleteCallbackData
+        for account in accounts:
+            if account.is_now_active:
+                account.name = f'❖ {account.name} ❖'
+            markup.button(
+                text=account.name,
+                callback_data=callback_class(
+                    name=account.name,
+                    id=account.id
+                ).pack()
+            )
+        markup.adjust(1)
+        markup.row(
+            cls.add_button(),
+            cls.edit_button(edit=edit),
+            cls.delete_button(delete=delete)
+        )
+        markup.attach(cls.cancel_builder())
+        return markup.as_markup()
+
+    @classmethod
     def favorites_markup(
             cls, favorites: list[FavoriteRequest],
             delete: bool = False
-    ):
+    ) -> InlineKeyboardMarkup:
         """Клавиатура для избранных запросов."""
         markup = InlineKeyboardBuilder()
         callback_class = (
@@ -61,7 +97,7 @@ class MakeMarkup:
                 ).pack()
             )
         markup.adjust(1)
-        markup.attach(cls.delete_builder(delete))
+        markup.row(cls.delete_button(delete))
         markup.attach(cls.cancel_builder())
         return markup.as_markup()
 
@@ -79,7 +115,7 @@ class MakeMarkup:
         return markup.as_markup()
 
     @classmethod
-    def help_markup(cls):
+    def help_markup(cls) -> InlineKeyboardMarkup:
         """Клавиатура для выбора раздела инструкции."""
         commands = (
             ('API Ключи', 'token'),
@@ -110,7 +146,10 @@ class MakeMarkup:
         return markup
 
     @classmethod
-    def add_to_favorite_builder(cls, add_to_favorite: bool = False):
+    def add_to_favorite_builder(
+            cls,
+            add_to_favorite: bool = False
+    ) -> InlineKeyboardBuilder:
         """Кнопка добавления в избранное."""
         text = '☆' if not add_to_favorite else '⭐️'
         markup = InlineKeyboardBuilder()
@@ -122,16 +161,34 @@ class MakeMarkup:
         return markup
 
     @classmethod
-    def delete_builder(cls, delete: bool = False):
-        """Кнопка удаления из избранного."""
+    def add_button(cls) -> InlineKeyboardButton:
+        """Кнопка добавления."""
+        text = '✚'
+        add_button = InlineKeyboardButton(
+            text=text,
+            callback_data='add'
+        )
+        return add_button
+
+    @classmethod
+    def edit_button(cls, edit: bool = False) -> InlineKeyboardButton:
+        """Кнопка редактирования."""
+        text = '✎'if not edit else '✏️'
+        edit_button = InlineKeyboardButton(
+            text=text,
+            callback_data='edit'
+        )
+        return edit_button
+
+    @classmethod
+    def delete_button(cls, delete: bool = False) -> InlineKeyboardButton:
+        """Кнопка удаления."""
         text = '♲' if not delete else '♻️'
-        markup = InlineKeyboardBuilder()
         delete_button = InlineKeyboardButton(
             text=text,
-            callback_data='delete_favorite'
+            callback_data='delete'
         )
-        markup.row(delete_button)
-        return markup
+        return delete_button
 
     @classmethod
     def change_token_markup(cls) -> InlineKeyboardMarkup:

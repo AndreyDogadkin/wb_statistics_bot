@@ -15,6 +15,14 @@ BOT_COMMANDS = [
         description='❓ Как пользоваться ботом.'
     ),
     types.BotCommand(
+        command='donate',
+        description='🩶 Пожертвовать на развитие.'
+    ),
+    types.BotCommand(
+        command='set_account',
+        description='🗂️ Выбрать активный аккаунт.'
+    ),
+    types.BotCommand(
         command='token',
         description='🔑 Добавить/обновить токен.'
     ),
@@ -49,7 +57,7 @@ PERIODS_FOR_REQUESTS = (
     ('2 Недели', 14),
     ('Месяц', 31),
     ('2 Месяца', 62),
-    ('6 Месяцев', 180)
+    ('6 Месяцев', 183)
 )
 
 PAGINATION_SIZE = 5

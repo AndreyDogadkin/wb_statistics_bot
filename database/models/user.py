@@ -6,8 +6,7 @@ from sqlalchemy.orm import mapped_column, Mapped, relationship
 from database.models.base import Base
 
 if TYPE_CHECKING:
-    from database.models.token import Token
-    from database.models.favorite import FavoriteRequest
+    from database.models.account import WBAccount
 
 
 class User(Base):
@@ -31,15 +30,8 @@ class User(Base):
     last_request = mapped_column(DateTime, nullable=True)
     requests_per_day: Mapped[int] = mapped_column(default=0)
 
-    tokens: Mapped['Token'] = relationship(
-        'Token',
-        back_populates='user',
-        cascade='all, delete',
-        passive_deletes=True,
-        single_parent=True
-    )
-    favorites: Mapped[list['FavoriteRequest']] = relationship(
-        'FavoriteRequest',
+    wb_accounts: Mapped[list['WBAccount']] = relationship(
+        'WBAccount',
         back_populates='user',
         cascade='all, delete',
         passive_deletes=True,
