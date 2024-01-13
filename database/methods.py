@@ -1,13 +1,14 @@
 import datetime
 
-from sqlalchemy import select, Select, exists
+from sqlalchemy import select, Select, exists, func
 from sqlalchemy.orm import selectinload
 
 from bot.base_messages.messages_templates import get_favorite_message_templates
 from config_data.config import (
     REQUESTS_PER_DAY_LIMIT,
     DAY_LIMIT_DELTA,
-    MAX_LEN_FAVORITES,
+    MAX_LIMIT_FAVORITES,
+    MAX_LIMIT_ACCOUNTS
 )
 from database import database_connector
 from database.models import User, Token, FavoriteRequest, WBAccount
@@ -16,7 +17,6 @@ from utils import AESEncryption
 
 
 class DBMethods:
-
     session = database_connector.session_factory
 
     def __get_query_select_user(self, telegram_id: int) -> Select:
@@ -59,13 +59,13 @@ class DBMethods:
                     telegram_id=telegram_id,
                     last_request=datetime.datetime.now()
                 )
-                user.wb_accounts = [
+                user.wb_accounts.append(
                     WBAccount(
                         user_id=telegram_id,
                         name=f'Мой магазин',
                         is_now_active=True
                     )
-                ]
+                )
                 s.add(user)
                 await s.commit()
 
@@ -88,11 +88,24 @@ class DBMethods:
             active_account = await s.execute(query)
             return active_account.scalar_one_or_none()
 
+    async def check_limit_accounts(self, telegram_id):
+        query = select(func.count()).select_from(WBAccount).where(
+            WBAccount.user_id == telegram_id
+        )
+        async with self.session() as s:
+            accounts_count = await s.execute(query)
+            accounts_count = accounts_count.scalar()
+            if accounts_count < MAX_LIMIT_ACCOUNTS:
+                return True
+            return False
+
     async def check_account_name(self, telegram_id, account_name):
         """Проверка на повторяющиеся имена."""
-        query = exists(WBAccount).where(
-            WBAccount.user_id == telegram_id,
-            WBAccount.name == account_name
+        query = select(
+            exists(WBAccount).where(
+                WBAccount.user_id == telegram_id,
+                WBAccount.name == account_name
+            )
         )
         async with self.session() as s:
             account = await s.execute(query)
@@ -100,20 +113,24 @@ class DBMethods:
 
     async def create_user_account(self, telegram_id, account_name):
         """Создать аккаунт пользователя."""
-        async with self.session() as s:
-            account = WBAccount(
-                user_id=telegram_id,
-                name=account_name
-            )
-            s.add(account)
-            await s.commit()
+        name_exists = await self.check_account_name(telegram_id, account_name)
+        if not name_exists:
+            async with self.session() as s:
+                account = WBAccount(
+                    user_id=telegram_id,
+                    name=account_name
+                )
+                s.add(account)
+                await s.commit()
+            return True
+        return False
 
     async def change_account_name(
             self,
             telegram_id: int,
             account_id: int,
             new_name: str,
-    ) -> str | None:
+    ) -> bool:
         """Изменить имя аккаунта."""
         query = select(WBAccount).where(
             WBAccount.id == account_id,
@@ -125,17 +142,36 @@ class DBMethods:
             if account:
                 account.name = new_name
                 s.commit()
-                return new_name
+                return True
+            return False
 
-    async def change_active_account(self, telegram_id: int):
+    async def change_active_account(
+            self,
+            telegram_id: int,
+            select_account_id: int
+    ) -> bool:
         """Изменить активный аккаунт пользователя."""
-        pass
+        active_account = await self.get_active_account(telegram_id=telegram_id)
+        query = select(WBAccount).where(
+            WBAccount.user_id == telegram_id,
+            WBAccount.id == select_account_id
+        )
+        if active_account.id != select_account_id:
+            async with self.session() as s:
+                select_account = await s.execute(query)
+                select_account = select_account.scalar_one_or_none()
+                s.add(active_account)
+                active_account.is_now_active = False
+                select_account.is_now_active = True
+                await s.commit()
+            return True
+        return False
 
     async def delete_account(self, telegram_id):
         """Удалить аккаунт пользователя."""
         pass
 
-    async def __get_user_token(
+    async def __get_user_token_and_account_id(
             self,
             telegram_id: int
     ) -> tuple[Token, WBAccount]:
@@ -157,7 +193,9 @@ class DBMethods:
         )
         encrypted_token = tokens_dict.get('token_content')
         async with self.session() as s:
-            token, account_id = await self.__get_user_token(telegram_id)
+            token, account_id = (
+                await self.__get_user_token_and_account_id(telegram_id)
+            )
             if token:
                 s.add(token)
                 token.wb_token_content = encrypted_token
@@ -180,7 +218,8 @@ class DBMethods:
         )
         encrypted_token = tokens_dict.get('token_analytic')
         async with self.session() as s:
-            token, account_id = await self.__get_user_token(telegram_id)
+            token, account_id = await self.__get_user_token_and_account_id(
+                telegram_id)
             if token:
                 s.add(token)
                 token.wb_token_analytic = encrypted_token
@@ -315,7 +354,7 @@ class DBMethods:
             account = await s.execute(query)
             account = account.scalar_one_or_none()
             len_favorites = len(account.favorites)
-            return len_favorites < MAX_LEN_FAVORITES, account.id
+            return len_favorites < MAX_LIMIT_FAVORITES, account.id
 
     async def add_favorite_request(
             self,
