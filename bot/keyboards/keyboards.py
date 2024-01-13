@@ -49,6 +49,7 @@ class MakeMarkup:
     def account_markup(
             cls,
             accounts: list[WBAccount],
+            gateway: bool = False,
             edit: bool = False,
             delete: bool = False
     ) -> InlineKeyboardMarkup:
@@ -60,7 +61,7 @@ class MakeMarkup:
         elif delete:
             callback_class = AccountsDeleteCallbackData
         for account in accounts:
-            if account.is_now_active:
+            if account.is_now_active and gateway:
                 account.name = f'❖ {account.name} ❖'
             markup.button(
                 text=account.name,
@@ -174,9 +175,10 @@ class MakeMarkup:
     def edit_button(cls, edit: bool = False) -> InlineKeyboardButton:
         """Кнопка редактирования."""
         text = '✎'if not edit else '✏️'
+        callback_data = 'edit' if not edit else 'cancel_edit'
         edit_button = InlineKeyboardButton(
             text=text,
-            callback_data='edit'
+            callback_data=callback_data
         )
         return edit_button
 
@@ -184,9 +186,10 @@ class MakeMarkup:
     def delete_button(cls, delete: bool = False) -> InlineKeyboardButton:
         """Кнопка удаления."""
         text = '♲' if not delete else '♻️'
+        callback_data = 'delete' if not delete else 'cancel_delete'
         delete_button = InlineKeyboardButton(
             text=text,
-            callback_data='delete'
+            callback_data=callback_data
         )
         return delete_button
 
