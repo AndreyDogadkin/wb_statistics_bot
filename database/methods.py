@@ -40,7 +40,7 @@ class DBMethods:
         )
         return query
 
-    async def get_user(self, telegram_id: int) -> User:
+    async def get_user(self, telegram_id: int) -> User | None:
         """Проверка наличия пользователя в БД."""
         async with self.session() as s:
             query = self.__get_query_select_user(telegram_id)
@@ -49,7 +49,7 @@ class DBMethods:
 
     async def add_user_if_not_exist(self, telegram_id: int) -> None:
         """
-        Добавление пользователя такого не существует.
+        Добавление пользователя если такого не существует.
         Добавление базового аккаунта созданному пользователю.
         """
         user = await self.get_user(telegram_id)
@@ -70,7 +70,7 @@ class DBMethods:
                 await s.commit()
 
     async def get_user_accounts(self, telegram_id: int):
-        """Получить аккаунты пользователя."""
+        """Получить все аккаунты выбранного пользователя."""
         query = select(WBAccount).where(
             WBAccount.user_id == telegram_id
         )
@@ -88,7 +88,8 @@ class DBMethods:
             active_account = await s.execute(query)
             return active_account.scalar_one_or_none()
 
-    async def check_limit_accounts(self, telegram_id):
+    async def check_limit_accounts(self, telegram_id) -> bool:
+        """Проверить достигнут ли лимит созданных аккаунтов."""
         query = select(func.count()).select_from(WBAccount).where(
             WBAccount.user_id == telegram_id
         )
@@ -99,7 +100,7 @@ class DBMethods:
                 return True
             return False
 
-    async def check_account_name(self, telegram_id, account_name):
+    async def check_account_name(self, telegram_id, account_name) -> WBAccount:
         """Проверка на повторяющиеся имена."""
         query = select(
             exists(WBAccount).where(
@@ -111,16 +112,24 @@ class DBMethods:
             account = await s.execute(query)
             return account.scalar()
 
-    async def create_user_account(self, telegram_id, account_name):
-        """Создать аккаунт пользователя."""
+    async def create_user_account(self, telegram_id, account_name) -> bool:
+        """
+        Создать новый аккаунт пользователя.
+        При создании новый аккаунт становится активным, а старый
+        деактивируется.
+        """
         name_exists = await self.check_account_name(telegram_id, account_name)
         if not name_exists:
+            active_account = await self.get_active_account(telegram_id)
+            account = WBAccount(
+                user_id=telegram_id,
+                name=account_name,
+                is_now_active=True
+            )
             async with self.session() as s:
-                account = WBAccount(
-                    user_id=telegram_id,
-                    name=account_name
-                )
+                s.add(active_account)
                 s.add(account)
+                active_account.is_now_active = False
                 await s.commit()
             return True
         return False

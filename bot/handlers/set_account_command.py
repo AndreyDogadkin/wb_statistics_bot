@@ -18,7 +18,7 @@ database = DBMethods()
 
 @set_account_router.message(Command('set_account'))
 async def set_account_gateway(message: types.Message, state: FSMContext):
-    """Вход для работы с аккаунтами."""
+    """Точка входа для работы с аккаунтами."""
     user_id = message.from_user.id
     user_accounts = await database.get_user_accounts(telegram_id=user_id)
     await state.update_data(user_accounts=user_accounts)
@@ -93,11 +93,14 @@ async def set_add_account_state(
     F.func(lambda x: len(x.text) <= MAX_LEN_ACCOUNT_NAME)
 )
 async def add_new_account(message: types.Message, state: FSMContext):
-    """Добавить новый аккаунт пользователя."""
+    """
+    Добавить новый аккаунт пользователя.
+    При успешном добавлении, активным становится новый аккаунт.
+    """
     state_data = await state.get_data()
     for_edit_mess: types.Message = state_data.get('for_edit_mess')
     user_id = message.from_user.id
-    account_name = message.text
+    account_name: str = message.text.strip().capitalize()
     is_created: bool = await database.create_user_account(
         telegram_id=user_id,
         account_name=account_name
@@ -117,7 +120,6 @@ async def add_new_account(message: types.Message, state: FSMContext):
             reply_markup=MakeMarkup.cancel_builder().as_markup()
         )
         await state.update_data(for_edit_mess=for_edit_mess)
-        # TODO Сделать аккаунт активным после создания.
 
 
 @set_account_router.message(
