@@ -21,6 +21,7 @@ from bot.keyboards import (
     PaginationNmIds
 )
 from bot.states import GetStatsStates
+from config_data.config import MAX_LIMIT_FAVORITES
 from database.methods import DBMethods
 from exceptions.wb_exceptions import ForUserException
 from wb_api.analytics_requests import StatisticsRequests
@@ -192,27 +193,35 @@ async def send_user_statistics(
             get_stats_mess_templates['make_request']
         )
     )
+    user_id = callback.from_user.id
     period: int = callback_data.unpack(callback.data).period
     state_data: dict = await state.get_data()
     nm_id: int = state_data.get('nm_id')
     token_analytic: str = state_data.get('token_analytic')
     photo: str = state_data.get(f'photo:{nm_id}')
-    add_in_favorite: bool | None = state_data.get('add_in_favorite')
+    add_in_favorite: bool = state_data.get('add_in_favorite')
+    in_limit_favorite = await database.check_limit_favorite(user_id)
     statistics = StatisticsRequests(token_analytic)
-    user_id = callback.from_user.id
     try:
         product, answer_message = await get_user_statistics(
             statistics,
             nm_id, period
         )
         if product and answer_message:
-            if add_in_favorite:
+            if add_in_favorite and in_limit_favorite[0]:
                 await database.add_favorite_request(
                     telegram_id=user_id,
                     name=f'{product}, дней- {period + 1}.',
                     nm_id=nm_id,
                     period=period,
                     photo_url=photo
+                )
+            else:
+                await callback.answer(
+                    get_stats_mess_templates[
+                        'max_limit_favorite'
+                    ].format(MAX_LIMIT_FAVORITES),
+                    show_alert=True
                 )
             await callback.answer(text=product)
             await message_wait.edit_text(
