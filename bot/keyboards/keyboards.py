@@ -71,11 +71,24 @@ class MakeMarkup:
                 ).pack()
             )
         markup.adjust(1)
-        markup.row(
-            cls.add_button(),
-            cls.edit_button(edit=edit),
-            cls.delete_button(delete=delete)
-        )
+        if delete:
+            markup.row(
+                cls.empty_button(),
+                cls.empty_button(),
+                cls.delete_button(delete=delete)
+            )
+        elif edit:
+            markup.row(
+                cls.empty_button(),
+                cls.edit_button(edit=edit),
+                cls.empty_button()
+            )
+        else:
+            markup.row(
+                cls.add_button(),
+                cls.edit_button(edit=edit),
+                cls.delete_button(delete=delete)
+            )
         markup.attach(cls.cancel_builder())
         return markup.as_markup()
 
@@ -192,6 +205,14 @@ class MakeMarkup:
             callback_data=callback_data
         )
         return delete_button
+
+    @classmethod
+    def empty_button(cls):
+        empty_button = InlineKeyboardButton(
+            text=' ',
+            callback_data=' '
+        )
+        return empty_button
 
     @classmethod
     def change_token_markup(cls) -> InlineKeyboardMarkup:
