@@ -1,3 +1,5 @@
+import asyncio
+
 from aiogram import types, Router
 from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
@@ -77,6 +79,8 @@ async def save_content_token(message: types.Message, state: FSMContext):
         await message_for_edit.edit_text(
             save_token_mess_templates['token_updated']
         )
+        await asyncio.sleep(5)
+        await message_for_edit.delete()
     else:
         await message_for_edit.edit_text(
             save_token_mess_templates['send_token_analytic']
@@ -102,6 +106,8 @@ async def save_analytic_token(message: types.Message, state: FSMContext):
         await message_for_edit.edit_text(
             save_token_mess_templates['token_updated']
         )
+        await asyncio.sleep(5)
+        await message_for_edit.delete()
     else:
         await message_for_edit.edit_text(
             save_token_mess_templates['send_token_content']
