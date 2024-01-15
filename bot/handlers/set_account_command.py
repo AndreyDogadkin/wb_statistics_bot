@@ -5,7 +5,7 @@ from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
 
 from bot.base_messages.messages_templates import account_message_templates
-from bot.keyboards import AccountsCallbackData
+from bot.keyboards import AccountsCallbackData, AccountsEditCallbackData
 from bot.keyboards import MakeMarkup
 from bot.states import AccountsStates
 from config_data.config import MAX_LEN_ACCOUNT_NAME
@@ -123,7 +123,7 @@ async def add_new_account(message: types.Message, state: FSMContext):
 
 
 @set_account_router.message(
-    StateFilter(AccountsStates.add_account),
+    StateFilter(AccountsStates.add_account, AccountsStates.edit_account),
     F.func(lambda x: len(x.text) > MAX_LEN_ACCOUNT_NAME)
 )
 async def name_too_long(message: types.Message, state: FSMContext):
@@ -169,6 +169,68 @@ async def set_edit_account_state(
             reply_markup=MakeMarkup.account_markup(user_accounts)
         )
         await state.set_state(AccountsStates.change_account)
+
+
+@set_account_router.callback_query(
+    StateFilter(AccountsStates.edit_account),
+    AccountsEditCallbackData.filter()
+)
+async def get_editable_account(
+        callback: types.CallbackQuery,
+        callback_data: AccountsEditCallbackData,
+        state: FSMContext
+):
+    """
+    Получить аккаунт для редактирования.
+    Запросить новое имя аккаунта.
+    """
+    editable_account_id = callback_data.unpack(callback.data).id
+    for_edit_mess = await callback.message.edit_text(
+        account_message_templates[
+            'send_new_account_name'
+        ].format(MAX_LEN_ACCOUNT_NAME),
+        reply_markup=MakeMarkup.cancel_builder().as_markup()
+    )
+    await callback.answer('Введите новое имя аккаунта.')
+    await state.update_data(
+        editable_account_id=editable_account_id,
+        for_edit_mess=for_edit_mess
+    )
+
+
+@set_account_router.message(StateFilter(AccountsStates.edit_account))
+async def get_new_name_for_editable_account(
+        message: types.Message,
+        state: FSMContext
+):
+    """Изменить название выбранного аккаунта."""
+    user_id = message.from_user.id
+    new_account_name = message.text.strip().capitalize()
+    state_data = await state.get_data()
+    editable_account_id = state_data.get('editable_account_id')
+    for_edit_mess: types.Message = state_data.get('for_edit_mess')
+    is_edited = await database.change_account_name(
+        telegram_id=user_id,
+        account_id=editable_account_id,
+        new_name=new_account_name
+    )
+    await message.delete()
+    if is_edited:
+        await for_edit_mess.edit_text(
+            account_message_templates[
+                'account_name_edit_done'
+            ].format(new_account_name)
+        )
+        await state.clear()
+        await asyncio.sleep(5)
+        await for_edit_mess.delete()
+    else:
+        await for_edit_mess.delete()
+        for_edit_mess = await message.answer(
+            account_message_templates['account_name_exists_edit'],
+            reply_markup=MakeMarkup.cancel_builder().as_markup()
+        )
+        await state.update_data(for_edit_mess=for_edit_mess)
 
 
 @set_account_router.callback_query(

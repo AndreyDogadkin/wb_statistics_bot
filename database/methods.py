@@ -69,14 +69,19 @@ class DBMethods:
                 s.add(user)
                 await s.commit()
 
-    async def get_user_accounts(self, telegram_id: int):
+    async def get_user_accounts(
+            self,
+            telegram_id: int
+    ) -> list[WBAccount] | None:
         """Получить все аккаунты выбранного пользователя."""
         query = select(WBAccount).where(
             WBAccount.user_id == telegram_id
         )
         async with self.session() as s:
             accounts = await s.execute(query)
-            return accounts.scalars().all()
+            accounts = accounts.scalars().all()
+            if accounts:
+                return accounts
 
     async def get_active_account(self, telegram_id) -> WBAccount | None:
         """Получить активный аккаунт пользователя."""
@@ -88,7 +93,7 @@ class DBMethods:
             active_account = await s.execute(query)
             return active_account.scalar_one_or_none()
 
-    async def check_limit_accounts(self, telegram_id) -> bool:
+    async def check_limit_accounts(self, telegram_id: int) -> bool:
         """Проверить достигнут ли лимит созданных аккаунтов."""
         query = select(func.count()).select_from(WBAccount).where(
             WBAccount.user_id == telegram_id
@@ -100,7 +105,11 @@ class DBMethods:
                 return True
             return False
 
-    async def check_account_name(self, telegram_id, account_name) -> WBAccount:
+    async def check_account_name(
+            self,
+            telegram_id: int,
+            account_name: str
+    ) -> WBAccount:
         """Проверка на повторяющиеся имена."""
         query = select(
             exists(WBAccount).where(
@@ -112,7 +121,11 @@ class DBMethods:
             account = await s.execute(query)
             return account.scalar()
 
-    async def create_user_account(self, telegram_id, account_name) -> bool:
+    async def create_user_account(
+            self,
+            telegram_id: int,
+            account_name: str
+    ) -> bool:
         """
         Создать новый аккаунт пользователя.
         При создании новый аккаунт становится активным, а старый
@@ -140,19 +153,21 @@ class DBMethods:
             account_id: int,
             new_name: str,
     ) -> bool:
-        """Изменить имя аккаунта."""
-        query = select(WBAccount).where(
-            WBAccount.id == account_id,
-            WBAccount.user_id == telegram_id,
-        )
-        async with self.session() as s:
-            account = await s.execute(query)
-            account.scalar_one_or_none()
-            if account:
-                account.name = new_name
-                s.commit()
-                return True
-            return False
+        """Изменить имя аккаунта если имя не занято."""
+        name_exists = await self.check_account_name(telegram_id, new_name)
+        if not name_exists:
+            query = select(WBAccount).where(
+                WBAccount.id == account_id,
+                WBAccount.user_id == telegram_id,
+            )
+            async with self.session() as s:
+                account = await s.execute(query)
+                account = account.scalar_one_or_none()
+                if account:
+                    account.name = new_name
+                    await s.commit()
+                    return True
+        return False
 
     async def change_active_account(
             self,
@@ -176,7 +191,7 @@ class DBMethods:
             return True
         return False
 
-    async def delete_account(self, telegram_id):
+    async def delete_account(self, telegram_id: int, account_id: int):
         """Удалить аккаунт пользователя."""
         pass
 
