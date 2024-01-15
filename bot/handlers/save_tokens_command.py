@@ -25,10 +25,12 @@ save_token_router = Router()
 )
 async def set_save_token_state(message: types.Message, state: FSMContext):
     """Запуск состояния выбора типа сохраняемого токена."""
-    await database.add_user_if_not_exist(message.from_user.id)
+    user_id = message.from_user.id
+    await database.add_user_if_not_exist(user_id)
+    account = await database.get_active_account(user_id)
     for_edit = await message.answer(
         text=save_token_mess_templates['change_token_type'],
-        reply_markup=MakeMarkup.change_token_markup()
+        reply_markup=MakeMarkup.change_token_markup(account=account)
     )
     await message.delete()
     await state.update_data(for_edit=for_edit)
@@ -79,14 +81,14 @@ async def save_content_token(message: types.Message, state: FSMContext):
         await message_for_edit.edit_text(
             save_token_mess_templates['token_updated']
         )
-        await asyncio.sleep(5)
-        await message_for_edit.delete()
     else:
         await message_for_edit.edit_text(
             save_token_mess_templates['send_token_analytic']
         )
-    await message.delete()
     await state.clear()
+    await message.delete()
+    await asyncio.sleep(5)
+    await message_for_edit.delete()
 
 
 @save_token_router.message(
@@ -106,14 +108,14 @@ async def save_analytic_token(message: types.Message, state: FSMContext):
         await message_for_edit.edit_text(
             save_token_mess_templates['token_updated']
         )
-        await asyncio.sleep(5)
-        await message_for_edit.delete()
     else:
         await message_for_edit.edit_text(
             save_token_mess_templates['send_token_content']
         )
-    await message.delete()
     await state.clear()
+    await message.delete()
+    await asyncio.sleep(5)
+    await message_for_edit.delete()
 
 
 @save_token_router.message(

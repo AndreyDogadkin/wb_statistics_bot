@@ -215,15 +215,24 @@ class MakeMarkup:
         return empty_button
 
     @classmethod
-    def change_token_markup(cls) -> InlineKeyboardMarkup:
+    def change_token_markup(cls, account) -> InlineKeyboardMarkup:
         """Клавиатура для выбора типа сохраняемого токена."""
+        tokens = account.tokens
+        text_content, text_analytic = '🔴 Контент', '🔴 Аналитика'
+        if tokens:
+            text_content = (
+                '🟢 Контент' if tokens.wb_token_content else text_content
+            )
+            text_analytic = (
+                '🟢 Аналитика' if tokens.wb_token_analytic else text_analytic
+            )
         markup = InlineKeyboardBuilder()
         markup.button(
-            text='Контент',
+            text=text_content,
             callback_data=TokenTypeCallbackData(token_type='content').pack(),
         )
         markup.button(
-            text='Аналитика',
+            text=text_analytic,
             callback_data=TokenTypeCallbackData(token_type='analytic').pack(),
         )
         markup.adjust(2)
