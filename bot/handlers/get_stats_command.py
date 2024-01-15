@@ -83,7 +83,7 @@ async def change_page_for_nm_ids(
     state_data = await state.get_data()
     page_number = state_data.get('page_number')
     nm_ids = state_data.get('nm_ids')
-    add_in_favorite: bool = state_data.get('add_in_favorite', False)
+    add_in_favorite: bool = state_data.get('add_in_favorite')
     command = callback_data.unpack(callback.data).command
     if page_number and command == 'prev':
         await state.update_data(page_number=page_number - 1)
@@ -109,7 +109,7 @@ async def paginate_nm_ids(
     state_data = await state.get_data()
     nm_ids = state_data.get('nm_ids')
     page_number = state_data.get('page_number')
-    add_in_favorite: bool = state_data.get('add_in_favorite', False)
+    add_in_favorite: bool = state_data.get('add_in_favorite')
     markup = MakeMarkup.nm_ids_markup(
         nm_ids,
         page_number,
@@ -141,6 +141,7 @@ async def send_nm_ids(
         if nm_ids:
             await state.update_data(nm_ids=nm_ids)
             await state.update_data(page_number=0)
+            await state.update_data(add_in_favorite=False)
             message_for_ids, markup = await paginate_nm_ids(state)
             await state.set_state(GetStatsStates.get_nm_ids)
             await message.answer(message_for_ids, reply_markup=markup)
@@ -208,21 +209,22 @@ async def send_user_statistics(
             nm_id, period
         )
         if product and answer_message:
-            if add_in_favorite and in_limit_favorite[0]:
-                await database.add_favorite_request(
-                    telegram_id=user_id,
-                    name=f'{product}, дней- {period + 1}.',
-                    nm_id=nm_id,
-                    period=period,
-                    photo_url=photo
-                )
-            else:
-                await callback.answer(
-                    get_stats_mess_templates[
-                        'max_limit_favorite'
-                    ].format(MAX_LIMIT_FAVORITES),
-                    show_alert=True
-                )
+            if add_in_favorite:
+                if in_limit_favorite[0]:
+                    await database.add_favorite_request(
+                        telegram_id=user_id,
+                        name=f'{product}, дней- {period + 1}.',
+                        nm_id=nm_id,
+                        period=period,
+                        photo_url=photo
+                    )
+                else:
+                    await callback.answer(
+                        get_stats_mess_templates[
+                            'max_limit_favorite'
+                        ].format(MAX_LIMIT_FAVORITES),
+                        show_alert=True
+                    )
             await callback.answer(text=product)
             await message_wait.edit_text(
                 answer_message + markdown.hlink(
