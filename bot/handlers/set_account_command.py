@@ -5,7 +5,11 @@ from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
 
 from bot.base_messages.messages_templates import account_message_templates
-from bot.keyboards import AccountsCallbackData, AccountsEditCallbackData
+from bot.keyboards import (
+    AccountsCallbackData,
+    AccountsEditCallbackData,
+    AccountsDeleteCallbackData
+)
 from bot.keyboards import MakeMarkup
 from bot.states import AccountsStates
 from config_data.config import MAX_LEN_ACCOUNT_NAME
@@ -39,6 +43,7 @@ async def change_account(
         callback_data: AccountsCallbackData,
         state: FSMContext
 ):
+    """Сменить активный аккаунт пользователя."""
     user_id = callback.from_user.id
     select_account_id = callback_data.unpack(callback.data).id
     select_account_name = callback_data.unpack(callback.data).name
@@ -249,7 +254,7 @@ async def set_delete_account_state(
     user_accounts = state_data.get('user_accounts')
     if callback.data == 'delete':
         await callback.message.edit_text(
-            'Выберите аккаунт который хотите удалить.',
+            account_message_templates['change_account_for delete'],
             reply_markup=MakeMarkup.account_markup(user_accounts, delete=True)
         )
         await state.set_state(AccountsStates.delete_account)
@@ -259,3 +264,33 @@ async def set_delete_account_state(
             reply_markup=MakeMarkup.account_markup(user_accounts)
         )
         await state.set_state(AccountsStates.change_account)
+
+
+@set_account_router.callback_query(
+    StateFilter(AccountsStates.delete_account),
+    AccountsDeleteCallbackData.filter()
+)
+async def delete_account(
+        callback: types.CallbackQuery,
+        callback_data: AccountsDeleteCallbackData,
+        state: FSMContext
+):
+    """Удалить аккаунта пользователя."""
+    user_id = callback.from_user.id
+    delete_account_id = callback_data.unpack(callback.data).id
+    is_deleted = await database.delete_account(
+        telegram_id=user_id,
+        account_id=delete_account_id
+    )
+    if is_deleted:
+        await callback.message.edit_text(
+            account_message_templates['account_delete_done']
+        )
+        await state.clear()
+        await asyncio.sleep(5)
+        await callback.message.delete()
+    else:
+        await callback.answer(
+            account_message_templates['cant_delete_active_account_alert'],
+            show_alert=True
+        )
