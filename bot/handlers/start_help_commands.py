@@ -56,6 +56,7 @@ async def send_help_chapter(
         state: FSMContext
 ):
     chapters = {
+        'set_account': 'help_accounts',
         'token': 'help_token',
         'favorites': 'help_favorites',
         'get_stats': 'help_get_stats',
