@@ -83,6 +83,12 @@ class MakeMarkup:
                 cls.edit_button(edit=edit),
                 cls.empty_button()
             )
+        elif len(accounts) == 1:
+            markup.row(
+                cls.add_button(),
+                cls.edit_button(edit=edit),
+                cls.empty_button()
+            )
         else:
             markup.row(
                 cls.add_button(),
@@ -132,6 +138,7 @@ class MakeMarkup:
     def help_markup(cls) -> InlineKeyboardMarkup:
         """Клавиатура для выбора раздела инструкции."""
         commands = (
+            ('Аккаунты', 'set_account'),
             ('API Ключи', 'token'),
             ('Статистика', 'get_stats'),
             ('Избранное', 'favorites'),
