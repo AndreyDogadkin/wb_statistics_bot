@@ -20,17 +20,26 @@ class DBMethods:
     session = database_connector.session_factory
 
     def __get_query_select_user(self, telegram_id: int) -> Select:
-        """Запрос на получение пользователя."""
+        """
+        Получить select запрос пользователя.
+        :param telegram_id:
+        :return: Select пользователя.
+        """
         query = select(User).where(
             User.telegram_id == telegram_id
         )
         return query
 
-    def __get_query_select_account(
+    def __get_query_select_active_account(
             self,
             telegram_id: int,
     ) -> Select:
-        """Запрос на получение токена."""
+        """
+        Получить select запрос активного аккаунта пользователя со
+        связанными объектами.
+        :param telegram_id:
+        :return: Select Активного аккаунта пользователя.
+        """
         query = select(WBAccount).where(
             WBAccount.user_id == telegram_id,
             WBAccount.is_now_active == True  # noqa
@@ -40,20 +49,31 @@ class DBMethods:
         )
         return query
 
-    async def get_user(self, telegram_id: int) -> User | None:
-        """Проверка наличия пользователя в БД."""
+    async def user_exists(self, telegram_id: int) -> bool:
+        """
+        Проверить наличия пользователя в БД.
+        :param telegram_id:
+        :return:  True если пользователь с таким telegram id есть,
+            иначе False
+        """
+        query = select(
+            exists(User).where(User.telegram_id == telegram_id)
+        )
         async with self.session() as s:
-            query = self.__get_query_select_user(telegram_id)
             user = await s.execute(query)
-            return user.scalar_one_or_none()
+            user = user.scalar_one()
+            return user
 
     async def add_user_if_not_exist(self, telegram_id: int) -> None:
         """
         Добавление пользователя если такого не существует.
-        Добавление базового аккаунта созданному пользователю.
+        При успешном добавлении пользователя создается его базовый аккаунт
+        для работы с WB API.
+        :param telegram_id:
+        :return: None
         """
-        user = await self.get_user(telegram_id)
-        if not user:
+        user_exists: bool = await self.user_exists(telegram_id)
+        if not user_exists:
             async with self.session() as s:
                 user = User(
                     telegram_id=telegram_id,
@@ -62,7 +82,7 @@ class DBMethods:
                 user.wb_accounts.append(
                     WBAccount(
                         user_id=telegram_id,
-                        name=f'Мой магазин',
+                        name='Мой магазин',
                         is_now_active=True
                     )
                 )
@@ -73,10 +93,13 @@ class DBMethods:
             self,
             telegram_id: int
     ) -> list[WBAccount] | None:
-        """Получить все аккаунты выбранного пользователя."""
-        query = select(WBAccount).where(
-            WBAccount.user_id == telegram_id
-        )
+        """
+        Получить все аккаунты выбранного пользователя.
+        :param telegram_id:
+        :return: List[WBAccount] если есть один или больше аккаунтов,
+            иначе None
+        """
+        query = select(WBAccount).where(WBAccount.user_id == telegram_id)
         async with self.session() as s:
             accounts = await s.execute(query)
             accounts = accounts.scalars().all()
@@ -84,17 +107,22 @@ class DBMethods:
                 return accounts
 
     async def get_active_account(self, telegram_id) -> WBAccount | None:
-        """Получить активный аккаунт пользователя."""
-        query = select(WBAccount).where(
-            WBAccount.user_id == telegram_id,
-            WBAccount.is_now_active == True
-        )
+        """
+        Получить активный аккаунт пользователя.
+        :param telegram_id:
+        :return: WBAccount если активный существует, иначе None
+        """
+        query = self.__get_query_select_active_account(telegram_id)
         async with self.session() as s:
             active_account = await s.execute(query)
             return active_account.scalar_one_or_none()
 
     async def check_limit_accounts(self, telegram_id: int) -> bool:
-        """Проверить достигнут ли лимит созданных аккаунтов."""
+        """
+        Проверить лимит созданных аккаунтов пользователя.
+        :param telegram_id:
+        :return: True если лимит не достигнут, иначе False
+        """
         query = select(func.count()).select_from(WBAccount).where(
             WBAccount.user_id == telegram_id
         )
@@ -109,8 +137,14 @@ class DBMethods:
             self,
             telegram_id: int,
             account_name: str
-    ) -> WBAccount:
-        """Проверка на повторяющиеся имена."""
+    ) -> bool:
+        """
+        Проверить наличие у пользователя аккаунтов с переданным названием.
+        :param telegram_id:
+        :param account_name:
+        :return: True если аккаунт с таким именем уже существует,
+            иначе False
+        """
         query = select(
             exists(WBAccount).where(
                 WBAccount.user_id == telegram_id,
@@ -130,6 +164,10 @@ class DBMethods:
         Создать новый аккаунт пользователя.
         При создании новый аккаунт становится активным, а старый
         деактивируется.
+        :param telegram_id:
+        :param account_name:
+        :return: True если аккаунт успешно создан, False если аккаунт с
+            таким именем уже существует.
         """
         name_exists = await self.check_account_name(telegram_id, account_name)
         if not name_exists:
@@ -153,7 +191,15 @@ class DBMethods:
             account_id: int,
             new_name: str,
     ) -> bool:
-        """Изменить имя аккаунта если имя не занято."""
+        """
+        Изменить название существующего аккаунта пользователя.
+        :param telegram_id:
+        :param account_id:
+        :param new_name:
+        :return: True если название аккаунта успешно изменено, False если
+            аккаунт с таким именем уже существует или изменяемого аккаунта
+            не существует.
+        """
         name_exists = await self.check_account_name(telegram_id, new_name)
         if not name_exists:
             query = select(WBAccount).where(
@@ -174,7 +220,14 @@ class DBMethods:
             telegram_id: int,
             select_account_id: int
     ) -> bool:
-        """Изменить активный аккаунт пользователя."""
+        """
+        Изменить активный аккаунт пользователя.
+        При изменении активный аккаунт становится деактивированным,
+        переданный аккаунт - активным
+        :param telegram_id:
+        :param select_account_id:
+        :return: True если активный аккаунт успешно изменен, иначе False
+        """
         active_account = await self.get_active_account(telegram_id=telegram_id)
         query = select(WBAccount).where(
             WBAccount.user_id == telegram_id,
@@ -191,17 +244,49 @@ class DBMethods:
             return True
         return False
 
-    async def delete_account(self, telegram_id: int, account_id: int):
-        """Удалить аккаунт пользователя."""
-        pass
+    async def delete_account(self, telegram_id: int, account_id: int) -> bool:
+        """
+        Удалить аккаунт пользователя.
+        Невозможно удалить единственный аккаунт пользователя.
+        Невозможно удалить активный аккаунт пользователя.
+        :param telegram_id:
+        :param account_id:
+        :return: True если аккаунт успешно удален, False если аккаунта не
+            существует.
+        """
+        account_query = select(WBAccount).where(
+            WBAccount.user_id == telegram_id,
+            WBAccount.id == account_id
+        )
+        accounts_count_query = select(
+            func.count()
+        ).select_from(WBAccount).where(
+            WBAccount.user_id == telegram_id
+        )
+        async with self.session() as s:
+            accounts_count = await s.execute(accounts_count_query)
+            accounts_count = accounts_count.scalar()
+            account = await s.execute(account_query)
+            account = account.scalar_one_or_none()
+            if account and not account.is_now_active and accounts_count > 1:
+                await s.delete(account)
+                await s.commit()
+                return True
+            return False
 
     async def __get_user_token_and_account_id(
             self,
             telegram_id: int
-    ) -> tuple[Token, WBAccount]:
+    ) -> tuple[Token | None, WBAccount]:
+        """
+        Получить Токены пользователя и id активного аккаунта
+        :param telegram_id:
+        :return: Token если запись создана,
+            id активного аккаунта.
+        """
         """Проверка наличия токенов у пользователя."""
         async with self.session() as s:
-            query = self.__get_query_select_account(telegram_id)
+            query = self.__get_query_select_active_account(telegram_id)
             account = await s.execute(query)
             account = account.scalar_one_or_none()
             return account.tokens, account.id
@@ -257,7 +342,7 @@ class DBMethods:
 
     async def get_user_content_token(self, telegram_id: int) -> str | None:
         """Получение токена типа 'Контент'."""
-        query = self.__get_query_select_account(telegram_id)
+        query = self.__get_query_select_active_account(telegram_id)
         async with self.session.begin() as s:
             account = await s.execute(query)
             account = account.scalar_one_or_none()
@@ -271,7 +356,7 @@ class DBMethods:
 
     async def get_user_analytic_token(self, telegram_id: int) -> str | None:
         """Получение токена типа 'Аналитика'."""
-        query = self.__get_query_select_account(telegram_id)
+        query = self.__get_query_select_active_account(telegram_id)
         async with self.session.begin() as s:
             account = await s.execute(query)
             account = account.scalar_one_or_none()
@@ -373,7 +458,7 @@ class DBMethods:
 
     async def check_limit_favorite(self, telegram_id: int) -> tuple[bool, int]:
         """Проверить лимит на добавление в избранное."""
-        query = self.__get_query_select_account(telegram_id=telegram_id)
+        query = self.__get_query_select_active_account(telegram_id=telegram_id)
         async with self.session() as s:
             account = await s.execute(query)
             account = account.scalar_one_or_none()
@@ -416,7 +501,7 @@ class DBMethods:
             telegram_id: int
     ) -> list[FavoriteRequest]:
         """Получить все избранные запросы пользователя."""
-        query = self.__get_query_select_account(telegram_id=telegram_id)
+        query = self.__get_query_select_active_account(telegram_id=telegram_id)
         async with self.session() as s:
             account = await s.execute(query)
             account = account.scalar_one_or_none()
