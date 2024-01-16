@@ -83,6 +83,12 @@ class MakeMarkup:
                 cls.edit_button(edit=edit),
                 cls.empty_button()
             )
+        elif len(accounts) == 1:
+            markup.row(
+                cls.add_button(),
+                cls.edit_button(edit=edit),
+                cls.empty_button()
+            )
         else:
             markup.row(
                 cls.add_button(),
@@ -132,11 +138,13 @@ class MakeMarkup:
     def help_markup(cls) -> InlineKeyboardMarkup:
         """Клавиатура для выбора раздела инструкции."""
         commands = (
+            ('Аккаунты', 'set_account'),
             ('API Ключи', 'token'),
             ('Статистика', 'get_stats'),
             ('Избранное', 'favorites'),
             ('Лимиты запросов', 'my_limits'),
-            ('Сброс состояний', 'cancel')
+            ('Сброс состояний', 'cancel'),
+            ('Удаление учетной записи', 'delete_me')
         )
         markup = InlineKeyboardBuilder()
         for command in commands:
@@ -215,15 +223,24 @@ class MakeMarkup:
         return empty_button
 
     @classmethod
-    def change_token_markup(cls) -> InlineKeyboardMarkup:
+    def change_token_markup(cls, account) -> InlineKeyboardMarkup:
         """Клавиатура для выбора типа сохраняемого токена."""
+        tokens = account.tokens
+        text_content, text_analytic = '🔴 Контент', '🔴 Аналитика'
+        if tokens:
+            text_content = (
+                '🟢 Контент' if tokens.wb_token_content else text_content
+            )
+            text_analytic = (
+                '🟢 Аналитика' if tokens.wb_token_analytic else text_analytic
+            )
         markup = InlineKeyboardBuilder()
         markup.button(
-            text='Контент',
+            text=text_content,
             callback_data=TokenTypeCallbackData(token_type='content').pack(),
         )
         markup.button(
-            text='Аналитика',
+            text=text_analytic,
             callback_data=TokenTypeCallbackData(token_type='analytic').pack(),
         )
         markup.adjust(2)

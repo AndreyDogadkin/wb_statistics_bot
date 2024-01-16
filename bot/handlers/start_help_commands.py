@@ -56,11 +56,13 @@ async def send_help_chapter(
         state: FSMContext
 ):
     chapters = {
+        'set_account': 'help_accounts',
         'token': 'help_token',
         'favorites': 'help_favorites',
         'get_stats': 'help_get_stats',
         'my_limits': 'help_my_limits',
-        'cancel': 'help_cancel'
+        'cancel': 'help_cancel',
+        'delete_me': 'help_delete_me'
     }
     command = callback_data.unpack(callback.data).command
     selected_chapter = chapters[command]

@@ -16,7 +16,7 @@ BOT_COMMANDS = [
     ),
     types.BotCommand(
         command='set_account',
-        description='🗂️ Управление аккаунтами.'
+        description='👤 Управление аккаунтами.'
     ),
     types.BotCommand(
         command='favorites',
