@@ -143,7 +143,8 @@ class MakeMarkup:
             ('Статистика', 'get_stats'),
             ('Избранное', 'favorites'),
             ('Лимиты запросов', 'my_limits'),
-            ('Сброс состояний', 'cancel')
+            ('Сброс состояний', 'cancel'),
+            ('Удаление учетной записи', 'delete_me')
         )
         markup = InlineKeyboardBuilder()
         for command in commands:
