@@ -44,7 +44,7 @@ async def set_get_stats_state(message: types.Message, state: FSMContext):
     user_id = message.from_user.id
     await database.add_user_if_not_exist(user_id)
     user_can_make_request, _, last_request = await (
-        database.check_user_limits(user_id)
+        database.check_and_get_user_limits(user_id)
     )
     if not user_can_make_request:
         next_update_limit = to_update_limits_format(last_request)
