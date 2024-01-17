@@ -121,15 +121,18 @@ async def get_confirm_delete_user(message: types.Message, state: FSMContext):
     confirm_string: str = state_data.get('confirm_string')
     for_del_message: types.Message = state_data.get('for_del_message')
     if confirm_string == message.text:
-        await database.delete_user(message.from_user.id)
-        await message.answer('🥲 Ваши данные успешно удалены,'
-                             'но мы надеемся на ваше возвращение.')
-        await message.delete()
+        is_deleted = await database.delete_user(message.from_user.id)
+        if is_deleted:
+            await message.answer('🥲 Ваши данные успешно удалены,'
+                                 'но мы надеемся на ваше возвращение.')
+        else:
+            await message.answer('⁉️ Не удалось выполнить удаление.\n'
+                                 'Попробуйте повторить попытку позже.')
     else:
         await message.answer(
             '⛔️ Введенное сообщение не соответствует ожидаемому.\n'
             'Удаление отменено.'
         )
-        await message.delete()
+    await message.delete()
     await for_del_message.delete()
     await state.clear()
