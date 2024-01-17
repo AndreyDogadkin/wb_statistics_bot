@@ -19,7 +19,7 @@ from exceptions.wb_exceptions import (
 from wb_api import ResponseHandlers
 from wb_api.urls_and_payloads import WBApiUrls, WBApiPayloads
 
-logger = logging.getLogger(__name__)  # TODO Добавить логирование ошибок в файл
+logger = logging.getLogger(__name__)
 
 
 class StatisticsRequests:
@@ -111,11 +111,12 @@ class StatisticsRequests:
     ) -> dict:
         """Запрос статистики товара по дням."""
         url = WBApiUrls.DETAIL_DAYS
+        now_date = datetime.now().date()
         data = {
             'nmIDs': nm_ids,
             'period': {
-                'begin': str(datetime.now().date() - timedelta(days=period)),
-                'end': str(datetime.now().date()),
+                'begin': str(now_date - timedelta(days=period)),
+                'end': str(now_date),
             },
             'aggregationLevel': aggregation_lvl,
             'timezone': 'Europe/Moscow',
@@ -127,20 +128,15 @@ class StatisticsRequests:
     async def get_analytic_detail_periods(self, nm_ids: list, period: int = 7):
         """Запрос статистики товара по периодам."""
         url = WBApiUrls.DETAIL_PERIODS
+        now = datetime.now()
         data = {
             'nmIDs': nm_ids,
             'period': {
-                'begin': str(datetime.now() - timedelta(days=period)),
-                'end': str(datetime.now()),
+                'begin': str(now - timedelta(days=period)),
+                'end': str(now),
             },
             'timezone': 'Europe/Moscow',
             'page': 1,
         }
         response = await self.__get_response_post(url=url, data=data)
         return ResponseHandlers.analytic_detail_period_handler(response)
-
-    # TODO добавить просмотр остатков товаров
-    #  (В документации -> статистика -> склад)
-
-    # TODO добавить продажи
-    #  (в документации -> статистика -> продажи)
