@@ -2,7 +2,8 @@ from aiogram import Router, types
 from aiogram.filters import Command, StateFilter
 from aiogram.fsm.state import default_state
 
-from bot.base_messages.messages_templates import my_limits_mess_template, stickers
+from bot.base_messages.messages_templates import my_limits_mess_template, \
+    stickers
 from bot.handlers.save_tokens_command import save_token_router
 from bot.helpers.users_limits import to_update_limits_format
 from config_data.config import REQUESTS_PER_DAY_LIMIT
@@ -22,7 +23,7 @@ async def send_user_limits(message: types.Message):
     user_id = message.from_user.id
     await database.add_user_if_not_exist(user_id)
     user_have_request, requests_count, _ = await (
-        database.check_user_limits(user_id)
+        database.check_and_get_user_limits(user_id)
     )
     last_request = await database.set_user_last_request(user_id)
     next_update_limit = to_update_limits_format(last_request)
