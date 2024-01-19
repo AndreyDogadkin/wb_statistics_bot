@@ -50,7 +50,7 @@ async def send_message_to_support(message: types.Message):
         message.from_user.username,
         message.from_user.id,
         message.text,
-        message.date,
+        message.date.date(),
     )
     await support_bot.send_message(
         chat_id=support_id,
