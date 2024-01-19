@@ -9,7 +9,7 @@ from typing import Coroutine
 import aiohttp
 
 from bot.base_messages.messages_templates import err_mess_templates
-from config_data import main_config
+from config_data import main_config, MSC_TIME_ZONE, MSC_TIME_DELTA
 from exceptions.wb_exceptions import (
     WBApiResponseExceptions,
     IncorrectKeyException,
@@ -34,7 +34,7 @@ class StatisticsRequests:
 
     async def __get_response_post(self, url, data):
         """Сессия для получения ответа от WB API."""
-        proxy = ('http://proxy.server:3128' if main_config.bot.TEST_SERVER
+        proxy = (main_config.bot.PROXY if main_config.bot.TEST_SERVER
                  else '')
 
         async with aiohttp.ClientSession(
@@ -111,7 +111,7 @@ class StatisticsRequests:
     ) -> dict:
         """Запрос статистики товара по дням."""
         url = WBApiUrls.DETAIL_DAYS
-        now_date = datetime.now().date()
+        now_date = datetime.now(tz=MSC_TIME_ZONE).date()
         data = {
             'nmIDs': nm_ids,
             'period': {
@@ -128,7 +128,7 @@ class StatisticsRequests:
     async def get_analytic_detail_periods(self, nm_ids: list, period: int = 7):
         """Запрос статистики товара по периодам."""
         url = WBApiUrls.DETAIL_PERIODS
-        now = datetime.now()
+        now = datetime.utcnow() + MSC_TIME_DELTA
         data = {
             'nmIDs': nm_ids,
             'period': {

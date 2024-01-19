@@ -31,7 +31,7 @@ async def set_default_commands(bot):
 
 async def main() -> None:
     if main_config.bot.TEST_SERVER:
-        session = AiohttpSession(proxy='http://proxy.server:3128')
+        session = AiohttpSession(proxy=main_config.bot.PROXY)
         bot = Bot(
             main_config.bot.TG_TOKEN,
             parse_mode=ParseMode.HTML,
