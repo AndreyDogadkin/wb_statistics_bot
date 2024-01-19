@@ -8,6 +8,9 @@ from pydantic_settings import BaseSettings
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+MSC_TIME_DELTA = datetime.timedelta(hours=3)
+MSC_TIME_ZONE = datetime.timezone(offset=MSC_TIME_DELTA, name='msc')
+
 
 BOT_COMMANDS = [
     types.BotCommand(
@@ -83,6 +86,7 @@ class BotSettings(BaseSettings):
     NGROK_URL: str
     ADMINS: list
     SUPPORT_ID: int
+    PROXY: str
 
 
 class DatabaseSettings(BaseSettings):
