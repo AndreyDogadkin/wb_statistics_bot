@@ -55,7 +55,6 @@ async def send_favorites_and_update_in_state_data(
 async def get_favorites_gateway(message: types.Message, state: FSMContext):
     """Установка состояния выбора номера номенклатуры из списка избранных."""
     user_id = message.from_user.id
-    await database.add_user_if_not_exist(user_id)
     user_can_make_request, _, last_request = await (
         database.check_and_get_user_limits(user_id)
     )

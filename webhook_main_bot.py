@@ -17,6 +17,7 @@ from bot.handlers import (
     donate_router,
     set_account_router
 )
+from bot.middlewares import AuthMiddleware
 from config_data.config import BOT_COMMANDS
 from polling_main_bot import main_config
 
@@ -50,6 +51,9 @@ async def lifespan(app: FastAPI):  # noqa
     dp.include_router(support_router)
     dp.include_router(donate_router)
     dp.include_router(set_account_router)
+
+    dp.message.middleware(AuthMiddleware())
+
     await set_default_commands(bot)
     logger.info('app start')
     yield

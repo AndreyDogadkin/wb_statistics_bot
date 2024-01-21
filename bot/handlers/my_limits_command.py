@@ -21,7 +21,6 @@ my_limits_router = Router()
 async def send_user_limits(message: types.Message):
     """Отправка количества оставшихся запросов и времени до обновления."""
     user_id = message.from_user.id
-    await database.add_user_if_not_exist(user_id)
     user_have_request, requests_count, _ = await (
         database.check_and_get_user_limits(user_id)
     )

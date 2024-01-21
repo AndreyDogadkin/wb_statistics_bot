@@ -26,7 +26,6 @@ save_token_router = Router()
 async def set_save_token_state(message: types.Message, state: FSMContext):
     """Запуск состояния выбора типа сохраняемого токена."""
     user_id = message.from_user.id
-    await database.add_user_if_not_exist(user_id)
     account = await database.get_active_account(user_id)
     for_edit = await message.answer(
         text=save_token_mess_templates['change_token_type'],

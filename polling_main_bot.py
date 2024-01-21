@@ -16,12 +16,11 @@ from bot.handlers import (
     donate_router,
     set_account_router
 )
+from bot.middlewares import AuthMiddleware
 from config_data import main_config
 from config_data.config import BOT_COMMANDS
-from database.methods import DBMethods
 
 dp = Dispatcher()
-database = DBMethods()
 
 
 async def set_default_commands(bot):
@@ -49,6 +48,9 @@ async def main() -> None:
     dp.include_router(support_router)
     dp.include_router(donate_router)
     dp.include_router(set_account_router)
+
+    dp.message.middleware(AuthMiddleware())
+
     await set_default_commands(bot)
     await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot)
