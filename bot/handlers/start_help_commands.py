@@ -29,7 +29,6 @@ async def command_start_handler(message: types.Message):
             )
         )
     )
-    await database.add_user_if_not_exist(message.from_user.id)
 
 
 @start_help_router.message(Command(commands='help'))

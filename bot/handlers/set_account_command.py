@@ -24,7 +24,6 @@ database = DBMethods()
 async def set_account_gateway(message: types.Message, state: FSMContext):
     """Точка входа для работы с аккаунтами."""
     user_id = message.from_user.id
-    await database.add_user_if_not_exist(telegram_id=user_id)
     user_accounts = await database.get_user_accounts(telegram_id=user_id)
     await state.update_data(user_accounts=user_accounts)
     await message.delete()
