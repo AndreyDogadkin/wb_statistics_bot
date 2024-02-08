@@ -15,40 +15,40 @@ MSC_TIME_ZONE = datetime.timezone(offset=MSC_TIME_DELTA, name='msc')
 BOT_COMMANDS = [
     types.BotCommand(
         command='help',
-        description='❓ Как пользоваться ботом.'
+        description='❓ Как пользоваться ботом.',
     ),
     types.BotCommand(
         command='set_account',
-        description='👤 Управление аккаунтами.'
+        description='👤 Управление аккаунтами.',
     ),
     types.BotCommand(
         command='favorites',
-        description='⭐️ Избранные запросы.'
+        description='⭐️ Избранные ' 'запросы.',
     ),
     types.BotCommand(
         command='get_stats',
-        description='📈 Получить статистику.'
+        description='📈 Получить статистику.',
     ),
     types.BotCommand(
         command='token',
-        description='🔑 Добавить/обновить токен.'
+        description='🔑 Добавить/обновить токен.',
     ),
     types.BotCommand(
         command='my_limits',
-        description='💯 Мои лимиты.'
+        description='💯 Мои лимиты.',
     ),
     types.BotCommand(
         command='donate',
-        description='🩶 Пожертвовать на развитие.'
+        description='🩶 Пожертвовать на развитие.',
     ),
     types.BotCommand(
         command='cancel',
-        description='↩️ Сброс состояния.'
+        description='↩️ Сброс состояния.',
     ),
     types.BotCommand(
         command='support',
-        description='🔔 Сообщить о проблеме.'
-    )
+        description='🔔 Сообщить о проблеме.',
+    ),
 ]
 
 PERIODS_FOR_REQUESTS = (
@@ -60,7 +60,7 @@ PERIODS_FOR_REQUESTS = (
     ('2 Недели', 14),
     ('Месяц', 31),
     ('2 Месяца', 62),
-    ('6 Месяцев', 183)
+    ('6 Месяцев', 183),
 )
 
 PAGINATION_SIZE = 5
@@ -102,9 +102,11 @@ class DatabaseSettings(BaseSettings):
 
     @property
     def db_url(self):
-        return ('postgresql+asyncpg://'
-                f'{self.DB_USER}:{self.DB_PASSWORD}'
-                f'@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}')
+        return (
+            'postgresql+asyncpg://'
+            f'{self.DB_USER}:{self.DB_PASSWORD}'
+            f'@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}'
+        )
 
 
 class EncryptionSettings(BaseSettings):
@@ -125,7 +127,7 @@ def get_config():
     return MainConfig(
         bot=BotSettings(),
         database=DatabaseSettings(),
-        encryption=EncryptionSettings()
+        encryption=EncryptionSettings(),
     )
 
 
