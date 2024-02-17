@@ -5,12 +5,12 @@ from sqlalchemy.ext.asyncio import (
     async_sessionmaker,
 )
 
-from config_data import main_config
+from bot.core import main_config
 
 if main_config.database.DB_PROD:
     DB_URL = main_config.database.db_url
 else:
-    DB_URL = main_config.database.DB_URL_TEST
+    DB_URL = main_config.database.test_db_url
 
     @event.listens_for(Engine, 'connect')
     def set_sqlite_pragma(dbapi_connection, connection_record):

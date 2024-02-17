@@ -9,12 +9,13 @@ from typing import Coroutine
 import aiohttp
 
 from bot.base_messages.messages_templates import err_mess_templates
-from config_data import main_config, MSC_TIME_ZONE, MSC_TIME_DELTA
+from bot.core import main_config, MSC_TIME_ZONE, MSC_TIME_DELTA
 from exceptions.wb_exceptions import (
     WBApiResponseExceptions,
     IncorrectKeyException,
     TimeoutException,
-    ForUserException, ToManyRequestsException,
+    ForUserException,
+    ToManyRequestsException,
 )
 from wb_api import ResponseHandlers
 from wb_api.urls_and_payloads import WBApiUrls, WBApiPayloads
@@ -34,8 +35,7 @@ class StatisticsRequests:
 
     async def __get_response_post(self, url, data):
         """Сессия для получения ответа от WB API."""
-        proxy = (main_config.bot.PROXY if main_config.bot.TEST_SERVER
-                 else '')
+        proxy = main_config.bot.PROXY if main_config.bot.TEST_SERVER else ''
 
         async with aiohttp.ClientSession(
             timeout=aiohttp.ClientTimeout(total=20)

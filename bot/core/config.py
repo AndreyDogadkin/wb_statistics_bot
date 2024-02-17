@@ -3,10 +3,11 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from aiogram import types
-from environs import Env
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+from bot.core.enums import Limits
+
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 MSC_TIME_DELTA = datetime.timedelta(hours=3)
 MSC_TIME_ZONE = datetime.timezone(offset=MSC_TIME_DELTA, name='msc')
@@ -23,7 +24,7 @@ BOT_COMMANDS = [
     ),
     types.BotCommand(
         command='favorites',
-        description='⭐️ Избранные ' 'запросы.',
+        description='⭐️ Избранные запросы.',
     ),
     types.BotCommand(
         command='get_stats',
@@ -51,33 +52,18 @@ BOT_COMMANDS = [
     ),
 ]
 
-PERIODS_FOR_REQUESTS = (
-    ('Сегодня', 0),
-    ('2 Дня', 1),
-    ('3 Дня', 2),
-    ('5 Дней', 4),
-    ('Неделя', 7),
-    ('2 Недели', 14),
-    ('Месяц', 31),
-    ('2 Месяца', 62),
-    ('6 Месяцев', 183),
-)
-
-PAGINATION_SIZE = 5
-
-REQUESTS_PER_DAY_LIMIT = 40
-DAY_LIMIT = 6
-DAY_LIMIT_DELTA = datetime.timedelta(hours=DAY_LIMIT)
-
-MAX_LIMIT_FAVORITES = 5
-MAX_LIMIT_ACCOUNTS = 3
-
-MAX_LEN_ACCOUNT_NAME = 20
-
-DB_TEST_PATH = BASE_DIR / 'test_database.sqlite3'
+DAY_LIMIT_DELTA = datetime.timedelta(hours=Limits.DAY_LIMIT.value)
 
 
-class BotSettings(BaseSettings):
+class EnvBaseSettings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_file='.env',
+        env_file_encoding='utf-8',
+        extra='ignore',
+    )
+
+
+class BotSettings(EnvBaseSettings):
     """Настройки бота."""
 
     TEST_SERVER: bool
@@ -89,11 +75,11 @@ class BotSettings(BaseSettings):
     PROXY: str
 
 
-class DatabaseSettings(BaseSettings):
+class DatabaseSettings(EnvBaseSettings):
     """Настройки базы данных."""
 
     DB_PROD: bool
-    DB_URL_TEST: str = f'sqlite+aiosqlite:///{DB_TEST_PATH}'
+    DB_TEST_PATH: str = f'{BASE_DIR}/test_database.sqlite3'
     DB_HOST: str
     DB_PORT: int
     DB_NAME: str
@@ -108,8 +94,12 @@ class DatabaseSettings(BaseSettings):
             f'@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}'
         )
 
+    @property
+    def test_db_url(self):
+        return f'sqlite+aiosqlite:///{self.DB_TEST_PATH}'
 
-class EncryptionSettings(BaseSettings):
+
+class EncryptionSettings(EnvBaseSettings):
     """Настройки шифрования."""
 
     ENCRYPTION_KEY: bytes
@@ -123,7 +113,6 @@ class MainConfig:
 
 
 def get_config():
-    Env().read_env()
     return MainConfig(
         bot=BotSettings(),
         database=DatabaseSettings(),

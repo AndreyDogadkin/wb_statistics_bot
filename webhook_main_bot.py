@@ -7,6 +7,7 @@ from aiogram.enums import ParseMode
 from aiogram.fsm.storage.memory import MemoryStorage
 from fastapi import FastAPI
 
+from bot.core.config import BOT_COMMANDS
 from bot.handlers import (
     get_favorite_router,
     get_stats_router,
@@ -15,10 +16,9 @@ from bot.handlers import (
     my_limits_router,
     support_router,
     donate_router,
-    set_account_router
+    set_account_router,
 )
 from bot.middlewares import AuthMiddleware
-from config_data.config import BOT_COMMANDS
 from polling_main_bot import main_config
 
 logger = logging.getLogger(__name__)

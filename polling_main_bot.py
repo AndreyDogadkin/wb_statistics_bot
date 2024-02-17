@@ -6,6 +6,8 @@ from aiogram import Bot, Dispatcher
 from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.enums import ParseMode
 
+from bot.core import main_config
+from bot.core.config import BOT_COMMANDS
 from bot.handlers import (
     get_favorite_router,
     get_stats_router,
@@ -14,11 +16,9 @@ from bot.handlers import (
     my_limits_router,
     support_router,
     donate_router,
-    set_account_router
+    set_account_router,
 )
 from bot.middlewares import AuthMiddleware
-from config_data import main_config
-from config_data.config import BOT_COMMANDS
 
 dp = Dispatcher()
 
@@ -34,12 +34,10 @@ async def main() -> None:
         bot = Bot(
             main_config.bot.TG_TOKEN,
             parse_mode=ParseMode.HTML,
-            session=session)
-    else:
-        bot = Bot(
-            main_config.bot.TG_TOKEN,
-            parse_mode=ParseMode.HTML
+            session=session,
         )
+    else:
+        bot = Bot(main_config.bot.TG_TOKEN, parse_mode=ParseMode.HTML)
     dp.include_router(start_help_router)
     dp.include_router(get_stats_router)
     dp.include_router(save_token_router)

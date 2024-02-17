@@ -1,6 +1,6 @@
 import datetime
 
-from config_data.config import DAY_LIMIT_DELTA
+from bot.core.config import DAY_LIMIT_DELTA
 
 
 def to_update_limits_format(last_request):

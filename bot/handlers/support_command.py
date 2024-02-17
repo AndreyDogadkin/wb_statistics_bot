@@ -7,9 +7,9 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state
 
 from bot.base_messages.messages_templates import support_mess_templates
+from bot.core import main_config
 from bot.keyboards import MakeMarkup
 from bot.states import SupportStates
-from config_data import main_config
 
 support_router = Router()
 
@@ -22,7 +22,7 @@ async def set_get_message_state(message: types.Message, state: FSMContext):
     """Установка состояния получения сообщения от пользователя."""
     message_for_edit = await message.answer(
         support_mess_templates['get_message'],
-        reply_markup=MakeMarkup.cancel_builder().as_markup()
+        reply_markup=MakeMarkup.cancel_builder().as_markup(),
     )
     await state.update_data(message_for_edit=message_for_edit)
     await state.set_state(SupportStates.get_message_for_support)
@@ -35,9 +35,7 @@ async def get_message_to_support(message: types.Message, state: FSMContext):
     state_data = await state.get_data()
     message_for_edit: types.Message = state_data.get('message_for_edit')
     await send_message_to_support(message=message)
-    await message_for_edit.edit_text(
-        support_mess_templates['message_send']
-    )
+    await message_for_edit.edit_text(support_mess_templates['message_send'])
     await message.delete()
     await state.clear()
     await asyncio.sleep(5)
