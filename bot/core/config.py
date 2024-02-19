@@ -2,7 +2,6 @@ import datetime
 from dataclasses import dataclass
 from pathlib import Path
 
-from aiogram import types
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from bot.core.enums import Limits
@@ -13,44 +12,16 @@ MSC_TIME_DELTA = datetime.timedelta(hours=3)
 MSC_TIME_ZONE = datetime.timezone(offset=MSC_TIME_DELTA, name='msc')
 
 
-BOT_COMMANDS = [
-    types.BotCommand(
-        command='help',
-        description='❓ Как пользоваться ботом.',
-    ),
-    types.BotCommand(
-        command='set_account',
-        description='👤 Управление аккаунтами.',
-    ),
-    types.BotCommand(
-        command='favorites',
-        description='⭐️ Избранные запросы.',
-    ),
-    types.BotCommand(
-        command='get_stats',
-        description='📈 Получить статистику.',
-    ),
-    types.BotCommand(
-        command='token',
-        description='🔑 Добавить/обновить токен.',
-    ),
-    types.BotCommand(
-        command='my_limits',
-        description='💯 Мои лимиты.',
-    ),
-    types.BotCommand(
-        command='donate',
-        description='🩶 Пожертвовать на развитие.',
-    ),
-    types.BotCommand(
-        command='cancel',
-        description='↩️ Сброс состояния.',
-    ),
-    types.BotCommand(
-        command='support',
-        description='🔔 Сообщить о проблеме.',
-    ),
-]
+BOT_COMMANDS = (
+    ('help', '❓ Как пользоваться ботом.'),
+    ('set_account', '👤 Управление аккаунтами.'),
+    ('favorites', '⭐️ Избранные запросы.'),
+    ('get_stats', '📈 Получить статистику.'),
+    ('token', '🔑 Добавить/обновить токен.'),
+    ('my_limits', '💯 Мои лимиты.'),
+    ('donate', '🩶 Пожертвовать на развитие.'),
+    ('support', '🔔 Сообщить о проблеме.'),
+)
 
 DAY_LIMIT_DELTA = datetime.timedelta(hours=Limits.DAY_LIMIT.value)
 
@@ -61,6 +32,19 @@ class EnvBaseSettings(BaseSettings):
         env_file_encoding='utf-8',
         extra='ignore',
     )
+
+
+class WebhookSettings(EnvBaseSettings):
+    USE_WEBHOOK: bool = False
+    WEBHOOK_BASE_URL: str
+    WEBHOOK_PATH: str
+    WEBHOOK_SECRET: str
+    WEBHOOK_HOST: str
+    WEBHOOK_PORT: str
+
+    @property
+    def webhook_url(self) -> str:
+        return f'{self.WEBHOOK_BASE_URL}{self.WEBHOOK_PATH}'
 
 
 class BotSettings(EnvBaseSettings):
@@ -108,6 +92,7 @@ class EncryptionSettings(EnvBaseSettings):
 @dataclass
 class MainConfig:
     bot: BotSettings
+    webhook: WebhookSettings
     database: DatabaseSettings
     encryption: EncryptionSettings
 
@@ -115,6 +100,7 @@ class MainConfig:
 def get_config():
     return MainConfig(
         bot=BotSettings(),
+        webhook=WebhookSettings(),
         database=DatabaseSettings(),
         encryption=EncryptionSettings(),
     )
