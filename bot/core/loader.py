@@ -2,7 +2,7 @@ from aiogram import Bot, Dispatcher
 from aiogram.enums import ParseMode
 from aiogram.types import BotCommand, BotCommandScopeDefault
 
-from config import main_config, BOT_COMMANDS
+from bot.core.config import main_config, BOT_COMMANDS
 
 token = main_config.bot.TG_TOKEN
 

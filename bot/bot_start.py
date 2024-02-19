@@ -1,6 +1,7 @@
 import asyncio
+import sys
 
-from bot.core.config import main_config
+from bot.core import main_config
 from bot.handlers import get_handlers_router
 from bot.core.loader import bot, dp, set_default_commands, remove_commands
 from bot.middlewares import set_middleware
@@ -23,9 +24,8 @@ async def on_startup():
     dp.include_router(get_handlers_router())
     set_middleware(dp=dp)
     await set_default_commands()
-    bot_info = bot.get_me()
 
-    logger.info(f'bot {bot_info.fullname} started.')
+    logger.info(f'bot started.')
 
 
 async def on_shutdown():
@@ -78,4 +78,10 @@ async def main():
 
 
 if __name__ == '__main__':
+    logging.basicConfig(
+        level=logging.INFO,
+        stream=sys.stdout,
+        format='[%(levelname)s : %(name)s : line-%(lineno)s : %(asctime)s] '
+        '-- %(message)s',
+    )
     asyncio.run(main())

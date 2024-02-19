@@ -5,6 +5,7 @@ import sys
 from aiogram import Bot, Dispatcher
 from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.enums import ParseMode
+from aiogram.types import BotCommand, BotCommandScopeDefault
 
 from bot.core import main_config
 from bot.core.config import BOT_COMMANDS
@@ -23,9 +24,16 @@ from bot.middlewares import AuthMiddleware
 dp = Dispatcher()
 
 
-async def set_default_commands(bot):
+async def set_default_commands(
+    bot,
+    commands: tuple[tuple[str, str]] = BOT_COMMANDS,
+):
     """Добавление кнопки 'Меню' со списком команд."""
-    await bot.set_my_commands(BOT_COMMANDS)
+    commands = [BotCommand(command=c, description=d) for c, d in commands]
+    await bot.set_my_commands(
+        commands=commands,
+        scope=BotCommandScopeDefault(),
+    )
 
 
 async def main() -> None:

@@ -10,6 +10,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 MSC_TIME_DELTA = datetime.timedelta(hours=3)
 MSC_TIME_ZONE = datetime.timezone(offset=MSC_TIME_DELTA, name='msc')
+DAY_LIMIT_DELTA = datetime.timedelta(hours=Limits.DAY_LIMIT.value)
 
 
 BOT_COMMANDS = (
@@ -23,12 +24,10 @@ BOT_COMMANDS = (
     ('support', '🔔 Сообщить о проблеме.'),
 )
 
-DAY_LIMIT_DELTA = datetime.timedelta(hours=Limits.DAY_LIMIT.value)
-
 
 class EnvBaseSettings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file='.env',
+        env_file='../.env',
         env_file_encoding='utf-8',
         extra='ignore',
     )
