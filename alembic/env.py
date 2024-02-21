@@ -6,7 +6,7 @@ from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
-from config_data import main_config
+from bot.core import main_config
 from database.models import Base
 
 # this is the Alembic Config object, which provides
@@ -32,7 +32,7 @@ target_metadata = Base.metadata
 if main_config.database.DB_PROD:
     DB_URL = main_config.database.db_url
 else:
-    DB_URL = main_config.database.DB_URL_TEST
+    DB_URL = main_config.database.test_db_url
 
 config.set_main_option("sqlalchemy.url", DB_URL)
 
