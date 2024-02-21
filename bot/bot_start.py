@@ -1,4 +1,5 @@
 import asyncio
+import logging
 import sys
 from contextlib import asynccontextmanager
 
@@ -7,16 +8,23 @@ from aiogram import types
 from fastapi import FastAPI
 
 from bot.core import main_config
+from bot.core.loader import (
+    bot,
+    dp,
+    set_default_commands,
+    remove_commands,
+    set_proxy_session,
+)
 from bot.handlers import get_handlers_router
-from bot.core.loader import bot, dp, set_default_commands, remove_commands
 from bot.middlewares import set_middleware
-import logging
 
 logger = logging.getLogger(__name__)
 
 
 async def on_startup():
     logger.info('Bot starting...')
+    if main_config.webhook.USE_WEBHOOK:
+        await set_proxy_session()
     dp.include_router(get_handlers_router())
     set_middleware(dp=dp)
     await set_default_commands()

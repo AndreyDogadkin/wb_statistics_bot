@@ -1,4 +1,5 @@
 from aiogram import Bot, Dispatcher
+from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.enums import ParseMode
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.types import BotCommand, BotCommandScopeDefault
@@ -12,6 +13,11 @@ token = main_config.bot.TG_TOKEN
 bot = Bot(token=token, parse_mode=ParseMode.HTML)
 storage = MemoryStorage()
 dp = Dispatcher(storage=storage)
+
+
+async def set_proxy_session():
+    session = AiohttpSession(proxy=main_config.bot.PROXY)
+    bot.session = session
 
 
 async def set_default_commands(

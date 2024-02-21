@@ -22,7 +22,7 @@ class EnvBaseSettings(BaseSettings):
 
 
 class WebhookSettings(EnvBaseSettings):
-    USE_WEBHOOK: bool = False
+    USE_WEBHOOK: bool
     WEBHOOK_BASE_URL: str
     WEBHOOK_PATH: str
     WEBHOOK_SECRET: str
@@ -37,7 +37,7 @@ class WebhookSettings(EnvBaseSettings):
 class BotSettings(EnvBaseSettings):
     """Настройки бота."""
 
-    TEST_SERVER: bool
+    USE_PROXY: bool
     TG_TOKEN: str
     TG_TOKEN_SUPPORT: str
     ADMINS: list

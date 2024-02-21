@@ -35,7 +35,7 @@ class StatisticsRequests:
 
     async def __get_response_post(self, url, data):
         """Сессия для получения ответа от WB API."""
-        proxy = main_config.bot.PROXY if main_config.bot.TEST_SERVER else ''
+        proxy = main_config.bot.PROXY if main_config.bot.USE_PROXY else ''
 
         async with aiohttp.ClientSession(
             timeout=aiohttp.ClientTimeout(total=20)
