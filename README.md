@@ -43,32 +43,44 @@ cd wb_statistics_bot
 ```
 Создайте файл .env и заполните его по примеру env.example
 ```
-TEST_SERVER=False
+USE_PROXY=False
 
-# Переменные телеграм
-TG_TOKEN=  # Телеграм токен.
-NGROK_URL=  # URL туннеля (для локального запуска через webhook).
-ADMINS=  # Список администраторов бота через запятую.
+# Телеграм
+TG_TOKEN=  # str Телеграм токен.
+TG_TOKEN_SUPPORT=  # str -- Телеграм токен бота для отправки Админу сообщений о проблеммах
+SUPPORT_ID=  # int -- id чата для получения сообщений о проблемах
+ADMINS=  # list -- Список администраторов бота через запятую.
+PROXY=  # srt -- Прокси сервер
 
-# Переменные для шифрования токенов
-PASSWORD_FOR_ENCRYPTION=  # Пароль для генерации ключа шифрования.
-DKLEN=  # Длина ключа шифрования.
-ENCRYPTION_KEY= # Ключ шифрования *
+# Шифрование токенов
+PASSWORD_FOR_ENCRYPTION=  # str -- Пароль для генерации ключа шифрования.
+DKLEN=  # int -- Длина ключа шифрования.
+ENCRYPTION_KEY= # bytes -- Ключ шифрования(сгенерировать через utils/generate_encryption_key.py)
 
-# Переменные БД
-DB_PROD=False
-DB_USER= # Имя пользователя
-DB_URL=  # Путь до базы данных либо URL.
-DB_PASSWORD=  # Пароль базы данных.
-DB_NAME= # Название БД
+# БД
+DB_PROD= # bool -- Если False то используется SQLite
+DB_HOST= # str -- Хост базы данных
+DB_PORT= # int -- Порт базы занных
+DB_USER= # str -- Имя пользователя
+DB_PASSWORD=  # str -- Пароль базы данных.
+DB_NAME= # str -- Имя базы данных
+
+# Webhook
+USE_WEBHOOK= # bool -- True если используете webhook
+WEBHOOK_BASE_URL= # str -- Например: https://xxx.ngrok-free.app
+WEBHOOK_PATH= # str -- Например: /bot/
+WEBHOOK_SECRET= # str -- Ваш секретный ключ(Придумываете/генерируете сами)
+WEBHOOK_HOST= # str -- Например: http://127.0.0.1
+WEBHOOK_PORT= # str -- Например: 8000
 ```
 * Для генерации ключа шифрования, находясь в корневой директории проекта, выполните команду:
 ```
 python utils/AES_encryption/generate_encryption_key.py 
 ```
-После заполнения, находясь в корневой директории проекта, выполните команду:
+После заполнения, находясь в корневой директории проекта, выполните команды:
 ```
-bash local_start.sh
+cd bot
+python bot_start.py
 ```
 ___
 Зависимости:
