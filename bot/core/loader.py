@@ -3,7 +3,8 @@ from aiogram.enums import ParseMode
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.types import BotCommand, BotCommandScopeDefault
 
-from bot.core.config import main_config, BOT_COMMANDS
+from bot.core.config import main_config
+from bot.core.enums import MyBotCommands
 
 token = main_config.bot.TG_TOKEN
 
@@ -14,7 +15,7 @@ dp = Dispatcher(storage=storage)
 
 
 async def set_default_commands(
-    commands: tuple[tuple[str, str]] = BOT_COMMANDS,
+    commands: MyBotCommands = MyBotCommands,
 ):
     """Добавление кнопки 'Меню' со списком команд."""
     commands = [BotCommand(command=c, description=d) for c, d in commands]

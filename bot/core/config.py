@@ -13,18 +13,6 @@ MSC_TIME_ZONE = datetime.timezone(offset=MSC_TIME_DELTA, name='msc')
 DAY_LIMIT_DELTA = datetime.timedelta(hours=Limits.DAY_LIMIT.value)
 
 
-BOT_COMMANDS = (
-    ('help', '❓ Как пользоваться ботом.'),
-    ('set_account', '👤 Управление аккаунтами.'),
-    ('favorites', '⭐️ Избранные запросы.'),
-    ('get_stats', '📈 Получить статистику.'),
-    ('token', '🔑 Добавить/обновить токен.'),
-    ('my_limits', '💯 Мои лимиты.'),
-    ('donate', '🩶 Пожертвовать на развитие.'),
-    ('support', '🔔 Сообщить о проблеме.'),
-)
-
-
 class EnvBaseSettings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file='../.env',
@@ -52,7 +40,6 @@ class BotSettings(EnvBaseSettings):
     TEST_SERVER: bool
     TG_TOKEN: str
     TG_TOKEN_SUPPORT: str
-    NGROK_URL: str
     ADMINS: list
     SUPPORT_ID: int
     PROXY: str
