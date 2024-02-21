@@ -1,5 +1,10 @@
 import asyncio
 import sys
+from contextlib import asynccontextmanager
+
+import uvicorn
+from aiogram import types
+from fastapi import FastAPI
 
 from bot.core import main_config
 from bot.handlers import get_handlers_router
@@ -10,71 +15,53 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-if main_config.webhook.USE_WEBHOOK:
-    from aiogram.webhook.aiohttp_server import (
-        SimpleRequestHandler,
-        setup_application,
-    )
-    from aiohttp import web
-
-
 async def on_startup():
-    logger.info('bot starting...')
-
+    logger.info('Bot starting...')
     dp.include_router(get_handlers_router())
     set_middleware(dp=dp)
     await set_default_commands()
-
-    logger.info(f'bot started.')
+    logger.info(f'Bot started.')
 
 
 async def on_shutdown():
-    logger.info('bot stopping ...')
-
+    logger.info('Bot stopping...')
     await remove_commands()
     await dp.storage.close()
     await dp.fsm.storage.close()
     await bot.delete_webhook()
     await bot.session.close()
+    logger.info('Bot stopped.')
 
-    logger.info('bot stopped.')
 
-
-async def setup_webhook():
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    await on_startup()
     await bot.set_webhook(
         main_config.webhook.webhook_url,
         allowed_updates=dp.resolve_used_update_types(),
         secret_token=main_config.webhook.WEBHOOK_SECRET,
     )
-
-    app = web.Application()
-
-    webhook_handler = SimpleRequestHandler(
-        dispatcher=dp, bot=bot, secret_token=main_config.webhook.WEBHOOK_SECRET
-    )
-    webhook_handler.register(app, path=main_config.webhook.WEBHOOK_PATH)
-    setup_application(app, dp, bot=bot)
-    runner = web.AppRunner(app)
-    await runner.setup()
-    site = web.TCPSite(
-        runner=runner,
-        host=main_config.webhook.WEBHOOK_HOST,
-        port=main_config.webhook.WEBHOOK_PORT,
-    )
-    await site.start()
-    await asyncio.Event().wait()
+    yield
+    await on_shutdown()
 
 
-async def main():
+app = FastAPI(lifespan=lifespan)
+
+
+@app.post(main_config.webhook.WEBHOOK_PATH)
+async def bot_webhook(update: dict):
+    telegram_update = types.Update(**update)
+    await dp.feed_update(bot=bot, update=telegram_update)
+
+
+async def _start_polling():
     dp.startup.register(on_startup)
     dp.shutdown.register(on_shutdown)
-    if main_config.webhook.USE_WEBHOOK:
-        await setup_webhook()
-    else:
-        await dp.start_polling(
-            bot,
-            allowed_updates=dp.resolve_used_update_types(),
-        )
+    await bot.delete_webhook()
+    await dp.start_polling(
+        bot,
+        allowed_updates=dp.resolve_used_update_types(),
+    )
 
 
 if __name__ == '__main__':
@@ -84,4 +71,7 @@ if __name__ == '__main__':
         format='[%(levelname)s : %(name)s : line-%(lineno)s : %(asctime)s] '
         '-- %(message)s',
     )
-    asyncio.run(main())
+    if main_config.webhook.USE_WEBHOOK:
+        uvicorn.run(app)
+    else:
+        asyncio.run(_start_polling())

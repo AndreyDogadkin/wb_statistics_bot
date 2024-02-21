@@ -1,5 +1,6 @@
 from aiogram import Bot, Dispatcher
 from aiogram.enums import ParseMode
+from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.types import BotCommand, BotCommandScopeDefault
 
 from bot.core.config import main_config, BOT_COMMANDS
@@ -8,7 +9,8 @@ token = main_config.bot.TG_TOKEN
 
 
 bot = Bot(token=token, parse_mode=ParseMode.HTML)
-dp = Dispatcher()
+storage = MemoryStorage()
+dp = Dispatcher(storage=storage)
 
 
 async def set_default_commands(
