@@ -5,12 +5,8 @@ from sqlalchemy import select, Select, exists, func
 from sqlalchemy.orm import selectinload
 
 from bot.base_messages.messages_templates import get_favorite_message_templates
-from config_data.config import (
-    REQUESTS_PER_DAY_LIMIT,
-    DAY_LIMIT_DELTA,
-    MAX_LIMIT_FAVORITES,
-    MAX_LIMIT_ACCOUNTS
-)
+from bot.core.config import DAY_LIMIT_DELTA
+from bot.core.enums import Limits
 from database import database_connector
 from database.decorators import log_exceptions_db_methods
 from database.models import User, Token, FavoriteRequest, WBAccount
@@ -31,14 +27,12 @@ class DBMethods:
         :return: Select для исполнения запроса получения пользователя по
             телеграм id.
         """
-        query = select(User).where(
-            User.telegram_id == telegram_id
-        )
+        query = select(User).where(User.telegram_id == telegram_id)
         return query
 
     def __get_query_select_active_account(
-            self,
-            telegram_id: int,
+        self,
+        telegram_id: int,
     ) -> Select:
         """
         Получить select запрос активного аккаунта пользователя со
@@ -47,12 +41,16 @@ class DBMethods:
         :return: Select для исполнения запроса на получение активного
             аккаунта пользователя.
         """
-        query = select(WBAccount).where(
-            WBAccount.user_id == telegram_id,
-            WBAccount.is_now_active == True  # noqa
-        ).options(
-            selectinload(WBAccount.tokens),
-            selectinload(WBAccount.favorites)
+        query = (
+            select(WBAccount)
+            .where(
+                WBAccount.user_id == telegram_id,
+                WBAccount.is_now_active == True,  # noqa
+            )
+            .options(
+                selectinload(WBAccount.tokens),
+                selectinload(WBAccount.favorites),
+            )
         )
         return query
 
@@ -63,9 +61,7 @@ class DBMethods:
         :return: True если пользователь с таким telegram id есть,
             иначе False.
         """
-        query = select(
-            exists(User).where(User.telegram_id == telegram_id)
-        )
+        query = select(exists(User).where(User.telegram_id == telegram_id))
         async with self.session() as s:
             user = await s.execute(query)
             user = user.scalar_one()
@@ -84,21 +80,20 @@ class DBMethods:
             async with self.session() as s:
                 user = User(
                     telegram_id=telegram_id,
-                    last_request=datetime.datetime.now()
+                    last_request=datetime.datetime.now(),
                 )
                 user.wb_accounts.append(
                     WBAccount(
                         user_id=telegram_id,
                         name='Мой магазин',
-                        is_now_active=True
+                        is_now_active=True,
                     )
                 )
                 s.add(user)
                 await s.commit()
 
     async def get_user_accounts(
-            self,
-            telegram_id: int
+        self, telegram_id: int
     ) -> list[WBAccount] | None:
         """
         Получить все аккаунты выбранного пользователя.
@@ -130,20 +125,20 @@ class DBMethods:
         :param telegram_id:
         :return: True если лимит не достигнут, иначе False.
         """
-        query = select(func.count()).select_from(WBAccount).where(
-            WBAccount.user_id == telegram_id
+        query = (
+            select(func.count())
+            .select_from(WBAccount)
+            .where(WBAccount.user_id == telegram_id)
         )
         async with self.session() as s:
             accounts_count = await s.execute(query)
             accounts_count = accounts_count.scalar()
-            if accounts_count < MAX_LIMIT_ACCOUNTS:
+            if accounts_count < Limits.MAX_LIMIT_ACCOUNTS:
                 return True
             return False
 
     async def check_account_name(
-            self,
-            telegram_id: int,
-            account_name: str
+        self, telegram_id: int, account_name: str
     ) -> bool:
         """
         Проверить наличие у пользователя аккаунтов с переданным названием.
@@ -155,7 +150,7 @@ class DBMethods:
         query = select(
             exists(WBAccount).where(
                 WBAccount.user_id == telegram_id,
-                WBAccount.name == account_name
+                WBAccount.name == account_name,
             )
         )
         async with self.session() as s:
@@ -163,9 +158,7 @@ class DBMethods:
             return account.scalar()
 
     async def create_user_account(
-            self,
-            telegram_id: int,
-            account_name: str
+        self, telegram_id: int, account_name: str
     ) -> bool:
         """
         Создать новый аккаунт пользователя.
@@ -180,9 +173,7 @@ class DBMethods:
         if not name_exists:
             active_account = await self.get_active_account(telegram_id)
             account = WBAccount(
-                user_id=telegram_id,
-                name=account_name,
-                is_now_active=True
+                user_id=telegram_id, name=account_name, is_now_active=True
             )
             async with self.session() as s:
                 s.add(active_account)
@@ -193,10 +184,10 @@ class DBMethods:
         return False
 
     async def change_account_name(
-            self,
-            telegram_id: int,
-            account_id: int,
-            new_name: str,
+        self,
+        telegram_id: int,
+        account_id: int,
+        new_name: str,
     ) -> bool:
         """
         Изменить название существующего аккаунта пользователя.
@@ -223,9 +214,7 @@ class DBMethods:
         return False
 
     async def change_active_account(
-            self,
-            telegram_id: int,
-            select_account_id: int
+        self, telegram_id: int, select_account_id: int
     ) -> bool:
         """
         Изменить активный аккаунт пользователя.
@@ -237,8 +226,7 @@ class DBMethods:
         """
         active_account = await self.get_active_account(telegram_id=telegram_id)
         query = select(WBAccount).where(
-            WBAccount.user_id == telegram_id,
-            WBAccount.id == select_account_id
+            WBAccount.user_id == telegram_id, WBAccount.id == select_account_id
         )
         if active_account.id != select_account_id:
             async with self.session() as s:
@@ -262,13 +250,12 @@ class DBMethods:
             существует.
         """
         account_query = select(WBAccount).where(
-            WBAccount.user_id == telegram_id,
-            WBAccount.id == account_id
+            WBAccount.user_id == telegram_id, WBAccount.id == account_id
         )
-        accounts_count_query = select(
-            func.count()
-        ).select_from(WBAccount).where(
-            WBAccount.user_id == telegram_id
+        accounts_count_query = (
+            select(func.count())
+            .select_from(WBAccount)
+            .where(WBAccount.user_id == telegram_id)
         )
         async with self.session() as s:
             accounts_count = await s.execute(accounts_count_query)
@@ -282,8 +269,7 @@ class DBMethods:
             return False
 
     async def __get_user_token_and_account_id(
-            self,
-            telegram_id: int
+        self, telegram_id: int
     ) -> tuple[Token | None, WBAccount]:
         """
         Получить Токены пользователя и id активного аккаунта.
@@ -299,9 +285,7 @@ class DBMethods:
             return account.tokens, account.id
 
     async def save_content_token(
-            self,
-            telegram_id: int,
-            token_content: str
+        self, telegram_id: int, token_content: str
     ) -> None:
         """
         Сохранение или обновление токена типа 'Контент'.
@@ -314,8 +298,8 @@ class DBMethods:
         )
         encrypted_token = tokens_dict.get('token_content')
         async with self.session() as s:
-            token, account_id = (
-                await self.__get_user_token_and_account_id(telegram_id)
+            token, account_id = await self.__get_user_token_and_account_id(
+                telegram_id
             )
             if token:
                 s.add(token)
@@ -329,9 +313,7 @@ class DBMethods:
             await s.commit()
 
     async def save_analytic_token(
-            self,
-            telegram_id: int,
-            token_analytic: str
+        self, telegram_id: int, token_analytic: str
     ) -> None:
         """
         Сохранение или обновление токена типа 'Аналитика'.
@@ -345,7 +327,8 @@ class DBMethods:
         encrypted_token = tokens_dict.get('token_analytic')
         async with self.session() as s:
             token, account_id = await self.__get_user_token_and_account_id(
-                telegram_id)
+                telegram_id
+            )
             if token:
                 s.add(token)
                 token.wb_token_analytic = encrypted_token
@@ -370,8 +353,7 @@ class DBMethods:
             token = account.tokens
             if token and token.wb_token_content:
                 tokens_dict: dict = AESEncryption.encrypt_keys(
-                    decrypt=True,
-                    token_content=token.wb_token_content
+                    decrypt=True, token_content=token.wb_token_content
                 )
                 return tokens_dict.get('token_content')
 
@@ -388,40 +370,43 @@ class DBMethods:
             token = account.tokens
             if token and token.wb_token_analytic:
                 tokens_dict: dict = AESEncryption.encrypt_keys(
-                    decrypt=True,
-                    token_analytic=token.wb_token_analytic
+                    decrypt=True, token_analytic=token.wb_token_analytic
                 )
                 return tokens_dict.get('token_analytic')
 
-    async def get_user_tokens(self, telegram_id: int) -> dict[str: str] | None:
+    async def get_user_tokens(self, telegram_id: int) -> dict[str:str] | None:
         """
         Получить токены "Контент" и "Аналитика" пользователя.
         :param telegram_id:
         :return: Токены пользователя обоих типов, если существуют оба токена,
             иначе None
         """
-        query = select(WBAccount).where(
-            WBAccount.is_now_active == True,
-            WBAccount.user_id == telegram_id
-        ).options(
-            selectinload(WBAccount.tokens)
+        query = (
+            select(WBAccount)
+            .where(
+                WBAccount.is_now_active == True,
+                WBAccount.user_id == telegram_id,
+            )
+            .options(selectinload(WBAccount.tokens))
         )
         async with self.session() as s:
             account = await s.execute(query)
             account = account.scalar_one_or_none()
             decrypted_tokens = account.tokens
-            if (decrypted_tokens and decrypted_tokens.wb_token_content
-                    and decrypted_tokens.wb_token_analytic):
+            if (
+                decrypted_tokens
+                and decrypted_tokens.wb_token_content
+                and decrypted_tokens.wb_token_analytic
+            ):
                 encrypted_tokens = AESEncryption.encrypt_keys(
                     decrypt=True,
                     wb_token_analytic=decrypted_tokens.wb_token_analytic,
-                    wb_token_content=decrypted_tokens.wb_token_content
+                    wb_token_content=decrypted_tokens.wb_token_content,
                 )
                 return encrypted_tokens
 
     async def set_user_last_request(
-            self,
-            telegram_id: int
+        self, telegram_id: int
     ) -> datetime.datetime:
         """
         Установить пользователю дату и время последнего запроса.
@@ -441,8 +426,7 @@ class DBMethods:
         return last_request
 
     async def set_plus_one_to_user_requests_per_day(
-            self,
-            telegram_id: int
+        self, telegram_id: int
     ) -> None:
         """
         Прибавить пользователю счетчик запросов на 1.
@@ -457,8 +441,7 @@ class DBMethods:
             await s.commit()
 
     async def check_and_get_user_limits(
-            self,
-            telegram_id: int
+        self, telegram_id: int
     ) -> tuple[bool, int, datetime.datetime]:
         """
         Проверить и вернуть лимиты запросов пользователя.
@@ -478,16 +461,13 @@ class DBMethods:
             if (now - last_request) >= DAY_LIMIT_DELTA:
                 user.requests_per_day = 0
                 check = True, 0, last_request
-            elif requests_per_day < REQUESTS_PER_DAY_LIMIT:
+            elif requests_per_day < Limits.REQUESTS_PER_DAY_LIMIT:
                 check = True, requests_per_day, last_request
             await s.commit()
             return check
 
     async def check_and_get_favorite(
-            self,
-            account_id: int,
-            nm_id: int,
-            period: int
+        self, account_id: int, nm_id: int, period: int
     ) -> FavoriteRequest | None:
         """
         Проверить наличие запроса пользователя в избранном.
@@ -519,15 +499,15 @@ class DBMethods:
             account = await s.execute(query)
             account = account.scalar_one_or_none()
             len_favorites = len(account.favorites)
-            return len_favorites < MAX_LIMIT_FAVORITES, account.id
+            return len_favorites < Limits.MAX_LIMIT_FAVORITES, account.id
 
     async def add_favorite_request(
-            self,
-            telegram_id: int,
-            name: str,
-            nm_id: int,
-            period: int,
-            photo_url: str
+        self,
+        telegram_id: int,
+        name: str,
+        nm_id: int,
+        period: int,
+        photo_url: str,
     ) -> None:
         """
         Добавить запрос в избранное.
@@ -557,14 +537,13 @@ class DBMethods:
                     wb_account_id=account_id,
                     nm_id=nm_id,
                     period=period,
-                    photo_url=photo_url
+                    photo_url=photo_url,
                 )
                 s.add(favorite)
                 await s.commit()
 
     async def get_user_favorites(
-            self,
-            telegram_id: int
+        self, telegram_id: int
     ) -> list[FavoriteRequest]:
         """
         Получить все избранные запросы пользователя.
@@ -579,10 +558,7 @@ class DBMethods:
             return favorites
 
     async def delete_user_favorite(
-            self,
-            telegram_id: int,
-            nm_id: int,
-            period: int
+        self, telegram_id: int, nm_id: int, period: int
     ) -> None:
         """
         Удалить избранный запрос пользователя.
@@ -595,7 +571,7 @@ class DBMethods:
         query = select(FavoriteRequest).where(
             FavoriteRequest.wb_account_id == account.id,
             FavoriteRequest.nm_id == nm_id,
-            FavoriteRequest.period == period
+            FavoriteRequest.period == period,
         )
         async with self.session() as s:
             favorite = await s.execute(query)

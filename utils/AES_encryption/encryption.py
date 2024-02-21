@@ -3,19 +3,16 @@ import base64
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad, unpad
 
-from config_data import main_config
+from bot.core import main_config
 
 
 class AESEncryption:
-
     __KEY = base64.b64decode(main_config.encryption.ENCRYPTION_KEY)
 
     @classmethod
     def encrypt_keys(
-            cls,
-            decrypt: bool = False,
-            **kwargs: dict[str: bytes] | dict[str: str]
-    ) -> dict[str: bytes] | dict[str: str]:
+        cls, decrypt: bool = False, **kwargs: dict[str:bytes] | dict[str:str]
+    ) -> dict[str:bytes] | dict[str:str]:
         """
         Зашифровать / расшифровать API ключи.
         Шифрует если decrypt = False

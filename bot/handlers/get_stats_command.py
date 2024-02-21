@@ -11,17 +11,17 @@ from aiogram.utils import markdown
 from bot.base_messages.messages_templates import (
     get_stats_mess_templates,
     err_mess_templates,
-    stickers
+    stickers,
 )
+from bot.core.enums import Limits
 from bot.helpers import get_user_statistics, to_update_limits_format
 from bot.keyboards import (
     MakeMarkup,
     NmIdsCallbackData,
     DaysCallbackData,
-    PaginationNmIds
+    PaginationNmIds,
 )
 from bot.states import GetStatsStates
-from config_data.config import MAX_LIMIT_FAVORITES
 from database.methods import DBMethods
 from exceptions.wb_exceptions import ForUserException
 from wb_api.analytics_requests import StatisticsRequests
@@ -35,16 +35,18 @@ get_stats_router = Router()
 
 @get_stats_router.message(
     Command(commands='get_stats'),
-    StateFilter(default_state)
+    StateFilter(default_state),
 )
 async def set_get_stats_state(message: types.Message, state: FSMContext):
     """
     Отправка номенклатур пользователю, если токен сохранен.
     """
     user_id = message.from_user.id
-    user_can_make_request, _, last_request = await (
-        database.check_and_get_user_limits(user_id)
-    )
+    (
+        user_can_make_request,
+        _,
+        last_request,
+    ) = await database.check_and_get_user_limits(user_id)
     if not user_can_make_request:
         next_update_limit = to_update_limits_format(last_request)
         await message.answer_sticker(stickers['limit_requests'])
@@ -61,7 +63,7 @@ async def set_get_stats_state(message: types.Message, state: FSMContext):
             await send_nm_ids(message, state, tokens['wb_token_content'])
             await state.update_data(
                 token_content=tokens['wb_token_content'],
-                token_analytic=tokens['wb_token_analytic']
+                token_analytic=tokens['wb_token_analytic'],
             )
         else:
             await message.answer(get_stats_mess_templates['save_tokens'])
@@ -71,12 +73,12 @@ async def set_get_stats_state(message: types.Message, state: FSMContext):
 
 @get_stats_router.callback_query(
     StateFilter(GetStatsStates.get_nm_ids),
-    PaginationNmIds.filter()
+    PaginationNmIds.filter(),
 )
 async def change_page_for_nm_ids(
-        callback: types.CallbackQuery,
-        callback_data: PaginationNmIds,
-        state: FSMContext
+    callback: types.CallbackQuery,
+    callback_data: PaginationNmIds,
+    state: FSMContext,
 ):
     """Отправка выбранной страницы номеров номенклатур пользователю."""
     state_data = await state.get_data()
@@ -102,7 +104,7 @@ async def change_page_for_nm_ids(
 
 
 async def paginate_nm_ids(
-        state: FSMContext
+    state: FSMContext,
 ) -> tuple[str, InlineKeyboardMarkup]:
     """Подготовка сообщения и клавиатуры для номеров номенклатур."""
     state_data = await state.get_data()
@@ -110,28 +112,24 @@ async def paginate_nm_ids(
     page_number = state_data.get('page_number')
     add_in_favorite: bool = state_data.get('add_in_favorite')
     markup = MakeMarkup.nm_ids_markup(
-        nm_ids,
-        page_number,
-        add_to_favorite=add_in_favorite
+        nm_ids, page_number, add_to_favorite=add_in_favorite
     )
     message_for_ids: str = markdown.hbold(
         get_stats_mess_templates['change_nm_id']
     )
     for nm in nm_ids[page_number]:
-        message_for_ids += (
-            get_stats_mess_templates['send_nm_ids_template'].format(*nm)
-        )
+        message_for_ids += get_stats_mess_templates[
+            'send_nm_ids_template'
+        ].format(*nm)
         await state.update_data(data={f'photo:{nm[2]}': nm[3]})
-    message_for_ids += (
-        markdown.hbold(get_stats_mess_templates['plus_send_nm_ids_template'])
+    message_for_ids += markdown.hbold(
+        get_stats_mess_templates['plus_send_nm_ids_template']
     )
     return message_for_ids, markup
 
 
 async def send_nm_ids(
-        message: types.Message,
-        state: FSMContext,
-        token_content
+    message: types.Message, state: FSMContext, token_content
 ):
     """Отправка первой страницы номеров номенклатур пользователю."""
     statistics = StatisticsRequests(token_content)
@@ -156,13 +154,12 @@ async def send_nm_ids(
 
 
 @get_stats_router.callback_query(
-    StateFilter(GetStatsStates.get_nm_ids),
-    NmIdsCallbackData.filter()
+    StateFilter(GetStatsStates.get_nm_ids), NmIdsCallbackData.filter()
 )
 async def set_period_state(
-        callback: types.CallbackQuery,
-        callback_data: NmIdsCallbackData,
-        state: FSMContext
+    callback: types.CallbackQuery,
+    callback_data: NmIdsCallbackData,
+    state: FSMContext,
 ):
     """
     Получения номера номенклатуры от пользователя.
@@ -173,25 +170,22 @@ async def set_period_state(
     markup = MakeMarkup.periods_markup()
     await callback.message.edit_text(
         text=get_stats_mess_templates['set_get_period_state'],
-        reply_markup=markup
+        reply_markup=markup,
     )
     await state.set_state(GetStatsStates.get_period)
 
 
 @get_stats_router.callback_query(
-    StateFilter(GetStatsStates.get_period),
-    DaysCallbackData.filter()
+    StateFilter(GetStatsStates.get_period), DaysCallbackData.filter()
 )
 async def send_user_statistics(
-        callback: types.CallbackQuery,
-        callback_data: DaysCallbackData,
-        state: FSMContext
+    callback: types.CallbackQuery,
+    callback_data: DaysCallbackData,
+    state: FSMContext,
 ):
     """Отправить статистику пользователю."""
     message_wait: types.Message = await callback.message.edit_text(
-        markdown.hitalic(
-            get_stats_mess_templates['make_request']
-        )
+        markdown.hitalic(get_stats_mess_templates['make_request'])
     )
     user_id = callback.from_user.id
     period: int = callback_data.unpack(callback.data).period
@@ -204,8 +198,7 @@ async def send_user_statistics(
     statistics = StatisticsRequests(token_analytic)
     try:
         product, answer_message = await get_user_statistics(
-            statistics,
-            nm_id, period
+            statistics, nm_id, period
         )
         if product and answer_message:
             if add_in_favorite:
@@ -215,21 +208,19 @@ async def send_user_statistics(
                         name=f'{product}, дней- {period + 1}.',
                         nm_id=nm_id,
                         period=period,
-                        photo_url=photo
+                        photo_url=photo,
                     )
                 else:
                     await callback.answer(
-                        get_stats_mess_templates[
-                            'max_limit_favorite'
-                        ].format(MAX_LIMIT_FAVORITES),
-                        show_alert=True
+                        get_stats_mess_templates['max_limit_favorite'].format(
+                            Limits.MAX_LIMIT_FAVORITES
+                        ),
+                        show_alert=True,
                     )
             await callback.answer(text=product)
             await message_wait.edit_text(
-                answer_message + markdown.hlink(
-                    title='📸 Открыть фото.',
-                    url=photo
-                )
+                answer_message
+                + markdown.hlink(title='📸 Открыть фото.', url=photo)
             )
             await database.set_user_last_request(user_id)
             await database.set_plus_one_to_user_requests_per_day(user_id)
@@ -248,5 +239,6 @@ async def send_user_statistics(
         await state.storage.close()
         await state.clear()
         loger.info(f'Состояние закрыто, хранилище очищено.')
+
 
 # TODO обработать ошибки ТГ

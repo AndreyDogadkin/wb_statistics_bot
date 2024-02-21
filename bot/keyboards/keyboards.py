@@ -1,9 +1,7 @@
 from aiogram.types import InlineKeyboardMarkup
-from aiogram.utils.keyboard import (
-    InlineKeyboardBuilder,
-    InlineKeyboardButton
-)
+from aiogram.utils.keyboard import InlineKeyboardBuilder, InlineKeyboardButton
 
+from bot.core.enums import Periods
 from bot.keyboards import (
     NmIdsCallbackData,
     PaginationNmIds,
@@ -14,9 +12,8 @@ from bot.keyboards import (
     HelpCallbackData,
     AccountsCallbackData,
     AccountsEditCallbackData,
-    AccountsDeleteCallbackData
+    AccountsDeleteCallbackData,
 )
-from config_data.config import PERIODS_FOR_REQUESTS
 from database.models import FavoriteRequest, WBAccount
 
 
@@ -25,33 +22,29 @@ class MakeMarkup:
 
     @classmethod
     def nm_ids_markup(
-            cls,
-            data,
-            page_number: int,
-            add_to_favorite: bool = False
+        cls, data, page_number: int, add_to_favorite: bool = False
     ) -> InlineKeyboardMarkup:
         """Клавиатура для вывода номенклатур пользователя."""
         markup = InlineKeyboardBuilder()
         for nm in data[page_number]:
             markup.button(
-                text=nm[0],
-                callback_data=NmIdsCallbackData(nm_id=nm[2]).pack()
+                text=nm[0], callback_data=NmIdsCallbackData(nm_id=nm[2]).pack()
             )
         markup.adjust(2)
         markup.attach(cls.__pagination_builder(page_number, len(data)))
-        markup.attach(cls.add_to_favorite_builder(
-            add_to_favorite=add_to_favorite)
+        markup.attach(
+            cls.add_to_favorite_builder(add_to_favorite=add_to_favorite)
         )
         markup.attach(cls.cancel_builder())
         return markup.as_markup()
 
     @classmethod
     def account_markup(
-            cls,
-            accounts: list[WBAccount],
-            gateway: bool = False,
-            edit: bool = False,
-            delete: bool = False
+        cls,
+        accounts: list[WBAccount],
+        gateway: bool = False,
+        edit: bool = False,
+        delete: bool = False,
     ) -> InlineKeyboardMarkup:
         """Клавиатура для аккаунтов пользователя."""
         markup = InlineKeyboardBuilder()
@@ -66,55 +59,52 @@ class MakeMarkup:
             markup.button(
                 text=account.name,
                 callback_data=callback_class(
-                    name=account.name,
-                    id=account.id
-                ).pack()
+                    name=account.name, id=account.id
+                ).pack(),
             )
         markup.adjust(1)
         if delete:
             markup.row(
                 cls.empty_button(),
                 cls.empty_button(),
-                cls.delete_button(delete=delete)
+                cls.delete_button(delete=delete),
             )
         elif edit:
             markup.row(
                 cls.empty_button(),
                 cls.edit_button(edit=edit),
-                cls.empty_button()
+                cls.empty_button(),
             )
         elif len(accounts) == 1:
             markup.row(
                 cls.add_button(),
                 cls.edit_button(edit=edit),
-                cls.empty_button()
+                cls.empty_button(),
             )
         else:
             markup.row(
                 cls.add_button(),
                 cls.edit_button(edit=edit),
-                cls.delete_button(delete=delete)
+                cls.delete_button(delete=delete),
             )
         markup.attach(cls.cancel_builder())
         return markup.as_markup()
 
     @classmethod
     def favorites_markup(
-            cls, favorites: list[FavoriteRequest],
-            delete: bool = False
+        cls, favorites: list[FavoriteRequest], delete: bool = False
     ) -> InlineKeyboardMarkup:
         """Клавиатура для избранных запросов."""
         markup = InlineKeyboardBuilder()
         callback_class = (
-            FavoritesCallbackData if not delete
+            FavoritesCallbackData
+            if not delete
             else FavoritesDeleteCallbackData
         )
         for i, favorite in enumerate(favorites):
             markup.button(
                 text=favorite.name,
-                callback_data=callback_class(
-                    index_in_data=i
-                ).pack()
+                callback_data=callback_class(index_in_data=i).pack(),
             )
         markup.adjust(1)
         markup.row(cls.delete_button(delete))
@@ -125,10 +115,10 @@ class MakeMarkup:
     def periods_markup(cls) -> InlineKeyboardMarkup:
         """Клавиатура для выбора периода получения статистики."""
         markup = InlineKeyboardBuilder()
-        for period in PERIODS_FOR_REQUESTS:
+        for period in Periods:
             markup.button(
                 text=period[0],
-                callback_data=DaysCallbackData(period=period[1]).pack()
+                callback_data=DaysCallbackData(period=period[1]).pack(),
             )
         markup.adjust(3)
         markup.attach(cls.cancel_builder())
@@ -144,13 +134,13 @@ class MakeMarkup:
             ('Избранное', 'favorites'),
             ('Лимиты запросов', 'my_limits'),
             ('Сброс состояний', 'cancel'),
-            ('Удаление учетной записи', 'delete_me')
+            ('Удаление учетной записи', 'delete_me'),
         )
         markup = InlineKeyboardBuilder()
         for command in commands:
             markup.button(
                 text=command[0],
-                callback_data=HelpCallbackData(command=command[1]).pack()
+                callback_data=HelpCallbackData(command=command[1]).pack(),
             )
         markup.adjust(2)
         markup.attach(cls.cancel_builder())
@@ -160,24 +150,19 @@ class MakeMarkup:
     def cancel_builder(cls) -> InlineKeyboardBuilder:
         """Кнопка отмены любого состояния."""
         markup = InlineKeyboardBuilder()
-        cancel_button = InlineKeyboardButton(
-            text='❌',
-            callback_data='cancel'
-        )
+        cancel_button = InlineKeyboardButton(text='❌', callback_data='cancel')
         markup.row(cancel_button)
         return markup
 
     @classmethod
     def add_to_favorite_builder(
-            cls,
-            add_to_favorite: bool = False
+        cls, add_to_favorite: bool = False
     ) -> InlineKeyboardBuilder:
         """Кнопка добавления в избранное."""
         text = '☆' if not add_to_favorite else '⭐️'
         markup = InlineKeyboardBuilder()
         add_to_favorite_button = InlineKeyboardButton(
-            text=text,
-            callback_data=PaginationNmIds(command='favorite').pack()
+            text=text, callback_data=PaginationNmIds(command='favorite').pack()
         )
         markup.row(add_to_favorite_button)
         return markup
@@ -186,20 +171,16 @@ class MakeMarkup:
     def add_button(cls) -> InlineKeyboardButton:
         """Кнопка добавления."""
         text = '✚'
-        add_button = InlineKeyboardButton(
-            text=text,
-            callback_data='add'
-        )
+        add_button = InlineKeyboardButton(text=text, callback_data='add')
         return add_button
 
     @classmethod
     def edit_button(cls, edit: bool = False) -> InlineKeyboardButton:
         """Кнопка редактирования."""
-        text = '✎'if not edit else '✏️'
+        text = '✎' if not edit else '✏️'
         callback_data = 'edit' if not edit else 'cancel_edit'
         edit_button = InlineKeyboardButton(
-            text=text,
-            callback_data=callback_data
+            text=text, callback_data=callback_data
         )
         return edit_button
 
@@ -209,17 +190,13 @@ class MakeMarkup:
         text = '♲' if not delete else '♻️'
         callback_data = 'delete' if not delete else 'cancel_delete'
         delete_button = InlineKeyboardButton(
-            text=text,
-            callback_data=callback_data
+            text=text, callback_data=callback_data
         )
         return delete_button
 
     @classmethod
     def empty_button(cls):
-        empty_button = InlineKeyboardButton(
-            text=' ',
-            callback_data=' '
-        )
+        empty_button = InlineKeyboardButton(text=' ', callback_data=' ')
         return empty_button
 
     @classmethod
@@ -249,9 +226,7 @@ class MakeMarkup:
 
     @classmethod
     def __pagination_builder(
-            cls,
-            page_number,
-            page_count
+        cls, page_number, page_count
     ) -> InlineKeyboardBuilder:
         """Кнопки для пагинации."""
         markup = InlineKeyboardBuilder()
