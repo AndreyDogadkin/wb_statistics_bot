@@ -1,21 +1,24 @@
 from pydantic import BaseModel, Field
 
-from wb_api.schemas.base import BaseResponse
+from bot.services.wb_api.schemas.base import BaseResponse
 
 
 class ResponseNmIDs(BaseResponse):
     """Получение артикулов продавца."""
+
     data: 'DataNmIDs'
 
 
 class DataNmIDs(BaseModel):
     """Получение артикулов продавца."""
+
     cards: list['CardsNmIds']
     cursor: dict
 
 
 class CardsNmIds(BaseModel):
     """Получение артикулов продавца. Данные о товарах."""
+
     sizes: list[dict]
     media_files: list[str] = Field(alias='mediaFiles')
     colors: list[str]

@@ -7,7 +7,8 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state
 from aiogram.utils import markdown
 
-from bot.base_messages.messages_templates import (
+from bot.base.exceptions import ForUserException
+from bot.base.messages_templates import (
     get_favorite_message_templates,
     err_mess_templates,
     stickers,
@@ -17,9 +18,8 @@ from bot.helpers import get_user_statistics, to_update_limits_format
 from bot.keyboards import FavoritesCallbackData, FavoritesDeleteCallbackData
 from bot.keyboards import MakeMarkup
 from bot.services.database import DBMethods
+from bot.services.wb_api.analytics_requests import StatisticsRequests
 from bot.states import FavoritesStates
-from exceptions.wb_exceptions import ForUserException
-from wb_api.analytics_requests import StatisticsRequests
 
 loger = logging.getLogger(__name__)
 

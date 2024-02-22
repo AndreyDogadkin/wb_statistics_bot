@@ -4,14 +4,14 @@ import logging
 from sqlalchemy import select, Select, exists, func
 from sqlalchemy.orm import selectinload
 
-from bot.base_messages.messages_templates import get_favorite_message_templates
+from bot.base.exceptions import ForUserException
+from bot.base.messages_templates import get_favorite_message_templates
 from bot.core.config import DAY_LIMIT_DELTA
 from bot.core.enums import Limits
 from bot.models import User, Token, FavoriteRequest, WBAccount
 from bot.services.database import database_connector
 from bot.services.database.decorators import log_exceptions_db_methods
-from exceptions.wb_exceptions import ForUserException
-from utils import AESEncryption
+from bot.utils import AESEncryption
 
 logger = logging.getLogger(__name__)
 

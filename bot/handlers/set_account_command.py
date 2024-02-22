@@ -4,7 +4,7 @@ from aiogram import Router, types, F
 from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
 
-from bot.base_messages.messages_templates import account_message_templates
+from bot.base.messages_templates import account_message_templates
 from bot.core.enums import Lengths
 from bot.keyboards import (
     AccountsCallbackData,
@@ -135,7 +135,7 @@ async def name_too_long(message: types.Message, state: FSMContext):
     await for_edit_mess.delete()
     for_edit_mess = await message.answer(
         account_message_templates['account_name_to_long'].format(
-            MAX_LEN_ACCOUNT_NAME
+            Lengths.MAX_LEN_ACCOUNT_NAME
         ),
         reply_markup=MakeMarkup.cancel_builder().as_markup(),
     )

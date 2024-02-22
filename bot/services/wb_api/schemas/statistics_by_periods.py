@@ -1,15 +1,17 @@
 from pydantic import BaseModel, Field
 
-from wb_api.schemas.base import BaseResponse
+from bot.services.wb_api.schemas.base import BaseResponse
 
 
 class ResponseStatsPeriod(BaseResponse):
     """Статистика по периодам."""
+
     data: 'DataStatsPeriod'
 
 
 class DataStatsPeriod(BaseModel):
     """Статистика по периодам."""
+
     page: int
     is_next_page: bool = Field(alias='isNextPage')
     cards: list['CardsStatsPeriod']
@@ -17,6 +19,7 @@ class DataStatsPeriod(BaseModel):
 
 class CardsStatsPeriod(BaseModel):
     """Статистика по периодам. Данные о товаре."""
+
     nm_id: int = Field(alias='nmID')
     vendor_code: str = Field(alias='vendorCode')
     brand_name: str = Field(alias='brandName')
@@ -27,12 +30,14 @@ class CardsStatsPeriod(BaseModel):
 
 class ObjectStatsPeriod(BaseModel):
     """Статистика по периодам. Данные о товаре."""
+
     id: int
     name: str
 
 
 class StatisticsStatsPeriod(BaseModel):
     """Статистика по периодам. Выбранный и предыдущий периоды."""
+
     selected_period: 'PeriodsStatsPeriod' = Field(alias='selectedPeriod')
     previous_period: 'PeriodsStatsPeriod' = Field(alias='previousPeriod')
     period_comparison: dict = Field(alias='periodComparison')
@@ -40,6 +45,7 @@ class StatisticsStatsPeriod(BaseModel):
 
 class ConversionsStatsPeriod(BaseModel):
     """Статистика по периодам. Конверсия."""
+
     add_to_cart_percent: int = Field(alias='addToCartPercent')
     cart_to_order_percent: int = Field(alias='cartToOrderPercent')
     buyout_percent: int = Field(alias='buyoutsPercent')
@@ -47,6 +53,7 @@ class ConversionsStatsPeriod(BaseModel):
 
 class PeriodsStatsPeriod(BaseModel):
     """Статистика по периодам. Данные статистики."""
+
     begin: str
     end: str
     orders_sum_rub: int = Field(alias='ordersSumRub')

@@ -7,7 +7,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state
 from aiogram.utils import markdown
 
-from bot.base_messages.messages_templates import info_mess_templates, stickers
+from bot.base.messages_templates import info_mess_templates, stickers
 from bot.keyboards import MakeMarkup, HelpCallbackData
 from bot.services.database import DBMethods
 from bot.states import HelpStates, DeleteUserStates

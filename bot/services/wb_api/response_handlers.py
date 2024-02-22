@@ -3,10 +3,10 @@ from datetime import datetime
 
 from pydantic import ValidationError
 
-from bot.base_messages.messages_templates import err_mess_templates
+from bot.base.exceptions import ForUserException
+from bot.base.messages_templates import err_mess_templates
 from bot.core.enums import Pagination
-from exceptions.wb_exceptions import ForUserException
-from wb_api import (
+from bot.services.wb_api import (
     ResponseStatsDays,
     ResponseNmIDs,
     CardsNmIds,

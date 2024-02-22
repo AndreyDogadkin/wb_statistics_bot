@@ -1,15 +1,17 @@
 from pydantic import BaseModel, Field
 
-from wb_api.schemas.base import BaseResponse
+from bot.services.wb_api.schemas.base import BaseResponse
 
 
 class ResponseStatsDays(BaseResponse):
     """Статистика по дням."""
+
     data: list['NmDataStatsDays']
 
 
 class NmDataStatsDays(BaseModel):
     """Статистика по дням. Данные о товаре."""
+
     nm_id: int = Field(alias='nmID')
     imt_name: str = Field(alias='imtName')
     vendor_code: str = Field(alias='vendorCode')
@@ -18,6 +20,7 @@ class NmDataStatsDays(BaseModel):
 
 class NmHistoryStatsDays(BaseModel):
     """Статистика по дням. Данные статистики."""
+
     dt: str
     orders_sum_rub: int = Field(alias='ordersSumRub')
     orders_count: int = Field(alias='ordersCount')
