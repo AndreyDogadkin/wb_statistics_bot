@@ -40,7 +40,6 @@ class BotSettings(EnvBaseSettings):
     USE_PROXY: bool
     TG_TOKEN: str
     TG_TOKEN_SUPPORT: str
-    ADMINS: list
     SUPPORT_ID: int
     PROXY: str
 
