@@ -10,7 +10,7 @@ def generate_key(password: str, dklen: int, iterations: int) -> bytes:
         password=password,
         salt=get_random_bytes(dklen),
         dkLen=dklen,
-        count=iterations
+        count=iterations,
     )
     return base64.b64encode(bytes_key)
 
@@ -25,10 +25,4 @@ if __name__ == '__main__':
     DKLEN = env.int('DKLEN')
     ITERATIONS = env.int('ITERATIONS_FOR_ENCRYPTION')
 
-    print(
-        generate_key(
-            password=PASSWORD,
-            dklen=DKLEN,
-            iterations=ITERATIONS
-        )
-    )
+    print(generate_key(password=PASSWORD, dklen=DKLEN, iterations=ITERATIONS))
