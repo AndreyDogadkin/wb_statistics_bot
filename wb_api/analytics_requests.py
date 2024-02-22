@@ -4,6 +4,7 @@ import logging
 from datetime import datetime, timedelta
 from functools import wraps
 from http import HTTPStatus
+from time import time
 from typing import Coroutine
 
 import aiohttp
@@ -74,12 +75,13 @@ class StatisticsRequests:
         @wraps(func)
         async def wrapper(*args, **kwargs) -> Coroutine:
             try:
-                start = datetime.now()
+                start = time()
                 response = await func(*args, **kwargs)
-                fin = datetime.now()
+                fin = time()
                 logger.info(
                     f'Ответ от WB API получен. '
-                    f'Время - {(fin - start).total_seconds()} c.'
+                    f'Время - '
+                    f'{round(fin - start, 2)} c.'
                 )
                 return response
             except IncorrectKeyException as e:
