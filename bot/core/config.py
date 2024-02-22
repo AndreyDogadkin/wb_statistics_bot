@@ -1,5 +1,4 @@
 import datetime
-from dataclasses import dataclass
 from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -74,21 +73,11 @@ class EncryptionSettings(EnvBaseSettings):
     ENCRYPTION_KEY: bytes
 
 
-@dataclass
-class MainConfig:
-    bot: BotSettings
-    webhook: WebhookSettings
-    database: DatabaseSettings
-    encryption: EncryptionSettings
+class MainConfig(EnvBaseSettings):
+    bot: BotSettings = BotSettings()
+    webhook: WebhookSettings = WebhookSettings()
+    database: DatabaseSettings = DatabaseSettings()
+    encryption: EncryptionSettings = EncryptionSettings()
 
 
-def get_config():
-    return MainConfig(
-        bot=BotSettings(),
-        webhook=WebhookSettings(),
-        database=DatabaseSettings(),
-        encryption=EncryptionSettings(),
-    )
-
-
-main_config = get_config()
+main_config = MainConfig()
