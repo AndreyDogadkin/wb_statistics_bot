@@ -75,15 +75,14 @@ WEBHOOK_PORT= # str -- Например: 8000
 ```
 * Для генерации ключа шифрования, находясь в корневой директории проекта, выполните команду:
 ```
-python utils/AES_encryption/generate_encryption_key.py 
+python bot/utils/aes_encryption/generate_encryption_key.py 
 ```
 После заполнения, находясь в корневой директории проекта, выполните команды:
 ```
 python3.11 -m venv venv
 source venv/bin/activate
 alembic upgrade head
-cd bot
-python bot_start.py
+python bot/bot_start.py
 ```
 ___
 Зависимости:
