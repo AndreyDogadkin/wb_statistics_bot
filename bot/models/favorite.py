@@ -3,10 +3,10 @@ from typing import TYPE_CHECKING
 from sqlalchemy import UniqueConstraint, ForeignKey, BigInteger, String
 from sqlalchemy.orm import mapped_column, Mapped, relationship
 
-from database.models.base import Base
+from bot.models.base import Base
 
 if TYPE_CHECKING:
-    from database.models.user import WBAccount
+    from bot.models.user import WBAccount
 
 
 class FavoriteRequest(Base):

@@ -9,8 +9,8 @@ from aiogram.utils import markdown
 
 from bot.base_messages.messages_templates import info_mess_templates, stickers
 from bot.keyboards import MakeMarkup, HelpCallbackData
+from bot.services.database import DBMethods
 from bot.states import HelpStates, DeleteUserStates
-from database.methods import DBMethods
 
 loger = logging.getLogger(__name__)
 
@@ -24,35 +24,29 @@ async def command_start_handler(message: types.Message):
     await message.answer_sticker(stickers['start_sticker'])
     await message.answer(
         info_mess_templates['start'].format(
-            markdown.hbold(
-                '@' + message.from_user.username
-            )
+            markdown.hbold('@' + message.from_user.username)
         )
     )
 
 
 @start_help_router.message(Command(commands='help'))
-async def command_help_handler(
-        message: types.Message,
-        state: FSMContext
-):
+async def command_help_handler(message: types.Message, state: FSMContext):
     """Команда help."""
     await message.answer(
         info_mess_templates['change_chapter'],
-        reply_markup=MakeMarkup.help_markup()
+        reply_markup=MakeMarkup.help_markup(),
     )
     await state.set_state(HelpStates.change_capter)
     await message.delete()
 
 
 @start_help_router.callback_query(
-    StateFilter(HelpStates.change_capter),
-    HelpCallbackData.filter()
+    StateFilter(HelpStates.change_capter), HelpCallbackData.filter()
 )
 async def send_help_chapter(
-        callback: types.CallbackQuery,
-        callback_data: HelpCallbackData,
-        state: FSMContext
+    callback: types.CallbackQuery,
+    callback_data: HelpCallbackData,
+    state: FSMContext,
 ):
     chapters = {
         'set_account': 'help_accounts',
@@ -61,22 +55,17 @@ async def send_help_chapter(
         'get_stats': 'help_get_stats',
         'my_limits': 'help_my_limits',
         'cancel': 'help_cancel',
-        'delete_me': 'help_delete_me'
+        'delete_me': 'help_delete_me',
     }
     command = callback_data.unpack(callback.data).command
     selected_chapter = chapters[command]
     await callback.answer('📑')
-    await callback.message.edit_text(
-        info_mess_templates[selected_chapter]
-    )
+    await callback.message.edit_text(info_mess_templates[selected_chapter])
     await state.clear()
 
 
 @start_help_router.message(Command(commands='cancel'))
-async def close_any_state_command(
-        message: types.Message,
-        state: FSMContext
-):
+async def close_any_state_command(message: types.Message, state: FSMContext):
     """Принудительный сброс любого состояния."""
     await message.delete()
     await state.clear()
@@ -84,14 +73,12 @@ async def close_any_state_command(
 
 
 @start_help_router.callback_query(
-    ~StateFilter(default_state),
-    F.data == 'cancel'
+    ~StateFilter(default_state), F.data == 'cancel'
 )
 async def close_any_state_callback(
-        callback: types.CallbackQuery,
-        state: FSMContext
+    callback: types.CallbackQuery, state: FSMContext
 ):
-    """Отмена любого состояния. """
+    """Отмена любого состояния."""
     await callback.message.delete()
     await state.clear()
     await callback.answer('Отмена.')
@@ -105,11 +92,10 @@ async def send_confirm_delete_user(message: types.Message, state: FSMContext):
     await message.delete()
     for_del_message = await message.answer(
         info_mess_templates['delete_user_warning'].format(confirm_string),
-        reply_markup=MakeMarkup.cancel_builder().as_markup()
+        reply_markup=MakeMarkup.cancel_builder().as_markup(),
     )
     await state.update_data(
-        confirm_string=confirm_string,
-        for_del_message=for_del_message
+        confirm_string=confirm_string, for_del_message=for_del_message
     )
     await state.set_state(DeleteUserStates.delete_user)
 
@@ -122,11 +108,15 @@ async def get_confirm_delete_user(message: types.Message, state: FSMContext):
     if confirm_string == message.text:
         is_deleted = await database.delete_user(message.from_user.id)
         if is_deleted:
-            await message.answer('🥲 Ваши данные успешно удалены,'
-                                 'но мы надеемся на ваше возвращение.')
+            await message.answer(
+                '🥲 Ваши данные успешно удалены,'
+                'но мы надеемся на ваше возвращение.'
+            )
         else:
-            await message.answer('⁉️ Не удалось выполнить удаление.\n'
-                                 'Попробуйте повторить попытку позже.')
+            await message.answer(
+                '⁉️ Не удалось выполнить удаление.\n'
+                'Попробуйте повторить попытку позже.'
+            )
     else:
         await message.answer(
             '⛔️ Введенное сообщение не соответствует ожидаемому.\n'

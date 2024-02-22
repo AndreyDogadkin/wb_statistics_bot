@@ -12,8 +12,8 @@ from bot.keyboards import (
     AccountsDeleteCallbackData,
 )
 from bot.keyboards import MakeMarkup
+from bot.services.database import DBMethods
 from bot.states import AccountsStates
-from database.methods import DBMethods
 
 set_account_router = Router()
 

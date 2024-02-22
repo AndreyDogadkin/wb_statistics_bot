@@ -3,10 +3,10 @@ from typing import TYPE_CHECKING
 from sqlalchemy import ForeignKey, String, UniqueConstraint
 from sqlalchemy.orm import mapped_column, Mapped, relationship
 
-from database.models.base import Base
+from bot.models.base import Base
 
 if TYPE_CHECKING:
-    from database.models import User, Token
+    from bot.models import User, Token
 
 
 class WBAccount(Base):

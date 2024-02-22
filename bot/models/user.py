@@ -3,10 +3,10 @@ from typing import TYPE_CHECKING
 from sqlalchemy import CheckConstraint, UniqueConstraint, BigInteger, DateTime
 from sqlalchemy.orm import mapped_column, Mapped, relationship
 
-from database.models.base import Base
+from bot.models.base import Base
 
 if TYPE_CHECKING:
-    from database.models.account import WBAccount
+    from bot.models.account import WBAccount
 
 
 class User(Base):

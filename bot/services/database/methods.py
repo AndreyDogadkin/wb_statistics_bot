@@ -7,9 +7,9 @@ from sqlalchemy.orm import selectinload
 from bot.base_messages.messages_templates import get_favorite_message_templates
 from bot.core.config import DAY_LIMIT_DELTA
 from bot.core.enums import Limits
-from database import database_connector
-from database.decorators import log_exceptions_db_methods
-from database.models import User, Token, FavoriteRequest, WBAccount
+from bot.models import User, Token, FavoriteRequest, WBAccount
+from bot.services.database import database_connector
+from bot.services.database.decorators import log_exceptions_db_methods
 from exceptions.wb_exceptions import ForUserException
 from utils import AESEncryption
 

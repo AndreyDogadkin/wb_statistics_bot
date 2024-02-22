@@ -21,8 +21,8 @@ from bot.keyboards import (
     DaysCallbackData,
     PaginationNmIds,
 )
+from bot.services.database import DBMethods
 from bot.states import GetStatsStates
-from database.methods import DBMethods
 from exceptions.wb_exceptions import ForUserException
 from wb_api.analytics_requests import StatisticsRequests
 

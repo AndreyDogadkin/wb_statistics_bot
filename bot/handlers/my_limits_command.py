@@ -9,7 +9,7 @@ from bot.base_messages.messages_templates import (
 from bot.core.enums import Limits
 from bot.handlers.save_tokens_command import save_token_router
 from bot.helpers.users_limits import to_update_limits_format
-from database.methods import DBMethods
+from bot.services.database import DBMethods
 
 database = DBMethods()
 

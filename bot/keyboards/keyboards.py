@@ -14,7 +14,7 @@ from bot.keyboards import (
     AccountsEditCallbackData,
     AccountsDeleteCallbackData,
 )
-from database.models import FavoriteRequest, WBAccount
+from bot.models import FavoriteRequest, WBAccount
 
 
 class MakeMarkup:

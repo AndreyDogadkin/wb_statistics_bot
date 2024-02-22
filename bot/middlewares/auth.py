@@ -3,17 +3,17 @@ from typing import Any, Callable, Dict, Awaitable
 from aiogram import BaseMiddleware
 from aiogram.types import Message, TelegramObject
 
-from database.methods import DBMethods
+from bot.services.database import DBMethods
 
 database = DBMethods()
 
 
 class AuthMiddleware(BaseMiddleware):
     async def __call__(
-            self,
-            handler: Callable[[TelegramObject, Dict[str, Any]], Awaitable[Any]],
-            event: TelegramObject,
-            data: dict[str: Any]
+        self,
+        handler: Callable[[TelegramObject, Dict[str, Any]], Awaitable[Any]],
+        event: TelegramObject,
+        data: dict[str:Any],
     ) -> Any:
         if not isinstance(event, Message):
             return await handler(event, data)
