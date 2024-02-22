@@ -8,7 +8,7 @@ from aiogram.fsm.state import default_state
 from aiogram.types import InlineKeyboardMarkup
 from aiogram.utils import markdown
 
-from bot.base_messages.messages_templates import (
+from bot.base.messages_templates import (
     get_stats_mess_templates,
     err_mess_templates,
     stickers,
@@ -23,8 +23,8 @@ from bot.keyboards import (
 )
 from bot.services.database import DBMethods
 from bot.states import GetStatsStates
-from exceptions.wb_exceptions import ForUserException
-from wb_api.analytics_requests import StatisticsRequests
+from bot.base.exceptions import ForUserException
+from bot.services.wb_api.analytics_requests import StatisticsRequests
 
 loger = logging.getLogger(__name__)
 

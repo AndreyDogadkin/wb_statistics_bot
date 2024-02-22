@@ -2,7 +2,7 @@ from aiogram import Router, types
 from aiogram.filters import Command, StateFilter
 from aiogram.fsm.state import default_state
 
-from bot.base_messages.messages_templates import (
+from bot.base.messages_templates import (
     my_limits_mess_template,
     stickers,
 )

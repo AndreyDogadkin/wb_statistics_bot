@@ -9,17 +9,17 @@ from typing import Coroutine
 
 import aiohttp
 
-from bot.base_messages.messages_templates import err_mess_templates
-from bot.core import main_config, MSC_TIME_ZONE, MSC_TIME_DELTA
-from exceptions.wb_exceptions import (
+from bot.base.exceptions import (
     WBApiResponseExceptions,
     IncorrectKeyException,
     TimeoutException,
     ForUserException,
     ToManyRequestsException,
 )
-from wb_api import ResponseHandlers
-from wb_api.urls_and_payloads import WBApiUrls, WBApiPayloads
+from bot.base.messages_templates import err_mess_templates
+from bot.core import main_config, MSC_TIME_ZONE, MSC_TIME_DELTA
+from bot.services.wb_api import ResponseHandlers
+from bot.services.wb_api.urls_and_payloads import WBApiUrls, WBApiPayloads
 
 logger = logging.getLogger(__name__)
 

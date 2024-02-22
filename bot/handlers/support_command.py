@@ -6,7 +6,7 @@ from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state
 
-from bot.base_messages.messages_templates import support_mess_templates
+from bot.base.messages_templates import support_mess_templates
 from bot.core import main_config
 from bot.keyboards import MakeMarkup
 from bot.states import SupportStates

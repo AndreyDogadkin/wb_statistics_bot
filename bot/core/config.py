@@ -15,7 +15,7 @@ DAY_LIMIT_DELTA = datetime.timedelta(hours=Limits.DAY_LIMIT.value)
 
 class EnvBaseSettings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file='../.env',
+        env_file=BASE_DIR / '.env',
         env_file_encoding='utf-8',
         extra='ignore',
     )

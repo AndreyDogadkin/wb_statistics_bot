@@ -5,7 +5,7 @@ from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state
 
-from bot.base_messages.messages_templates import (
+from bot.base.messages_templates import (
     save_token_mess_templates,
     err_mess_templates,
 )
