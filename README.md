@@ -82,7 +82,7 @@ python bot/utils/aes_encryption/generate_encryption_key.py
 python3.11 -m venv venv
 source venv/bin/activate
 alembic upgrade head
-python bot/bot_start.py
+python -m bot
 ```
 ___
 Зависимости:
