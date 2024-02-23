@@ -14,7 +14,7 @@ from bot.base.messages_templates import (
     stickers,
     get_stats_mess_templates,
 )
-from bot.helpers import get_user_statistics, to_update_limits_format
+from bot.helpers import get_user_statistics
 from bot.keyboards import FavoritesCallbackData, FavoritesDeleteCallbackData
 from bot.keyboards import MakeMarkup
 from bot.services.database import DBMethods
@@ -54,42 +54,27 @@ async def send_favorites_and_update_in_state_data(
 async def get_favorites_gateway(message: types.Message, state: FSMContext):
     """Установка состояния выбора номера номенклатуры из списка избранных."""
     user_id = message.from_user.id
-    (
-        user_can_make_request,
-        _,
-        last_request,
-    ) = await database.check_and_get_user_limits(user_id)
-    if not user_can_make_request:
-        next_update_limit = to_update_limits_format(last_request)
-        await message.answer_sticker(stickers['limit_requests'])
-        await message.answer(
-            get_stats_mess_templates["limit_requests"].format(
-                next_update_limit
-            )
+    token_analytic = await database.get_user_analytic_token(user_id)
+    if token_analytic:
+        favorites = await database.get_user_favorites(telegram_id=user_id)
+        await state.update_data(
+            token_analytic=token_analytic, favorites=favorites
         )
-        await state.clear()
-    else:
-        token_analytic = await database.get_user_analytic_token(user_id)
-        if token_analytic:
-            favorites = await database.get_user_favorites(telegram_id=user_id)
-            await state.update_data(
-                token_analytic=token_analytic, favorites=favorites
+        markup = MakeMarkup.favorites_markup(favorites=favorites)
+        if favorites:
+            await message.answer(
+                get_favorite_message_templates['favorite_requests'],
+                reply_markup=markup,
             )
-            markup = MakeMarkup.favorites_markup(favorites=favorites)
-            if favorites:
-                await message.answer(
-                    get_favorite_message_templates['favorite_requests'],
-                    reply_markup=markup,
-                )
-                await state.set_state(FavoritesStates.get_favorite)
-            else:
-                await message.answer(
-                    get_favorite_message_templates['no_favorites']
-                )
+            await state.set_state(FavoritesStates.get_favorite)
         else:
-            await message.answer(get_stats_mess_templates['save_tokens'])
-            await state.clear()
-        await message.delete()
+            await message.answer(
+                get_favorite_message_templates['no_favorites']
+            )
+    else:
+        await message.answer(get_stats_mess_templates['save_tokens'])
+        await state.clear()
+    await message.delete()
 
 
 @get_favorite_router.callback_query(
@@ -190,8 +175,6 @@ async def send_statistics_from_favorite(
                 answer_message
                 + markdown.hlink(title='📸 Открыть фото.', url=photo)
             )
-            await database.set_user_last_request(user_id)
-            await database.set_plus_one_to_user_requests_per_day(user_id)
         else:
             await message_wait.edit_text(err_mess_templates['no_data'])
     except ForUserException as e:

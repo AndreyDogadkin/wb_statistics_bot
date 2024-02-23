@@ -1,4 +1,3 @@
-import datetime
 import logging
 
 from sqlalchemy import select, Select, exists, func
@@ -6,7 +5,6 @@ from sqlalchemy.orm import selectinload
 
 from bot.base.exceptions import ForUserException
 from bot.base.messages_templates import get_favorite_message_templates
-from bot.core.config import DAY_LIMIT_DELTA
 from bot.core.enums import Limits
 from bot.models import User, Token, FavoriteRequest, WBAccount
 from bot.services.database import database_connector
@@ -80,7 +78,6 @@ class DBMethods:
             async with self.session() as s:
                 user = User(
                     telegram_id=telegram_id,
-                    last_request=datetime.datetime.now(),
                 )
                 user.wb_accounts.append(
                     WBAccount(
@@ -404,67 +401,6 @@ class DBMethods:
                     wb_token_content=decrypted_tokens.wb_token_content,
                 )
                 return encrypted_tokens
-
-    async def set_user_last_request(
-        self, telegram_id: int
-    ) -> datetime.datetime:
-        """
-        Установить пользователю дату и время последнего запроса.
-        :param telegram_id:
-        :return: Дата последнего запроса пользователя.
-        """
-        async with self.session.begin() as s:
-            query = self.__get_query_select_user(telegram_id)
-            user = await s.execute(query)
-            user = user.scalar_one()
-            now = datetime.datetime.now()
-            last_request = user.last_request
-            if (now - last_request) >= DAY_LIMIT_DELTA:
-                last_request = now
-                user.last_request = last_request
-            await s.commit()
-        return last_request
-
-    async def set_plus_one_to_user_requests_per_day(
-        self, telegram_id: int
-    ) -> None:
-        """
-        Прибавить пользователю счетчик запросов на 1.
-        :param telegram_id:
-        :return:
-        """
-        async with self.session.begin() as s:
-            query = self.__get_query_select_user(telegram_id)
-            user = await s.execute(query)
-            user = user.scalar_one()
-            user.requests_per_day = user.requests_per_day + 1
-            await s.commit()
-
-    async def check_and_get_user_limits(
-        self, telegram_id: int
-    ) -> tuple[bool, int, datetime.datetime]:
-        """
-        Проверить и вернуть лимиты запросов пользователя.
-        :param telegram_id:
-        :return: Tuple: bool: Может ли пользователь сделать запрос,
-            int: Сколько запросов сделал за день,
-            datetime: Дата и время последнего запроса.
-        """
-        async with self.session.begin() as s:
-            query = self.__get_query_select_user(telegram_id)
-            user = await s.execute(query)
-            user = user.scalar_one()
-            now = datetime.datetime.now()
-            last_request: datetime.datetime = user.last_request
-            requests_per_day = user.requests_per_day
-            check = False, requests_per_day, last_request
-            if (now - last_request) >= DAY_LIMIT_DELTA:
-                user.requests_per_day = 0
-                check = True, 0, last_request
-            elif requests_per_day < Limits.REQUESTS_PER_DAY_LIMIT:
-                check = True, requests_per_day, last_request
-            await s.commit()
-            return check
 
     async def check_and_get_favorite(
         self, account_id: int, nm_id: int, period: int

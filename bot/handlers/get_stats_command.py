@@ -8,13 +8,14 @@ from aiogram.fsm.state import default_state
 from aiogram.types import InlineKeyboardMarkup
 from aiogram.utils import markdown
 
+from bot.base.exceptions import ForUserException
 from bot.base.messages_templates import (
     get_stats_mess_templates,
     err_mess_templates,
     stickers,
 )
 from bot.core.enums import Limits
-from bot.helpers import get_user_statistics, to_update_limits_format
+from bot.helpers import get_user_statistics
 from bot.keyboards import (
     MakeMarkup,
     NmIdsCallbackData,
@@ -22,9 +23,8 @@ from bot.keyboards import (
     PaginationNmIds,
 )
 from bot.services.database import DBMethods
-from bot.states import GetStatsStates
-from bot.base.exceptions import ForUserException
 from bot.services.wb_api.analytics_requests import StatisticsRequests
+from bot.states import GetStatsStates
 
 loger = logging.getLogger(__name__)
 
@@ -42,33 +42,17 @@ async def set_get_stats_state(message: types.Message, state: FSMContext):
     Отправка номенклатур пользователю, если токен сохранен.
     """
     user_id = message.from_user.id
-    (
-        user_can_make_request,
-        _,
-        last_request,
-    ) = await database.check_and_get_user_limits(user_id)
-    if not user_can_make_request:
-        next_update_limit = to_update_limits_format(last_request)
-        await message.answer_sticker(stickers['limit_requests'])
-        await message.answer(
-            get_stats_mess_templates["limit_requests"].format(
-                next_update_limit
-            )
+    tokens = await database.get_user_tokens(telegram_id=user_id)
+    if tokens:
+        await send_nm_ids(message, state, tokens['wb_token_content'])
+        await state.update_data(
+            token_content=tokens['wb_token_content'],
+            token_analytic=tokens['wb_token_analytic'],
         )
+    else:
+        await message.answer(get_stats_mess_templates['save_tokens'])
         await message.delete()
         await state.clear()
-    else:
-        tokens = await database.get_user_tokens(telegram_id=user_id)
-        if tokens:
-            await send_nm_ids(message, state, tokens['wb_token_content'])
-            await state.update_data(
-                token_content=tokens['wb_token_content'],
-                token_analytic=tokens['wb_token_analytic'],
-            )
-        else:
-            await message.answer(get_stats_mess_templates['save_tokens'])
-            await message.delete()
-            await state.clear()
 
 
 @get_stats_router.callback_query(
@@ -222,8 +206,6 @@ async def send_user_statistics(
                 answer_message
                 + markdown.hlink(title='📸 Открыть фото.', url=photo)
             )
-            await database.set_user_last_request(user_id)
-            await database.set_plus_one_to_user_requests_per_day(user_id)
         else:
             await message_wait.edit_text(err_mess_templates['no_data'])
     except ForUserException as e:

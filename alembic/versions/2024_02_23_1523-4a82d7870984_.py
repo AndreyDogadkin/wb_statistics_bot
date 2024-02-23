@@ -1,8 +1,8 @@
-"""initial
+"""empty message
 
-Revision ID: 137ed1343fcb
+Revision ID: 4a82d7870984
 Revises: 
-Create Date: 2024-01-12 07:38:23.280668
+Create Date: 2024-02-23 15:23:42.459743
 
 """
 from typing import Sequence, Union
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = '137ed1343fcb'
+revision: str = '4a82d7870984'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -23,10 +23,9 @@ def upgrade() -> None:
     sa.Column('telegram_id', sa.BigInteger(), nullable=False),
     sa.Column('is_active', sa.Boolean(), nullable=False),
     sa.Column('is_premium', sa.Boolean(), nullable=False),
-    sa.Column('last_request', sa.DateTime(), nullable=True),
-    sa.Column('requests_per_day', sa.Integer(), nullable=False),
+    sa.Column('is_admin', sa.Boolean(), nullable=False),
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.CheckConstraint('requests_per_day >= 0', name='requests_per_day_not_negative'),
+    sa.Column('date_added', sa.DateTime(), nullable=False),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('telegram_id'),
     sa.UniqueConstraint('telegram_id', name='telegram_id_uniq')
@@ -36,6 +35,7 @@ def upgrade() -> None:
     sa.Column('name', sa.String(), nullable=False),
     sa.Column('is_now_active', sa.Boolean(), nullable=False),
     sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('date_added', sa.DateTime(), nullable=False),
     sa.ForeignKeyConstraint(['user_id'], ['user_account.telegram_id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('name', 'user_id', name='uniq_account_name')
@@ -47,6 +47,7 @@ def upgrade() -> None:
     sa.Column('nm_id', sa.BigInteger(), nullable=False),
     sa.Column('period', sa.Integer(), nullable=False),
     sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('date_added', sa.DateTime(), nullable=False),
     sa.ForeignKeyConstraint(['wb_account_id'], ['wb_account.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('wb_account_id', 'nm_id', 'period', name='all_columns_uniq')
@@ -56,6 +57,7 @@ def upgrade() -> None:
     sa.Column('wb_token_content', sa.LargeBinary(), nullable=True),
     sa.Column('wb_token_analytic', sa.LargeBinary(), nullable=True),
     sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('date_added', sa.DateTime(), nullable=False),
     sa.ForeignKeyConstraint(['wb_account_id'], ['wb_account.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )

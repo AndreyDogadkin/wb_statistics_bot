@@ -34,6 +34,5 @@ class MyBotCommands(tuple, Enum):
     FAVORITES = 'favorites', '⭐️ Избранные запросы.'
     GET_STATS = 'get_stats', '📈 Получить статистику.'
     TOKEN = 'token', '🔑 Добавить/обновить токен.'
-    LIMITS = 'my_limits', '💯 Мои лимиты.'
     DONATE = 'donate', '🩶 Пожертвовать на развитие.'
     SUPPORT = 'support', '🔔 Сообщить о проблеме.'
