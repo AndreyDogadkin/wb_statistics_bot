@@ -44,4 +44,3 @@ class WBAccount(Base):
         'User',
         back_populates='wb_accounts'
     )
-

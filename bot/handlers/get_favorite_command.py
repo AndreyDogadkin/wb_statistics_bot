@@ -60,8 +60,8 @@ async def get_favorites_gateway(message: types.Message, state: FSMContext):
         await state.update_data(
             token_analytic=token_analytic, favorites=favorites
         )
-        markup = MakeMarkup.favorites_markup(favorites=favorites)
         if favorites:
+            markup = MakeMarkup.favorites_markup(favorites=favorites)
             await message.answer(
                 get_favorite_message_templates['favorite_requests'],
                 reply_markup=markup,
@@ -152,7 +152,6 @@ async def send_statistics_from_favorite(
     message_wait: types.Message = await callback.message.edit_text(
         markdown.hitalic(get_stats_mess_templates['make_request'])
     )
-    user_id = callback.from_user.id
     index_in_favorites_data = callback_data.unpack(callback.data).index_in_data
     state_data = await state.get_data()
     select_favorite = state_data.get('favorites')[index_in_favorites_data]
