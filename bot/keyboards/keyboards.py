@@ -132,7 +132,6 @@ class MakeMarkup:
             ('API Ключи', 'token'),
             ('Статистика', 'get_stats'),
             ('Избранное', 'favorites'),
-            ('Лимиты запросов', 'my_limits'),
             ('Сброс состояний', 'cancel'),
             ('Удаление учетной записи', 'delete_me'),
         )

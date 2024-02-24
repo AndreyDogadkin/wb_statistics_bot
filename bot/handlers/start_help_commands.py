@@ -53,7 +53,6 @@ async def send_help_chapter(
         'token': 'help_token',
         'favorites': 'help_favorites',
         'get_stats': 'help_get_stats',
-        'my_limits': 'help_my_limits',
         'cancel': 'help_cancel',
         'delete_me': 'help_delete_me',
     }
