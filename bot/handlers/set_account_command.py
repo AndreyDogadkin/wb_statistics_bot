@@ -4,6 +4,7 @@ from aiogram import Router, types, F
 from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
 
+from bot.base.helpers import delayed_delete
 from bot.base.messages_templates import account_message_templates
 from bot.core.enums import Lengths
 from bot.keyboards import (
@@ -61,8 +62,7 @@ async def change_account(
     else:
         await callback.answer(f'Активный аккаунт остался прежним.')
     await state.clear()
-    await asyncio.sleep(0.2)
-    await callback.message.delete()
+    asyncio.create_task(delayed_delete(callback.message, 0.2))
 
 
 @set_account_router.callback_query(
@@ -112,8 +112,7 @@ async def add_new_account(message: types.Message, state: FSMContext):
             account_message_templates['account_added_done']
         )
         await state.clear()
-        await asyncio.sleep(7)
-        await for_edit_mess.delete()
+        asyncio.create_task(delayed_delete(for_edit_mess, 7))
     else:
         await for_edit_mess.delete()
         for_edit_mess = await message.answer(
@@ -216,8 +215,7 @@ async def get_new_name_for_editable_account(
             )
         )
         await state.clear()
-        await asyncio.sleep(5)
-        await for_edit_mess.delete()
+        asyncio.create_task(delayed_delete(for_edit_mess, 5))
     else:
         await for_edit_mess.delete()
         for_edit_mess = await message.answer(
@@ -271,8 +269,7 @@ async def delete_account(
             account_message_templates['account_delete_done']
         )
         await state.clear()
-        await asyncio.sleep(5)
-        await callback.message.delete()
+        asyncio.create_task(delayed_delete(callback.message, 5))
     else:
         await callback.answer(
             account_message_templates['cant_delete_active_account_alert'],

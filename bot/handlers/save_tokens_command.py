@@ -5,6 +5,7 @@ from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state
 
+from bot.base.helpers import delayed_delete
 from bot.base.messages_templates import (
     save_token_mess_templates,
     err_mess_templates,
@@ -84,8 +85,7 @@ async def save_content_token(message: types.Message, state: FSMContext):
         )
     await state.clear()
     await message.delete()
-    await asyncio.sleep(5)
-    await message_for_edit.delete()
+    asyncio.create_task(delayed_delete(message_for_edit, 5))
 
 
 @save_token_router.message(
@@ -108,8 +108,7 @@ async def save_analytic_token(message: types.Message, state: FSMContext):
         )
     await state.clear()
     await message.delete()
-    await asyncio.sleep(5)
-    await message_for_edit.delete()
+    asyncio.create_task(delayed_delete(message_for_edit, 5))
 
 
 @save_token_router.message(

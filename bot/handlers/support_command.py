@@ -6,6 +6,7 @@ from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state
 
+from bot.base.helpers import delayed_delete
 from bot.base.messages_templates import support_mess_templates
 from bot.core import main_config
 from bot.keyboards import MakeMarkup
@@ -38,8 +39,7 @@ async def get_message_to_support(message: types.Message, state: FSMContext):
     await message_for_edit.edit_text(support_mess_templates['message_send'])
     await message.delete()
     await state.clear()
-    await asyncio.sleep(5)
-    await message_for_edit.delete()
+    asyncio.create_task(delayed_delete(message_for_edit, 5))
 
 
 async def send_message_to_support(message: types.Message):

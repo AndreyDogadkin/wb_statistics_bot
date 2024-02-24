@@ -8,13 +8,13 @@ from aiogram.fsm.state import default_state
 from aiogram.utils import markdown
 
 from bot.base.exceptions import ForUserException
+from bot.base.helpers import get_user_statistics
 from bot.base.messages_templates import (
     get_favorite_message_templates,
     err_mess_templates,
     stickers,
     get_stats_mess_templates,
 )
-from bot.helpers import get_user_statistics
 from bot.keyboards import FavoritesCallbackData, FavoritesDeleteCallbackData
 from bot.keyboards import MakeMarkup
 from bot.services.database import DBMethods
