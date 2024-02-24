@@ -46,6 +46,7 @@ async def lifespan(_app: FastAPI):
     await on_startup()
     await bot.set_webhook(
         main_config.webhook.webhook_url,
+        drop_pending_updates=True,
         allowed_updates=dp.resolve_used_update_types(),
         secret_token=main_config.webhook.WEBHOOK_SECRET,
     )
@@ -69,6 +70,7 @@ async def _start_polling():
     await dp.start_polling(
         bot,
         allowed_updates=dp.resolve_used_update_types(),
+        drop_pending_updates=True,
     )
 
 
