@@ -1,3 +1,7 @@
+import asyncio
+
+from aiogram import types
+
 from bot.base.messages_templates import get_stats_mess_templates
 from bot.services.wb_api.analytics_requests import StatisticsRequests
 
@@ -26,3 +30,9 @@ async def get_user_statistics(
         for nm in statistics_nm_id:
             answer_message += message_template.format(*nm)
         return product[1], answer_message
+
+
+async def delayed_delete(message: types.Message, delay: float):
+    """Удаление сообщения с задержкой."""
+    await asyncio.sleep(delay)
+    await message.delete()
