@@ -1,0 +1,10 @@
+# ignore all files
+**
+
+# exclusion
+!/bot/
+!/alembic/
+
+!/alembic.ini
+!/requirements.txt
+!/pyproject.toml

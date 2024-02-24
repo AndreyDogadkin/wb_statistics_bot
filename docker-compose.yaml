@@ -1,0 +1,35 @@
+version: '3.3'
+
+services:
+
+  db:
+    image: postgres:14
+    restart: always
+    env_file: .env
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+
+  bot:
+    image: andreydogadkin/wb-bot:latest
+    restart: always
+    env_file:
+      - .env
+    command: bash -c "
+      alembic upgrade head
+      && python -m bot
+      "
+    depends_on:
+      - db
+
+  nginx:
+    image: nginx:1.25.0
+    restart: always
+    ports:
+      - "9000:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - bot
+
+volumes:
+  pg_data:
