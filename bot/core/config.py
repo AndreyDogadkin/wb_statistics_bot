@@ -26,7 +26,7 @@ class WebhookSettings(EnvBaseSettings):
     WEBHOOK_PATH: str
     WEBHOOK_SECRET: str
     WEBHOOK_HOST: str
-    WEBHOOK_PORT: str
+    WEBHOOK_PORT: int
 
     @property
     def webhook_url(self) -> str:
@@ -51,16 +51,16 @@ class DatabaseSettings(EnvBaseSettings):
     DB_TEST_PATH: str = f'{BASE_DIR}/test_database.sqlite3'
     DB_HOST: str
     DB_PORT: int
-    DB_NAME: str
-    DB_USER: str
-    DB_PASSWORD: str
+    POSTGRES_DB: str
+    POSTGRES_USER: str
+    POSTGRES_PASSWORD: str
 
     @property
     def db_url(self):
         return (
             'postgresql+asyncpg://'
-            f'{self.DB_USER}:{self.DB_PASSWORD}'
-            f'@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}'
+            f'{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}'
+            f'@{self.DB_HOST}:{self.DB_PORT}/{self.POSTGRES_DB}'
         )
 
     @property

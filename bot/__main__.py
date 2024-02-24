@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 async def on_startup():
     logger.info('Bot starting...')
-    if main_config.webhook.USE_WEBHOOK:
+    if main_config.bot.USE_PROXY:
         await set_proxy_session()
     dp.include_router(get_handlers_router())
     set_middleware(dp=dp)
@@ -80,6 +80,10 @@ if __name__ == '__main__':
         '-- %(message)s',
     )
     if main_config.webhook.USE_WEBHOOK:
-        uvicorn.run(app)
+        uvicorn.run(
+            app,
+            host=main_config.webhook.WEBHOOK_HOST,
+            port=main_config.webhook.WEBHOOK_PORT,
+        )
     else:
         asyncio.run(_start_polling())
