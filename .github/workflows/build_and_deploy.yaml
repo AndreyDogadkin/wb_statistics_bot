@@ -2,12 +2,13 @@ name: bot_build_and_deploy_workflow
 
 on:
   push:
-    branches: [ "master" ]
+    branches:
+      - master
 
   pull_request:
-    branches: [ "master" ]
-    types:
-      - closed
+    branches:
+        - master
+    types: [closed]
 
 jobs:
   build_and_push_to_docker_hub:
