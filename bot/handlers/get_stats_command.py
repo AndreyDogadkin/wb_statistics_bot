@@ -117,10 +117,10 @@ async def send_nm_ids(
 ):
     """Отправка первой страницы номеров номенклатур пользователю."""
     statistics = StatisticsRequests(token_content)
+    message_wait = await message.answer(
+        markdown.hitalic(get_stats_mess_templates['make_request'])
+    )
     try:
-        message_wait = await message.answer(
-            markdown.hitalic(get_stats_mess_templates['make_request'])
-        )
         nm_ids: list[list[tuple]] = await statistics.get_nm_ids()
         if nm_ids:
             await state.update_data(
@@ -133,10 +133,10 @@ async def send_nm_ids(
             await message_wait.edit_text(message_for_ids, reply_markup=markup)
         else:
             await state.clear()
-            await message.answer(err_mess_templates['no_active_nms'])
+            await message_wait.edit_text(err_mess_templates['no_active_nms'])
     except ForUserException as e:
         await message.answer_sticker(stickers['error_try_later_sticker'])
-        await message.answer(e.message)
+        await message_wait.edit_text(e.message)
         await state.clear()
     finally:
         await message.delete()
