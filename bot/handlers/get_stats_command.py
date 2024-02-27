@@ -118,14 +118,19 @@ async def send_nm_ids(
     """Отправка первой страницы номеров номенклатур пользователю."""
     statistics = StatisticsRequests(token_content)
     try:
+        message_wait = await message.answer(
+            markdown.hitalic(get_stats_mess_templates['make_request'])
+        )
         nm_ids: list[list[tuple]] = await statistics.get_nm_ids()
         if nm_ids:
-            await state.update_data(nm_ids=nm_ids)
-            await state.update_data(page_number=0)
-            await state.update_data(add_in_favorite=False)
+            await state.update_data(
+                nm_ids=nm_ids,
+                page_number=0,
+                add_in_favorite=False,
+            )
             message_for_ids, markup = await paginate_nm_ids(state)
             await state.set_state(GetStatsStates.get_nm_ids)
-            await message.answer(message_for_ids, reply_markup=markup)
+            await message_wait.edit_text(message_for_ids, reply_markup=markup)
         else:
             await state.clear()
             await message.answer(err_mess_templates['no_active_nms'])
