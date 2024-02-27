@@ -39,14 +39,14 @@ class StatisticsRequests:
         proxy = main_config.bot.PROXY if main_config.bot.USE_PROXY else ''
 
         async with aiohttp.ClientSession(
-            timeout=aiohttp.ClientTimeout(total=20)
+            timeout=aiohttp.ClientTimeout(total=10)
         ) as session:
             try:
                 async with session.post(
                     url=url,
                     data=json.dumps(data),
                     headers=self.__headers,
-                    timeout=aiohttp.ClientTimeout(total=20),
+                    timeout=aiohttp.ClientTimeout(total=10),
                     proxy=proxy,
                 ) as response:
                     if response.status == HTTPStatus.OK:
