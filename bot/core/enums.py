@@ -2,7 +2,7 @@ from enum import IntEnum, Enum
 
 
 class Pagination(IntEnum):
-    PAGINATION_SIZE_NM_ID = 5
+    PAGINATION_SIZE_NM_ID = 10
 
 
 class Limits(IntEnum):
