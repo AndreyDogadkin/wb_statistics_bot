@@ -50,9 +50,9 @@ jobs:
             cd ${{ secrets.PATH_TO_REPO }}
             git checkout master
             git pull
-            sudo docker compose -f docker-compose.yml pull
-            sudo docker compose -f docker-compose.yml down
-            sudo docker compose -f docker-compose.yml up -d
+            sudo docker compose -f docker-compose.yaml pull
+            sudo docker compose -f docker-compose.yaml down
+            sudo docker compose -f docker-compose.yaml up -d
 
   send_message:
     runs-on: ubuntu-latest
