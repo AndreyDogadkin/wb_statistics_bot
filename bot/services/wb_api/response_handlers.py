@@ -1,6 +1,6 @@
-import logging
 from datetime import datetime
 
+from loguru import logger
 from pydantic import ValidationError
 
 from bot.base.exceptions import ForUserException
@@ -15,8 +15,6 @@ from bot.services.wb_api import (
     BaseResponse,
 )
 
-logger = logging.getLogger(__name__)
-
 
 class ResponseHandlers:
     @staticmethod
@@ -24,12 +22,12 @@ class ResponseHandlers:
         """Проверка поля ошибок в ответе."""
         if data.error is True:
             error = data.error_text
-            logger.error(f'В ответе присутствуют ошибки: {error}.')
+            logger.error(f'There are errors in the response: {error}.')
             raise ForUserException(
                 err_mess_templates['response_error_field_true']
             )
         if not data.data:
-            logger.warning('Получен пустой ответ.')
+            logger.warning('An empty response was received.')
             raise ForUserException(err_mess_templates['empty_response'])
 
     @staticmethod
@@ -66,7 +64,7 @@ class ResponseHandlers:
                 out.append(page)
             return out
         except ValidationError as e:
-            logger.critical(f'Ошибка валидации ответа: {e.json()}')
+            logger.critical(f'Response validation error: {e.json()}')
             raise ForUserException(
                 err_mess_templates['response_validation_error']
             )
@@ -87,7 +85,7 @@ class ResponseHandlers:
                 len_out_list -= 1
             return out
         except ValidationError as e:
-            logger.critical(f'Ошибка валидации ответа: {e.json()}')
+            logger.critical(f'Response validation error: {e.json()}')
             raise ForUserException(
                 err_mess_templates['response_validation_error']
             )
@@ -135,7 +133,7 @@ class ResponseHandlers:
                 ),
             ]
         except ValidationError as e:
-            logger.critical(f'Ошибка валидации ответа: {e.json()}')
+            logger.critical(f'Response validation error: {e.json()}')
             raise ForUserException(
                 err_mess_templates['response_validation_error']
             )
