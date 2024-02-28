@@ -26,7 +26,7 @@ async def on_startup():
     dp.include_router(get_handlers_router())
     set_middleware(dp=dp)
     await set_default_commands()
-    logger.info(f'Bot started.')
+    logger.warning(f'Bot started.')
 
 
 async def on_shutdown():
@@ -36,7 +36,7 @@ async def on_shutdown():
     await dp.fsm.storage.close()
     await bot.delete_webhook()
     await bot.session.close()
-    logger.info('Bot stopped.')
+    logger.warning('Bot stopped.')
 
 
 @asynccontextmanager
