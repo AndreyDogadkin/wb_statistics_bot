@@ -36,6 +36,7 @@ class WebhookSettings(EnvBaseSettings):
 class BotSettings(EnvBaseSettings):
     """Настройки бота."""
 
+    DEBUG: bool
     SUPER_USERS: list
     USE_PROXY: bool
     TG_TOKEN: str

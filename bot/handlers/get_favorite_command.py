@@ -1,11 +1,10 @@
-import logging
-
 from aiogram import Router, types, F
 from aiogram.exceptions import TelegramAPIError
 from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state
 from aiogram.utils import markdown
+from loguru import logger
 
 from bot.base.exceptions import ForUserException
 from bot.base.helpers import get_user_statistics
@@ -20,8 +19,6 @@ from bot.keyboards import MakeMarkup
 from bot.services.database import DBMethods
 from bot.services.wb_api.analytics_requests import StatisticsRequests
 from bot.states import FavoritesStates
-
-loger = logging.getLogger(__name__)
 
 database = DBMethods()
 
@@ -184,8 +181,7 @@ async def send_statistics_from_favorite(
         await message_wait.delete()
         await message_wait.answer_sticker(stickers['error_try_later_sticker'])
         await message_wait.answer(err_mess_templates['telegram_error'])
-        loger.error(f'{err.message}, chat_id={err.method.chat_id}')
+        logger.error(f'{err.message}, chat_id={err.method.chat_id}')
     finally:
         await state.storage.close()
         await state.clear()
-        loger.info('Состояние закрыто, хранилище очищено.')

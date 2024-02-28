@@ -1,13 +1,13 @@
 import asyncio
-import logging
-import sys
 from contextlib import asynccontextmanager
 
 import uvicorn
 from aiogram import types
 from fastapi import FastAPI
+from loguru import logger
 
 from bot.core import main_config
+from bot.core.config import BASE_DIR
 from bot.core.loader import (
     bot,
     dp,
@@ -18,8 +18,6 @@ from bot.core.loader import (
 from bot.handlers import get_handlers_router
 from bot.middlewares import set_middleware
 
-logger = logging.getLogger(__name__)
-
 
 async def on_startup():
     logger.info('Bot starting...')
@@ -28,7 +26,7 @@ async def on_startup():
     dp.include_router(get_handlers_router())
     set_middleware(dp=dp)
     await set_default_commands()
-    logger.info(f'Bot started.')
+    logger.warning(f'Bot started.')
 
 
 async def on_shutdown():
@@ -38,7 +36,7 @@ async def on_shutdown():
     await dp.fsm.storage.close()
     await bot.delete_webhook()
     await bot.session.close()
-    logger.info('Bot stopped.')
+    logger.warning('Bot stopped.')
 
 
 @asynccontextmanager
@@ -58,6 +56,7 @@ app = FastAPI(lifespan=lifespan)
 
 
 @app.post(main_config.webhook.WEBHOOK_PATH)
+@logger.catch(level='CRITICAL')
 async def bot_webhook(update: dict):
     telegram_update = types.Update(**update)
     await dp.feed_update(bot=bot, update=telegram_update)
@@ -75,12 +74,15 @@ async def _start_polling():
 
 
 if __name__ == '__main__':
-    logging.basicConfig(
-        level=logging.INFO,
-        stream=sys.stdout,
-        format='[%(levelname)s : %(name)s : line-%(lineno)s : %(asctime)s] '
-        '-- %(message)s',
+    logger.add(
+        BASE_DIR / "logs/wb_bot.log",
+        level="DEBUG" if main_config.bot.DEBUG else "WARNING",
+        format="{time} | {level} | {module}:{function}:{line} | {message}",
+        rotation="100 KB",
+        compression="zip",
+        retention="10 days",
     )
+
     if main_config.webhook.USE_WEBHOOK:
         uvicorn.run(
             app,

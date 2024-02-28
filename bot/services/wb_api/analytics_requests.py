@@ -1,6 +1,5 @@
 import asyncio
 import json
-import logging
 from datetime import datetime, timedelta
 from functools import wraps
 from http import HTTPStatus
@@ -8,6 +7,7 @@ from time import time
 from typing import Coroutine
 
 import aiohttp
+from loguru import logger
 
 from bot.base.exceptions import (
     WBApiResponseExceptions,
@@ -20,8 +20,6 @@ from bot.base.messages_templates import err_mess_templates
 from bot.core import main_config, MSC_TIME_ZONE, MSC_TIME_DELTA
 from bot.services.wb_api import ResponseHandlers
 from bot.services.wb_api.urls_and_payloads import WBApiUrls, WBApiPayloads
-
-logger = logging.getLogger(__name__)
 
 
 class StatisticsRequests:
@@ -54,22 +52,24 @@ class StatisticsRequests:
                         return response_data
                     if response.status == HTTPStatus.UNAUTHORIZED:
                         raise IncorrectKeyException(
-                            'Ошибка авторизации. Невалидный токен.'
+                            'Authorization error. Invalid token.'
                         )
                     if response.status == HTTPStatus.TOO_MANY_REQUESTS:
                         raise ToManyRequestsException(
-                            f'Слишком много запросов. URL: {url}'
+                            f'To many requests error. URL: {url}'
                         )
                     raise WBApiResponseExceptions(
-                        url=url, message=f'Статус ответа-{response.status}'
+                        url=url,
+                        message=f'Response status-code-{response.status}',
                     )
             except asyncio.TimeoutError:
                 raise TimeoutException(
-                    'WB API не ответил за отведенное время.'
+                    'Timeout error. '
+                    'WB API did not respond in the allotted time.'
                 )
 
     @staticmethod
-    def __check_errors(func):
+    def check_errors(func):
         """Проверить ошибки."""
 
         @wraps(func)
@@ -79,8 +79,7 @@ class StatisticsRequests:
                 response = await func(*args, **kwargs)
                 fin = time()
                 logger.info(
-                    f'Ответ от WB API получен. '
-                    f'Время - '
+                    'The response from WB API was received in '
                     f'{round(fin - start, 2)} c.'
                 )
                 return response
@@ -99,7 +98,7 @@ class StatisticsRequests:
 
         return wrapper
 
-    @__check_errors
+    @check_errors
     async def get_nm_ids(self):
         """Запрос номенклатур продавца."""
         url = WBApiUrls.GET_NM_IDS
@@ -107,7 +106,7 @@ class StatisticsRequests:
         response = await self.__get_response_post(url=url, data=data)
         return ResponseHandlers.nm_ids_handler(response)
 
-    @__check_errors
+    @check_errors
     async def get_analytics_detail_days(
         self, nm_ids: list, period: int = 1, aggregation_lvl: str = 'day'
     ) -> dict:
@@ -126,7 +125,7 @@ class StatisticsRequests:
         response = await self.__get_response_post(url=url, data=data)
         return ResponseHandlers.analytic_detail_days_handler(response)
 
-    @__check_errors
+    @check_errors
     async def get_analytic_detail_periods(self, nm_ids: list, period: int = 7):
         """Запрос статистики товара по периодам."""
         url = WBApiUrls.DETAIL_PERIODS

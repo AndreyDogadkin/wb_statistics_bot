@@ -1,4 +1,3 @@
-import logging
 import random
 
 from aiogram import types, F, Router
@@ -11,8 +10,6 @@ from bot.base.messages_templates import info_mess_templates, stickers
 from bot.keyboards import MakeMarkup, HelpCallbackData
 from bot.services.database import DBMethods
 from bot.states import HelpStates, DeleteUserStates
-
-loger = logging.getLogger(__name__)
 
 start_help_router = Router()
 database = DBMethods()

@@ -1,4 +1,4 @@
-import logging
+from loguru import logger
 
 from aiogram import types, Router
 from aiogram.exceptions import TelegramAPIError
@@ -25,8 +25,6 @@ from bot.keyboards import (
 from bot.services.database import DBMethods
 from bot.services.wb_api.analytics_requests import StatisticsRequests
 from bot.states import GetStatsStates
-
-loger = logging.getLogger(__name__)
 
 database = DBMethods()
 
@@ -138,6 +136,12 @@ async def send_nm_ids(
         await message.answer_sticker(stickers['error_try_later_sticker'])
         await message_wait.edit_text(e.message)
         await state.clear()
+    except TelegramAPIError as err:
+        logger.error(f'{err.message}, chat_id={err.method.chat_id}')
+        await message_wait.delete()
+        await message_wait.answer_sticker(stickers['error_try_later_sticker'])
+        await message_wait.answer(err_mess_templates['telegram_error'])
+        await state.clear()
     finally:
         await message.delete()
 
@@ -218,14 +222,10 @@ async def send_user_statistics(
         await message_wait.answer_sticker(stickers['error_try_later_sticker'])
         await message_wait.answer(e.message)
     except TelegramAPIError as err:
-        loger.error(f'{err.message}, chat_id={err.method.chat_id}')
+        logger.error(f'{err.message}, chat_id={err.method.chat_id}')
         await message_wait.delete()
         await message_wait.answer_sticker(stickers['error_try_later_sticker'])
         await message_wait.answer(err_mess_templates['telegram_error'])
     finally:
         await state.storage.close()
         await state.clear()
-        loger.info(f'Состояние закрыто, хранилище очищено.')
-
-
-# TODO обработать ошибки ТГ
