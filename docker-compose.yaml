@@ -18,6 +18,8 @@ services:
       alembic upgrade head
       && python -m bot
       "
+    volumes:
+      - bot_logs:/app-bot/logs
     depends_on:
       - db
 
@@ -32,4 +34,5 @@ services:
       - bot
 
 volumes:
+  bot_logs:
   pg_data:
