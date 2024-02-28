@@ -1,10 +1,10 @@
 import asyncio
 from contextlib import asynccontextmanager
-from loguru import logger
 
 import uvicorn
 from aiogram import types
 from fastapi import FastAPI
+from loguru import logger
 
 from bot.core import main_config
 from bot.core.config import BASE_DIR
@@ -75,7 +75,7 @@ async def _start_polling():
 
 if __name__ == '__main__':
     logger.add(
-        BASE_DIR / "logs/telegram_bot.log",
+        BASE_DIR / "logs/wb_bot.log",
         level="DEBUG" if main_config.bot.DEBUG else "WARNING",
         format="{time} | {level} | {module}:{function}:{line} | {message}",
         rotation="100 KB",
