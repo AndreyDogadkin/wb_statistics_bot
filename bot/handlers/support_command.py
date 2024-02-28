@@ -54,3 +54,4 @@ async def send_message_to_support(message: types.Message):
         chat_id=support_id,
         text=support_message,
     )
+    await support_bot.session.close()
