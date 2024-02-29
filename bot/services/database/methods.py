@@ -1,6 +1,6 @@
 import logging
 
-from sqlalchemy import select, Select, exists, func
+from sqlalchemy import select, Select, exists, func, union_all
 from sqlalchemy.orm import selectinload
 
 from bot.base.exceptions import ForUserException
@@ -51,6 +51,43 @@ class DBMethods:
             )
         )
         return query
+
+    async def get_user(self, telegram_id) -> User | None:
+        """Получить пользователя."""
+        query = self.__get_query_select_user(telegram_id)
+        async with self.session() as s:
+            user = await s.execute(query)
+            user = user.scalar_one_or_none()
+            return user
+
+    async def get_users_tokens_accounts_count(self) -> list[int]:
+        """Получить количество зарегистрированных пользователей."""
+        query_users = select(func.count(User.id))
+        query_accounts = select(func.count(WBAccount.id))
+        query_tokens = select(func.count(Token.id))
+        async with self.session() as s:
+            users_count = await s.execute(
+                union_all(
+                    query_users,
+                    query_tokens,
+                    query_accounts,
+                )
+            )
+            return users_count.scalars().all()
+
+    async def set_user_is_admin(
+        self, telegram_id: int | str, add_to_admins: bool
+    ) -> bool:
+        """Установить пользователю значение is_admin."""
+        query = self.__get_query_select_user(telegram_id)
+        async with self.session() as s:
+            user = await s.execute(query)
+            user = user.scalar_one_or_none()
+            if not user:
+                return False
+            user.is_admin = add_to_admins
+            await s.commit()
+            return True
 
     async def user_exists(self, telegram_id: int) -> bool:
         """
