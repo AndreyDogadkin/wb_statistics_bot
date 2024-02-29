@@ -20,7 +20,7 @@ async def get_logs_handler(message: types.Message):
     )
 
 
-@admin_router.message(Command(commands='cstats'), AdminFilter())
+@admin_router.message(Command(commands='stats'), AdminFilter())
 async def get_count_stats(message: types.Message):
     """Получить количество пользователей, токенов и аккаунтов."""
     count_stats = await database.get_users_tokens_accounts_count()
