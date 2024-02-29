@@ -41,13 +41,19 @@ async def set_user_to_admin(message: types.Message):
     Пример: /admins + 123456789 или /admins - 123456789
     """
     message_split = message.text.strip().split()
-    if len(message_split) != 3 or message_split[1] not in ['+', '-']:
+    if (
+        len(message_split) != 3
+        or message_split[1] not in ['+', '-']
+        or not message_split[2].isnumeric()
+    ):
         await message.answer(
             admins_message_templates['invalid_format_set_admin']
         )
     else:
         to_admin = True if message_split[1] == '+' else False
-        result = await database.set_user_is_admin(message_split[2], to_admin)
+        result = await database.set_user_is_admin(
+            int(message_split[2]), to_admin
+        )
         if not result:
             await message.answer('Пользователь не найден.')
         else:
