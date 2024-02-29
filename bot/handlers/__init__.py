@@ -7,12 +7,12 @@ __all__ = (
     'donate_router',
     'set_account_router',
     'get_handlers_router',
-    'get_logs_router',
+    'admin_router',
 )
 
 from aiogram import Router
 
-from bot.handlers.admin_get_logs_command import get_logs_router
+from bot.handlers.admin_commands import admin_router
 from bot.handlers.donate_command import donate_router
 from bot.handlers.get_favorite_command import get_favorite_router
 from bot.handlers.get_stats_command import get_stats_router
@@ -32,6 +32,6 @@ def get_handlers_router():
         set_account_router,
         start_help_router,
         support_router,
-        get_logs_router,
+        admin_router,
     )
     return router
