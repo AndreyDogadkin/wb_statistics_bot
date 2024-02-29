@@ -76,7 +76,7 @@ class DBMethods:
             return users_count.scalars().all()
 
     async def set_user_is_admin(
-        self, telegram_id: int | str, add_to_admins: bool
+        self, telegram_id: int, add_to_admins: bool
     ) -> bool:
         """Установить пользователю значение is_admin."""
         query = self.__get_query_select_user(telegram_id)
