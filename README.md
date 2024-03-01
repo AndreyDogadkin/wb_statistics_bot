@@ -1,4 +1,20 @@
-# WB Statistics Telegram Bot
+# <p align="center">🫐 WB Statistics Telegram Bot 🫐</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-FFD43B?style=for-the-badge&logo=python&logoColor=blue" alt="Python">
+  <img src="https://img.shields.io/badge/aiogram-%232671E5.svg?style=for-the-badge" alt="Aiogram">
+  <img src="https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi" alt="FastAPI">
+  <img src="https://img.shields.io/badge/iohttp-%232C5bb4.svg?style=for-the-badge&logo=aiohttp&logoColor=white" alt="AIOHTTP">
+  <img src="https://img.shields.io/badge/pydantic-E6007A?style=for-the-badge&logo=pydantic&logoColor=white" alt="Pydantic">
+  <img src="https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white" alt="Postgres">
+  <img src="https://img.shields.io/badge/SQLite-07405E?style=for-the-badge&logo=sqlite&logoColor=white" alt="SQLite">
+  <img src="https://img.shields.io/badge/SQLAlchemy-529873?style=for-the-badge&logo=sqlalchemy&logoColor=white" alt="SQLAlchemy">
+  <img src="https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white" alt="Docker">
+  <img src="https://img.shields.io/badge/nginx-%23009639.svg?style=for-the-badge&logo=nginx&logoColor=white" alt="Nginx">
+  <img src="https://img.shields.io/badge/uvicorn-%298729.svg?style=for-the-badge" alt="Uvicorn">
+  <img src="https://img.shields.io/badge/github%20actions%20-%232671E5.svg?&style=for-the-badge&logo=github%20actions&logoColor=white"/>
+</p>
+
 ___
 ## Описание:
 Телеграм бот создан для быстрого взаимодействия с WB API.
@@ -26,6 +42,8 @@ ___
 - [x] Лимиты запросов
   - [x] Просмотр лимитов запросов
   - [x] Обновление лимитов запросов
+- [ ] Уведомления
+  - [ ] Уведомления о новых заказах
 - [ ] Дополнительные функции.
   - [ ] Получение остатков товаров на складах
   - [ ] Получение продаж с подробным описанием
@@ -79,19 +97,13 @@ python bot/utils/aes_encryption/generate_encryption_key.py
 ```
 После заполнения, находясь в корневой директории проекта, выполните команды:
 ```
+docker compose up
+```
+или
+```
 python3.11 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 alembic upgrade head
 python -m bot
 ```
-___
-Зависимости:
-* Python3.11
-* aiogram3
-* aiohttp
-* fastapi
-* pydantic
-* pydantic-settings
-* SQLAlchemy
-* alembic
