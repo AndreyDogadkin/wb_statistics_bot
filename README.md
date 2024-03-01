@@ -2,7 +2,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/Python-FFD43B?style=for-the-badge&logo=python&logoColor=blue" alt="Python">
-  <img src="https://img.shields.io/badge/aiogram-%232671E5.svg?style=for-the-badge" alt="Aiogram">
+  <img src="https://img.shields.io/badge/aiogram-%232671E5.svg?style=for-the-badge&logo=telegram&logoColor=white" alt="Aiogram">
   <img src="https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi" alt="FastAPI">
   <img src="https://img.shields.io/badge/iohttp-%232C5bb4.svg?style=for-the-badge&logo=aiohttp&logoColor=white" alt="AIOHTTP">
   <img src="https://img.shields.io/badge/pydantic-E6007A?style=for-the-badge&logo=pydantic&logoColor=white" alt="Pydantic">
