@@ -23,6 +23,8 @@ ___
 Бот закрывает потребность пользователей получать более точные данные о своих продажах через мобильное
 устройство.
 
+[![Telegram](https://img.shields.io/badge/Telegram-@wb_statistics_robot-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/wb_statistics_robot)
+
 ### Функционал:
 ⚠️ Проект находится в разработке.
 - [x] Мультиаккаунт
