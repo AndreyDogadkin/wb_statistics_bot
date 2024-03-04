@@ -11,6 +11,20 @@ token = main_config.bot.TG_TOKEN
 
 
 bot = Bot(token=token, parse_mode=ParseMode.HTML)
+
+# redis_client = Redis(
+#     connection_pool=ConnectionPool(
+#         host=main_config.redis.REDIS_HOST,
+#         port=main_config.redis.REDIS_PORT,
+#         password=main_config.redis.REDIS_PASSWORD,
+#         db=0,
+#     ),
+# )
+#
+# storage = RedisStorage(
+#     redis=redis_client,
+#     key_builder=DefaultKeyBuilder(with_bot_id=True),
+# )
 storage = MemoryStorage()
 dp = Dispatcher(storage=storage)
 
