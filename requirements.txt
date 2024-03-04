@@ -10,5 +10,6 @@ greenlet==3.0.0
 loguru==0.7.2
 pycryptodome==3.19.1
 pydantic-settings==2.0.3
+redis==5.0.2
 SQLAlchemy==2.0.22
 uvicorn==0.24.0.post1
