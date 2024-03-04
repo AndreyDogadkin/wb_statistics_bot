@@ -7,7 +7,7 @@ from bot.services.database import DBMethods
 database = DBMethods()
 
 
-class AdminFilter(BaseFilter):
+class AdminOrSuperUserFilter(BaseFilter):
     async def __call__(self, message: types.Message):
         user_id = message.from_user.id
         user = await database.get_user(user_id)
