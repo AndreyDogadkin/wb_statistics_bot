@@ -69,6 +69,12 @@ class DatabaseSettings(EnvBaseSettings):
         return f'sqlite+aiosqlite:///{self.DB_TEST_PATH}'
 
 
+class RedisSettings(EnvBaseSettings):
+    REDIS_HOST: str
+    REDIS_PORT: int
+    REDIS_PASSWORD: str
+
+
 class EncryptionSettings(EnvBaseSettings):
     """Настройки шифрования."""
 
@@ -79,6 +85,7 @@ class MainConfig(EnvBaseSettings):
     bot: BotSettings = BotSettings()
     webhook: WebhookSettings = WebhookSettings()
     database: DatabaseSettings = DatabaseSettings()
+    redis: RedisSettings = RedisSettings()
     encryption: EncryptionSettings = EncryptionSettings()
 
 
