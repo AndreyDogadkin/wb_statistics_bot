@@ -2,10 +2,14 @@ from enum import IntEnum, Enum
 
 
 class Pagination(IntEnum):
+    """Пагинация."""
+
     PAGINATION_SIZE_NM_ID = 10
 
 
 class Limits(IntEnum):
+    """Лимиты."""
+
     REQUESTS_PER_DAY_LIMIT = 40
     DAY_LIMIT = 6
     MAX_LIMIT_FAVORITES = 5
@@ -13,10 +17,14 @@ class Limits(IntEnum):
 
 
 class Lengths(IntEnum):
+    """Длины значений."""
+
     MAX_LEN_ACCOUNT_NAME = 20
 
 
 class Periods(tuple, Enum):
+    """Периоды."""
+
     TODAY = 'Сегодня', 0
     TWO_DAYS = '2 Дня', 1
     THREE_DAYS = '3 Дня', 2
@@ -29,6 +37,8 @@ class Periods(tuple, Enum):
 
 
 class MyBotCommands(tuple, Enum):
+    """Команды бота."""
+
     HELP = 'help', '❓ Как пользоваться ботом.'
     SET_ACCOUNT = 'set_account', '👤 Управление аккаунтами.'
     FAVORITES = 'favorites', '⭐️ Избранные запросы.'

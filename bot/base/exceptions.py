@@ -11,20 +11,25 @@ class WBApiResponseExceptions(Exception):
 
 class IncorrectKeyException(Exception):
     """Ошибка 401."""
+
     pass
 
 
 class ToManyRequestsException(Exception):
+    """Ошибка 429"""
+
     pass
 
 
 class TimeoutException(Exception):
     """Ошибка времени ожидания."""
+
     pass
 
 
 class ForUserException(Exception):
     """Ошибка для вывода сообщения пользователю."""
+
     def __init__(self, message):
         self.message = message
 
