@@ -9,6 +9,7 @@ database = DBMethods()
 
 class AdminOrSuperUserFilter(BaseFilter):
     """Фильтр для админов и суперпользователей."""
+
     async def __call__(self, message: types.Message):
         user_id = message.from_user.id
         user = await database.get_user(user_id)
