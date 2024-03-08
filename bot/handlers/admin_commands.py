@@ -4,7 +4,7 @@ from aiogram.filters import Command
 
 from bot.base.messages_templates import admins_message_templates
 from bot.core.config import BASE_DIR, main_config
-from bot.filters.admin_filter import AdminFilter
+from bot.filters.admin_filter import AdminOrSuperUserFilter
 from bot.services.database import DBMethods
 
 admin_router = Router()
@@ -12,15 +12,15 @@ admin_router = Router()
 database = DBMethods()
 
 
-@admin_router.message(Command(commands='logs'), AdminFilter())
+@admin_router.message(Command(commands='logs'), AdminOrSuperUserFilter())
 async def get_logs_handler(message: types.Message):
     """Получить файл логов бота."""
-    await message.reply_document(
+    await message.answer_document(
         types.FSInputFile(path=BASE_DIR / 'logs/wb_bot.log')
     )
 
 
-@admin_router.message(Command(commands='stats'), AdminFilter())
+@admin_router.message(Command(commands='stats'), AdminOrSuperUserFilter())
 async def get_count_stats(message: types.Message):
     """Получить количество пользователей, токенов и аккаунтов."""
     count_stats = await database.get_users_tokens_accounts_count()

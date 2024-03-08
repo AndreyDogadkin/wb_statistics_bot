@@ -30,6 +30,7 @@ dp = Dispatcher(storage=storage)
 
 
 async def set_proxy_session():
+    """Добавить прокси-сервер."""
     session = AiohttpSession(proxy=main_config.bot.PROXY)
     bot.session = session
 
@@ -46,4 +47,5 @@ async def set_default_commands(
 
 
 async def remove_commands():
+    """Удалить команды."""
     await bot.delete_my_commands(scope=BotCommandScopeDefault())

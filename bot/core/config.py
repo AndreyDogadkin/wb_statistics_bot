@@ -13,6 +13,8 @@ DAY_LIMIT_DELTA = datetime.timedelta(hours=Limits.DAY_LIMIT.value)
 
 
 class EnvBaseSettings(BaseSettings):
+    """Базовый класс настроек."""
+
     model_config = SettingsConfigDict(
         env_file=BASE_DIR / '.env',
         env_file_encoding='utf-8',
@@ -21,6 +23,8 @@ class EnvBaseSettings(BaseSettings):
 
 
 class WebhookSettings(EnvBaseSettings):
+    """Настройки webhook для телеграм."""
+
     USE_WEBHOOK: bool
     WEBHOOK_BASE_URL: str
     WEBHOOK_PATH: str
