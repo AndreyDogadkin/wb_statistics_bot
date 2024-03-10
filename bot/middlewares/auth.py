@@ -13,7 +13,7 @@ class AuthMiddleware(BaseMiddleware):
         self,
         handler: Callable[[TelegramObject, Dict[str, Any]], Awaitable[Any]],
         event: TelegramObject,
-        data: dict[str:Any],
+        data: dict[str, Any],
     ) -> Any:
         if not isinstance(event, Message):
             return await handler(event, data)
