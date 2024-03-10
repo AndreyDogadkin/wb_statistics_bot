@@ -7,13 +7,14 @@ from aiogram.utils import markdown
 from loguru import logger
 
 from bot.base.exceptions import ForUserException
-from bot.base.helpers import get_user_statistics
+from bot.base.helpers import get_user_statistics, blocked_answer
 from bot.base.messages_templates import (
     get_favorite_message_templates,
     err_mess_templates,
     stickers,
     get_stats_mess_templates,
 )
+from bot.filters.is_active_filter import IsActiveUserFilter
 from bot.keyboards import FavoritesCallbackData, FavoritesDeleteCallbackData
 from bot.keyboards import MakeMarkup
 from bot.services.database import DBMethods
@@ -46,7 +47,9 @@ async def send_favorites_and_update_in_state_data(
 
 
 @get_favorite_router.message(
-    Command(commands='favorites'), StateFilter(default_state)
+    Command(commands='favorites'),
+    StateFilter(default_state),
+    IsActiveUserFilter(),
 )
 async def get_favorites_gateway(message: types.Message, state: FSMContext):
     """Установка состояния выбора номера номенклатуры из списка избранных."""
@@ -72,6 +75,16 @@ async def get_favorites_gateway(message: types.Message, state: FSMContext):
         await message.answer(get_stats_mess_templates['save_tokens'])
         await state.clear()
     await message.delete()
+
+
+@get_favorite_router.message(
+    Command(commands='favorites'),
+    StateFilter(default_state),
+    ~IsActiveUserFilter(),
+)
+async def get_favorites_block(message: types.Message):
+    """Ответ заблокированному пользователю."""
+    await blocked_answer(message)
 
 
 @get_favorite_router.callback_query(
