@@ -352,4 +352,6 @@ admins_message_templates = {
     'Всего аккаунтов: {}.',
     'invalid_format_set_admin': 'Неправильный формат команды.\n'
     'Пример: /admins + 123456789 или /admins - 123456789',
+    'invalid_format_set_is_active': 'Неправильный формат команды.\n'
+    'Пример: /block + 123456789 или /block - 123456789',
 }

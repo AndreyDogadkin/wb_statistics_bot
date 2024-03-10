@@ -89,6 +89,20 @@ class DBMethods:
             await s.commit()
             return True
 
+    async def set_user_is_active(
+        self, telegram_id: int, is_active: bool
+    ) -> bool:
+        """Установить пользователю значение is_active."""
+        query = self.__get_query_select_user(telegram_id)
+        async with self.session() as s:
+            user = await s.execute(query)
+            user = user.scalar_one_or_none()
+            if not user:
+                return False
+            user.is_active = is_active
+            await s.commit()
+            return True
+
     async def user_exists(self, telegram_id: int) -> bool:
         """
         Проверить наличия пользователя в БД.

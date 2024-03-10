@@ -58,3 +58,32 @@ async def set_user_to_admin(message: types.Message):
             await message.answer('Пользователь не найден.')
         else:
             await message.answer('Операция успешна.')
+
+
+@admin_router.message(
+    Command(commands='block'),
+    F.func(lambda x: x.from_user.id in main_config.bot.SUPER_USERS),
+)
+async def block_user(message: types.Message):
+    """
+    Заблокировать или разблокировать пользователя.
+    Пример: /block + 123456789 или /block - 123456789
+    """
+    message_split = message.text.strip().split()
+    if (
+        len(message_split) != 3
+        or message_split[1] not in ['+', '-']
+        or not message_split[2].isnumeric()
+    ):
+        await message.answer(
+            admins_message_templates['invalid_format_set_is_active']
+        )
+    else:
+        block = False if message_split[1] == '+' else True
+        result = await database.set_user_is_active(
+            int(message_split[2]), block
+        )
+        if not result:
+            await message.answer('Пользователь не найден.')
+        else:
+            await message.answer('Операция успешна.')
