@@ -11,6 +11,7 @@ from bot.base.messages_templates import (
     err_mess_templates,
 )
 from bot.filters import TokenFilter
+from bot.filters.is_active_filter import IsActiveUserFilter
 from bot.keyboards import MakeMarkup, TokenTypeCallbackData
 from bot.services.database import DBMethods
 from bot.states import SaveTokenStates
@@ -18,6 +19,7 @@ from bot.states import SaveTokenStates
 database = DBMethods()
 
 save_token_router = Router()
+save_token_router.message.filter(IsActiveUserFilter())
 
 
 @save_token_router.message(
