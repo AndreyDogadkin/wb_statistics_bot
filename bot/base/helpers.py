@@ -36,10 +36,3 @@ async def delayed_delete(message: types.Message, delay: float):
     """Удаление сообщения с задержкой."""
     await asyncio.sleep(delay)
     await message.delete()
-
-
-async def blocked_answer(message: types.Message):
-    await message.delete()
-    await message.answer(
-        '😪 Вы заблокированы, обратитесь в поддержку!\n➡️ /support'
-    )

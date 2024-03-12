@@ -8,7 +8,7 @@ from aiogram.utils import markdown
 from loguru import logger
 
 from bot.base.exceptions import ForUserException
-from bot.base.helpers import get_user_statistics, blocked_answer
+from bot.base.helpers import get_user_statistics
 from bot.base.messages_templates import (
     get_stats_mess_templates,
     err_mess_templates,
@@ -29,12 +29,12 @@ from bot.states import GetStatsStates
 database = DBMethods()
 
 get_stats_router = Router()
+get_stats_router.message.filter(IsActiveUserFilter())
 
 
 @get_stats_router.message(
     Command(commands='get_stats'),
     StateFilter(default_state),
-    IsActiveUserFilter(),
 )
 async def set_get_stats_state(message: types.Message, state: FSMContext):
     """
@@ -52,16 +52,6 @@ async def set_get_stats_state(message: types.Message, state: FSMContext):
         await message.answer(get_stats_mess_templates['save_tokens'])
         await message.delete()
         await state.clear()
-
-
-@get_stats_router.message(
-    Command(commands='get_stats'),
-    StateFilter(default_state),
-    ~IsActiveUserFilter(),
-)
-async def set_get_stats_state(message: types.Message):
-    """Ответ заблокированному пользователю."""
-    await blocked_answer(message=message)
 
 
 @get_stats_router.callback_query(
