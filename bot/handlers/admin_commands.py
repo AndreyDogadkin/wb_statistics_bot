@@ -4,6 +4,7 @@ from aiogram.filters import Command
 
 from bot.base.messages_templates import admins_message_templates
 from bot.core.config import BASE_DIR, main_config
+from bot.core.loader import bot
 from bot.filters.admin_filter import AdminOrSuperUserFilter
 from bot.services.database import DBMethods
 
@@ -86,4 +87,9 @@ async def block_user(message: types.Message):
         if not result:
             await message.answer('Пользователь не найден.')
         else:
-            await message.answer('Операция успешна.')
+            block_for_mess = 'заблокирован' if not block else 'разблокирован'
+            await bot.send_message(
+                chat_id=int(message_split[2]),
+                text=f'‼️ Ваш профиль {block_for_mess} администратором.',
+            )
+            await message.answer(f'Пользователь {block_for_mess}.')
