@@ -1,5 +1,6 @@
 from aiogram import Router, F
 from aiogram import types
+from aiogram.exceptions import TelegramForbiddenError
 from aiogram.filters import Command
 
 from bot.base.messages_templates import admins_message_templates
@@ -88,8 +89,11 @@ async def block_user(message: types.Message):
             await message.answer('Пользователь не найден.')
         else:
             block_for_mess = 'заблокирован' if not block else 'разблокирован'
-            await bot.send_message(
-                chat_id=int(message_split[2]),
-                text=f'‼️ Ваш профиль {block_for_mess} администратором.',
-            )
+            try:
+                await bot.send_message(
+                    chat_id=int(message_split[2]),
+                    text=f'‼️ Ваш профиль {block_for_mess} администратором.',
+                )
+            except TelegramForbiddenError:
+                pass
             await message.answer(f'Пользователь {block_for_mess}.')
