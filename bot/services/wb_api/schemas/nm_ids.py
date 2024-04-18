@@ -19,15 +19,19 @@ class DataNmIDs(BaseModel):
 class CardsNmIds(BaseModel):
     """Получение артикулов продавца. Данные о товарах."""
 
-    sizes: list[dict]
-    media_files: list[str] = Field(alias='mediaFiles')
-    colors: list[str]
-    update_at: str = Field(alias='updateAt')
+    nm_id: int = Field(alias='nmID')
+    nm_uuid: str = Field(alias='nmUUID')
+    object_id: int = Field(alias='subjectID')
     vendor_code: str = Field(alias='vendorCode')
     brand: str
-    object: str
-    nm_id: int = Field(alias='nmID')
+    title: str
+    description: str
+    video: str | None = None
+    media_files: list[dict] = Field(alias='photos')
+    dimensions: dict
+    characteristics: list[dict]
+    created_at: str = Field(alias='createdAt')
+    update_at: str = Field(alias='updatedAt')
     imt_id: int = Field(alias='imtID')
-    object_id: int = Field(alias='objectID')
-    is_prohibited: bool = Field(alias='isProhibited')
-    tags: list
+    sizes: list[dict]
+    subject_name: str = Field(alias='subjectName')
