@@ -8,12 +8,12 @@ from bot.base.messages_templates import err_mess_templates
 from bot.core.enums import Pagination
 from bot.services.wb_api import (
     ResponseStatsDays,
-    ResponseNmIDs,
     CardsNmIds,
     ResponseStatsPeriod,
     ConversionsStatsPeriod,
     BaseResponse,
 )
+from bot.services.wb_api.schemas.nm_ids import DataNmIDs
 
 
 class ResponseHandlers:
@@ -45,18 +45,17 @@ class ResponseHandlers:
     def nm_ids_handler(cls, response) -> list[tuple]:
         """Обработчик ответа для запроса номеров номенклатур."""
         try:
-            data: ResponseNmIDs = ResponseNmIDs.model_validate(response)
-            cls.__check_error_key(data)
-            cards: list = data.data.cards
+            data: DataNmIDs = DataNmIDs(**response)
+            cards: list = data.cards
             out: list = []
             page: list = []
             for card in cards:
                 card: CardsNmIds
                 vendor_code: str = card.vendor_code
-                object_: str = card.object
+                title: str = card.title
                 nm_id: int = card.nm_id
-                photo: str = card.media_files[0]
-                page.append((vendor_code, object_, nm_id, photo))
+                photo: str = card.media_files[0]['big']
+                page.append((vendor_code, title, nm_id, photo))
                 if len(page) == Pagination.PAGINATION_SIZE_NM_ID:
                     out.append(page)
                     page = []
