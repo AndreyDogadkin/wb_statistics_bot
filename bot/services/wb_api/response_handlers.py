@@ -54,7 +54,7 @@ class ResponseHandlers:
                 vendor_code: str = card.vendor_code
                 title: str = card.title
                 nm_id: int = card.nm_id
-                photo: str = card.media_files[0]['big']
+                photo: str = card.media_files[0]['square']
                 page.append((vendor_code, title, nm_id, photo))
                 if len(page) == Pagination.PAGINATION_SIZE_NM_ID:
                     out.append(page)
