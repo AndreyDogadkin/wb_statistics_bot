@@ -3,7 +3,7 @@ from aiogram import Router, types
 from bot.filters.is_active_filter import IsActiveUserFilter
 
 block_router = Router()
-block_router.message(~IsActiveUserFilter())
+block_router.message.filter(~IsActiveUserFilter())
 
 
 @block_router.message()
