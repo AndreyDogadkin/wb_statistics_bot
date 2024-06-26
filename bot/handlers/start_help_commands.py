@@ -18,10 +18,12 @@ database = DBMethods()
 @start_help_router.message(CommandStart(), StateFilter(default_state))
 async def command_start_handler(message: types.Message):
     """Команда start."""
+    username = message.from_user.username
+    first_name = message.from_user.first_name
     await message.answer_sticker(stickers['start_sticker'])
     await message.answer(
         info_mess_templates['start'].format(
-            markdown.hbold('@' + message.from_user.username)
+            markdown.hbold('@' + username if username else first_name),
         )
     )
 
